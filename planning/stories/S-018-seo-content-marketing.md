@@ -677,3 +677,11 @@ AI: 📊 SEO Performance Report (Last 30 Days)
 - GMB API requires business verification
 - Schedule sitemap regeneration on content changes
 - Consider AMP for blog posts (future)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

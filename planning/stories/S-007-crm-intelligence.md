@@ -363,3 +363,11 @@ AI: Here are customers at risk of churning:
 - Consider GDPR/privacy compliance for marketing
 - Social media enrichment could use APIs or manual entry
 - Loyalty program is basic - could expand in future
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

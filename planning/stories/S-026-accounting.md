@@ -972,3 +972,11 @@ AI: 🏦 RECONCILIATION - December 20, 2025
 - Bank reconciliation is critical for cash control
 - May need certified accountant review for tax compliance
 - Integration with SAT systems (CFDI) already in S-020
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

@@ -561,3 +561,11 @@ AI (WhatsApp):
 - Consider family accounts (shared points across pets)
 - Integration with payment processor for automatic points
 - Consider prepaid packages (buy 5 checkups, get 1 free)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

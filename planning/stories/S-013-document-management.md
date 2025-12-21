@@ -546,3 +546,11 @@ Upload → Virus Scan → Store → Generate Thumbnail
 - HEIC conversion for iPhone photos
 - Consider document size limits (10MB default)
 - PDF preview generation with pdf.js or similar
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

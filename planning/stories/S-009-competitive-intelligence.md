@@ -510,3 +510,11 @@ This package is designed to work for any business:
 - Batch process insights generation (daily cron)
 - Consider competitor social media API monitoring (future)
 - Mobile app competitor analysis (future enhancement)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

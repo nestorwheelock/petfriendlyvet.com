@@ -498,3 +498,11 @@ AI: On-Call Schedule for this weekend:
 - First aid content should be reviewed by vet
 - 24-hour hospital info should be verified regularly
 - Consider panic button in mobile app (future)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

@@ -295,3 +295,11 @@ AI: ⚠️ Inventory Alert
 - GDPR compliance important for EU tourists
 - Integration with OkVet.co TBD (may need research)
 - Consider separate compliance database for long-term retention
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

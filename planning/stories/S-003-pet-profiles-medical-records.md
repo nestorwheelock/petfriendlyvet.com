@@ -303,3 +303,11 @@ AI: I've recorded the visit for Max:
 - Medical records are sensitive data - ensure HIPAA-like protections
 - Consider OCR for uploaded lab results in future epoch
 - Weight chart could use Chart.js or similar
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

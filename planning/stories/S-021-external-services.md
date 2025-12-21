@@ -534,3 +534,11 @@ AI: 📊 Grooming Partner Statistics (Last 90 Days)
 - Medication handoff is critical for boarding stays
 - Commission tracking is optional (depends on agreements)
 - Consider adding partner portal in future version
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

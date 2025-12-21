@@ -172,3 +172,11 @@ EPOCH_1_TOOLS = [
 - This epoch establishes the foundation for all future epochs
 - AI chat is informational only in Epoch 1 (no transactions)
 - Custom admin interface is mobile-first, not Django admin
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

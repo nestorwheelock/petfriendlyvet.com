@@ -544,3 +544,11 @@ REVIEW_REQUEST_RULES = {
 - Respond to negative reviews promptly
 - Feature diverse reviews (different pets, services)
 - Consider video testimonials (future)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

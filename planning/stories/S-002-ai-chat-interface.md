@@ -248,3 +248,11 @@ class AIService:
 - In Epoch 1, chat is informational only (no booking, no purchases)
 - Epoch 2 will add appointment booking tools
 - Epoch 3 will add product search and cart tools
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

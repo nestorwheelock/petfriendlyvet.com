@@ -619,3 +619,11 @@ AI: Q4 2024 vs Q3 2024 Comparison:
 - Real-time updates for key metrics
 - Consider integration with Google Analytics
 - Celery for async report generation
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

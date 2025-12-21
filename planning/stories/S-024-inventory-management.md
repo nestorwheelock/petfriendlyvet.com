@@ -761,3 +761,11 @@ AI: ✅ Tramadol dispensed and logged
 - Consider barcode/QR scanning for faster receiving and counting
 - Stock valuation affects financial reporting (link to S-026)
 - May need temperature logging integration for refrigerated items (future)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.

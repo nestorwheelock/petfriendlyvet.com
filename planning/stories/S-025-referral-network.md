@@ -733,3 +733,11 @@ AI: ✅ Report marked as reviewed
 - HIPAA-equivalent privacy for shared medical records
 - PDF generation for referral letters
 - Consider specialist portal for direct communication (future)
+
+## Development Process
+
+**Before implementing this story**, review and follow the **23-Step TDD Cycle** in:
+- `CLAUDE.md` - Global development workflow
+- `planning/TASK_BREAKDOWN.md` - Specific tasks for this story
+
+Tests must be written before implementation. >95% coverage required.
