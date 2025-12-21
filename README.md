@@ -1,4 +1,4 @@
-# Pet-Friendly Website (SPEC Phase - Awaiting Approval)
+# Pet-Friendly Veterinary Clinic (SPEC Phase - Awaiting Approval)
 
 **STATUS**: This project is in SPEC phase. No code has been written yet.
 This README guides you through the approval process.
@@ -7,18 +7,63 @@ This README guides you through the approval process.
 
 ## What This Will Be
 
-A bilingual (Spanish/English) website for **Pet-Friendly**, Dr. Pablo's veterinary clinic in Puerto Morelos, Quintana Roo, Mexico. The website will serve as:
+An **AI-first** multilingual platform for **Pet-Friendly**, Dr. Pablo's veterinary clinic in Puerto Morelos, Quintana Roo, Mexico.
 
-1. **Online presence** - Professional website showcasing the clinic, pharmacy, and pet store
-2. **Appointment booking** - Online appointment request system
-3. **E-commerce platform** - Online store for pet products
-4. **Information hub** - Services, hours, location, and contact information
+**Languages:** Spanish, English, German, French, Italian built-in - plus AI-powered translation for 100+ additional languages on-demand.
 
-### Tech Stack
-- **Backend**: Django (Python)
+### The Vision: Conversation as Interface
+
+Instead of navigating menus and filling forms, users **talk** to the website:
+
+> "I need to bring my dog Luna in for her vaccines"
+> "What's the best flea medicine for a 10kg cat?"
+> "Do you have Hills Science Diet in stock?"
+> "When is Dr. Pablo available this week?"
+
+The AI understands context, remembers pet information, and handles everything from questions to appointments to purchases.
+
+### Three Service Lines
+
+1. **Clínica** - Veterinary consultations, vaccinations, surgery, emergency care
+2. **Farmacia** - Prescription medications, supplements, flea/tick prevention
+3. **Tienda** - Pet food, toys, accessories, grooming supplies
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| AI Chat Interface | Natural language for all interactions |
+| Multilingual | 5 core + AI translation for 100+ languages |
+| Online Appointments | Book via conversation with AI |
+| E-Commerce Store | Full product catalog and checkout |
+| Pet Records | Owners can access their pet's information |
+| Omnichannel | WhatsApp, SMS, email - unified inbox |
+| Mobile-First Admin | Custom dashboard for Dr. Pablo |
+
+### Technology Stack
+
+- **Backend**: Django 5.x (Python)
 - **Frontend**: HTMX + Alpine.js + Tailwind CSS
+- **AI**: OpenRouter (Claude) with tool calling
 - **Database**: PostgreSQL
 - **Payments**: Stripe
+- **Communications**: Twilio + WhatsApp Business API
+
+### Architecture: Reusable Modules
+
+Built as **9 pip-installable packages** that can be reused across other businesses:
+
+| Package | Purpose |
+|---------|---------|
+| django-multilingual | AI-powered translation |
+| django-appointments | Service booking |
+| django-simple-store | E-commerce + inventory |
+| django-ai-assistant | AI chat + tools |
+| django-crm-lite | Contact management |
+| django-omnichannel | Multi-channel communications |
+| django-competitive-intel | Competitor tracking + intelligence |
+| django-vet-clinic | Pet profiles + medical records |
+| django-accounting | Full double-entry accounting |
 
 ---
 
@@ -28,55 +73,94 @@ Please review these planning documents before approving:
 
 ### Core Documents
 - **[Project Charter](planning/PROJECT_CHARTER.md)** - What, Why, How, Success Criteria, Risks
-- **[SPEC Summary](planning/SPEC_SUMMARY.md)** - Quick reference and architecture overview
-- **[Task Breakdown](planning/TASK_BREAKDOWN.md)** - Implementation plan with estimates
+- **[SPEC Summary](planning/SPEC_SUMMARY.md)** - Architecture overview and epoch roadmap
 
-### User Stories (Features)
-- **[S-001: Bilingual Public Website](planning/stories/S-001-bilingual-public-website.md)** - Core pages and language support
-- **[S-002: Appointment Booking](planning/stories/S-002-appointment-booking.md)** - Online appointment requests
-- **[S-003: E-Commerce Store](planning/stories/S-003-ecommerce-store.md)** - Product catalog and checkout
-- **[S-004: Pharmacy Information](planning/stories/S-004-pharmacy-information.md)** - Pharmacy services page
-- **[S-005: Admin Dashboard](planning/stories/S-005-admin-dashboard.md)** - Content management
+### User Stories (Features by Epoch)
+
+**Epoch 1: Foundation + AI Core**
+- **[S-001: Foundation + AI Core](planning/stories/S-001-foundation-ai-core.md)** - Django setup, auth, multilingual, AI service
+- **[S-002: AI Chat Interface](planning/stories/S-002-ai-chat-interface.md)** - Customer and admin chat widgets
+- **[S-011: Knowledge Base Admin](planning/stories/S-011-knowledge-base-admin.md)** - AI content management
+- **[S-023: Data Migration](planning/stories/S-023-data-migration.md)** - OkVet.co import (CRITICAL)
+
+**Epoch 2: Appointments + Pets**
+- **[S-003: Pet Profiles + Medical Records](planning/stories/S-003-pet-profiles-medical-records.md)** - Pet data and health records
+- **[S-004: Appointment Booking via AI](planning/stories/S-004-appointment-booking-ai.md)** - Conversational scheduling
+- **[S-012: Notifications & Reminders](planning/stories/S-012-notifications-reminders.md)** - Vaccination, appointment reminders
+- **[S-013: Document Management](planning/stories/S-013-document-management.md)** - Upload, OCR, medical documents
+- **[S-021: External Services](planning/stories/S-021-external-services.md)** - Outsourced grooming, boarding referrals
+- **[S-022: Travel Certificates](planning/stories/S-022-travel-certificates.md)** - International health certificates
+
+**Epoch 3: E-Commerce + Billing**
+- **[S-005: E-Commerce Store](planning/stories/S-005-ecommerce-store.md)** - Product catalog and checkout
+- **[S-010: Pharmacy Management](planning/stories/S-010-pharmacy-management.md)** - Prescriptions, refills, controlled substances
+- **[S-020: Billing & Invoicing](planning/stories/S-020-billing-invoicing.md)** - Stripe, CFDI, B2B accounts, discounts
+- **[S-024: Inventory Management](planning/stories/S-024-inventory-management.md)** - Stock tracking, expiry, reorder alerts
+
+**Epoch 4: Communications Hub**
+- **[S-006: Omnichannel Communications](planning/stories/S-006-omnichannel-communications.md)** - WhatsApp, SMS, unified inbox
+- **[S-015: Emergency Services](planning/stories/S-015-emergency-services.md)** - After-hours triage, on-call management
+- **[S-025: Referral Network](planning/stories/S-025-referral-network.md)** - Specialists, visiting vets, referral tracking
+
+**Epoch 5: CRM + Intelligence + Marketing**
+- **[S-007: CRM + Intelligence](planning/stories/S-007-crm-intelligence.md)** - Owner profiles, marketing
+- **[S-009: Competitive Intelligence](planning/stories/S-009-competitive-intelligence.md)** - Competitor tracking, market analysis
+- **[S-014: Reviews & Testimonials](planning/stories/S-014-reviews-testimonials.md)** - Client reviews, Google integration
+- **[S-016: Loyalty & Rewards](planning/stories/S-016-loyalty-rewards.md)** - Points, tiers, referral program
+- **[S-018: SEO & Content Marketing](planning/stories/S-018-seo-content-marketing.md)** - Blog, landing pages, technical SEO
+- **[S-019: Email Marketing](planning/stories/S-019-email-marketing.md)** - Campaigns, segmentation, automation
+
+**Epoch 6: Practice Management**
+- **[S-008: Practice Management](planning/stories/S-008-practice-management.md)** - Staff tools, compliance
+- **[S-017: Reports & Analytics](planning/stories/S-017-reports-analytics.md)** - Business intelligence, dashboards
+- **[S-026: Accounting](planning/stories/S-026-accounting.md)** - Full double-entry accounting, AP/AR, bank reconciliation
 
 ### Wireframes (Visual Layouts)
 - **[Wireframes Overview](planning/wireframes/README.md)** - Design patterns and color scheme
 - **[Homepage](planning/wireframes/01-homepage.txt)** - Desktop and mobile layouts
 - **[About Page](planning/wireframes/02-about.txt)** - Dr. Pablo bio and clinic info
-- **[Appointment Form](planning/wireframes/05-appointment.txt)** - Booking request flow
-- **[Store & Products](planning/wireframes/06-store.txt)** - Product catalog and details
-- **[Cart & Checkout](planning/wireframes/07-cart-checkout.txt)** - Shopping and payment flow
+- **[Appointment Form](planning/wireframes/05-appointment.txt)** - AI-powered booking flow
+- **[Store & Products](planning/wireframes/06-store.txt)** - Product catalog
+- **[Cart & Checkout](planning/wireframes/07-cart-checkout.txt)** - Shopping flow
+- **[Competitive Intelligence](planning/wireframes/10-competitive-intelligence.txt)** - Competitor map, pricing, visitor tracking
 
 ---
 
 ## Scope Summary
 
-### IN SCOPE (v1.0)
-- Bilingual website (Spanish/English)
-- Homepage, About, Services, Contact, Pharmacy pages
-- Appointment request form with email notifications
-- E-commerce store with product catalog
-- Shopping cart and checkout (Stripe payments)
-- Django admin for content management
-- Mobile responsive design
+### IN SCOPE (6 Epochs, 26 Stories)
+
+| Epoch | Focus | Stories | Deliverable |
+|-------|-------|---------|-------------|
+| 1 | Foundation + AI Core | 4 | Site with AI chat, data migration |
+| 2 | Appointments + Pets | 6 | Booking, pet records, travel certs |
+| 3 | E-Commerce + Billing | 4 | Store, pharmacy, billing, inventory |
+| 4 | Communications Hub | 3 | WhatsApp, SMS, emergency, referrals |
+| 5 | CRM + Intelligence + Marketing | 6 | CRM, reviews, loyalty, SEO, email |
+| 6 | Practice Management | 3 | Staff tools, reports, accounting |
 
 ### OUT OF SCOPE (Future Versions)
 - Native mobile app
 - Real-time video consultations
-- Pet health records database
+- Full EMR system (beyond basic records)
 - Automated inventory management
 - Multi-location support
 
 ---
 
-## Estimated Effort
+## Market Opportunity
 
-| Phase | Estimate |
-|-------|----------|
-| Sprint 1: Core + Appointments | 35 hours |
-| Sprint 2: E-Commerce + Pharmacy | 34 hours |
-| Testing & Documentation | 16 hours |
-| Deployment | 6 hours |
-| **Total** | **91 hours** |
+Based on our competitor research:
+
+| Competitor | Website | Online Booking | E-Commerce |
+|------------|---------|----------------|------------|
+| Pet-Friendly | **AI-Powered** | **AI Chat** | **Full Store** |
+| Fauna Silvestre | None | None | None |
+| La Vet del Puerto | None | None | None |
+| Dr. Guillermo | None | None | None |
+| Veterinaria Miramar | None | None | None |
+
+**Key Finding:** No veterinary clinic in Puerto Morelos has a real website.
 
 ---
 
@@ -84,20 +168,28 @@ Please review these planning documents before approving:
 
 Before BUILD phase begins, please provide:
 
-### Required
+### Required for Epoch 1
 1. Full list of veterinary services offered
 2. Business hours (regular and emergency)
 3. Complete address for Google Maps
 4. Phone number(s) and email
 5. Dr. Pablo's bio and professional photo
-6. Product inventory list (or initial categories)
-7. Payment preferences (Stripe account setup)
+6. Payment preferences (Stripe account setup)
+
+### Required for Epoch 2
+7. Appointment types and durations
+8. Pet intake questionnaire content
+
+### Required for Epoch 3
+9. Product inventory list (or initial categories)
+10. Product images and descriptions
 
 ### Desired (Can Add Later)
 - Photos of clinic, staff, facility
 - Client testimonials
-- FAQ content
+- FAQ content for AI knowledge base
 - Social media links
+- Common pet care questions and answers
 
 ---
 
@@ -119,11 +211,13 @@ Contact the development team with any questions about the scope, features, or te
 Once approved:
 - Scope is locked (changes require new approval)
 - Development begins following TDD practices
-- This README will be replaced with full documentation
+- Epochs are delivered incrementally
+- Each epoch is a complete, working system
 - Regular progress updates provided
 
 ---
 
 **Prepared by**: Development Team
-**Date**: December 20, 2025
+**Date**: December 21, 2025
 **Status**: AWAITING CLIENT APPROVAL
+**Version**: 2.2.0 (Complete SPEC - 26 User Stories, 9 Modules)

@@ -6,16 +6,37 @@ This document contains ASCII wireframes for all pages of the Pet-Friendly websit
 
 ## Pages Covered
 
-| Wireframe File | Page(s) |
-|---------------|---------|
-| 01-homepage.txt | Homepage (desktop + mobile) |
-| 02-about.txt | About Dr. Pablo & Clinic |
-| 03-services.txt | Veterinary Services |
-| 04-contact.txt | Contact & Location |
-| 05-appointment.txt | Appointment Booking Form |
-| 06-store.txt | Store Catalog & Product Pages |
-| 07-cart-checkout.txt | Shopping Cart & Checkout |
-| 08-pharmacy.txt | Pharmacy Information |
+### Existing Wireframes
+
+| Wireframe File | Page(s) | Epoch |
+|---------------|---------|-------|
+| 01-homepage.txt | Homepage (desktop + mobile) | 1 |
+| 02-about.txt | About Dr. Pablo & Clinic | 1 |
+| 03-services.txt | Veterinary Services | 1 |
+| 04-contact.txt | Contact & Location | 1 |
+| 05-appointment.txt | Appointment Booking Form | 2 |
+| 06-store.txt | Store Catalog & Product Pages | 3 |
+| 07-cart-checkout.txt | Shopping Cart & Checkout | 3 |
+| 08-pharmacy.txt | Pharmacy Information | 3 |
+| 10-competitive-intelligence.txt | Competitor Map & Analysis | 5 |
+
+### Wireframes Needed (To Be Created)
+
+| Wireframe File | Page(s) | Epoch | Story |
+|---------------|---------|-------|-------|
+| 09-ai-chat.txt | AI Chat Interface (customer + admin) | 1 | S-002 |
+| 11-pet-profile.txt | Pet Profile Dashboard | 2 | S-003 |
+| 12-travel-certificates.txt | Travel Certificate Request Flow | 2 | S-022 |
+| 13-external-services.txt | Partner Directory & Referrals | 2 | S-021 |
+| 14-inventory-admin.txt | Inventory Management Dashboard | 3 | S-024 |
+| 15-billing-admin.txt | Billing & Invoice Management | 3 | S-020 |
+| 16-communications-inbox.txt | Unified Inbox (WhatsApp, SMS, Email) | 4 | S-006 |
+| 17-emergency-triage.txt | Emergency Services Flow | 4 | S-015 |
+| 18-referral-network.txt | Specialists & Visiting Vets | 4 | S-025 |
+| 19-crm-dashboard.txt | CRM Owner Profiles | 5 | S-007 |
+| 20-loyalty-program.txt | Loyalty Points & Rewards | 5 | S-016 |
+| 21-reports-dashboard.txt | Reports & Analytics | 6 | S-017 |
+| 22-accounting-dashboard.txt | Accounting Overview | 6 | S-026 |
 
 ## Design Patterns
 
@@ -54,17 +75,48 @@ This document contains ASCII wireframes for all pages of the Pet-Friendly websit
 
 ## User Flows
 
+### AI Chat Flow (Primary Interface)
+```
+Any Page → Chat Widget → Conversation → AI Handles Request
+    ├── Information Query → AI Responds
+    ├── Appointment Request → AI Books → Confirmation
+    ├── Product Question → AI Shows Products → Add to Cart
+    └── Pet Question → AI Retrieves Records → Display Info
+```
+
 ### Appointment Booking Flow
 ```
 Homepage → Services → Book Appointment → Fill Form → Confirmation
     or
 Homepage → Book Now CTA → Fill Form → Confirmation
+    or
+AI Chat → "I need an appointment" → AI Schedules → Confirmation
 ```
 
 ### Shopping Flow
 ```
 Homepage → Store → Category → Product → Add to Cart →
 Cart → Checkout → Payment → Order Confirmation
+    or
+AI Chat → "I need flea medicine" → AI Shows Options → Add to Cart
+```
+
+### Travel Certificate Flow
+```
+Pet Profile → Travel Plans → Select Destination →
+Requirements Checklist → Schedule Exam → Certificate Issued
+```
+
+### Emergency Flow
+```
+Homepage → Emergency Button → Triage Questions →
+Severity Assessment → Action (Escalate/Advice/Schedule)
+```
+
+### Referral Flow
+```
+Pet Record → Referral Needed → Find Specialist →
+Create Referral → Send → Track Status → Receive Report
 ```
 
 ### Information Flow
@@ -84,5 +136,14 @@ Homepage → About/Services/Contact/Pharmacy → Details
 
 - Use Tailwind CSS for styling
 - HTMX for dynamic interactions
-- Alpine.js for cart state
-- All text must support bilingual (ES/EN)
+- Alpine.js for cart state and UI state
+- All text must support multilingual (ES/EN/DE/FR/IT + AI on-demand)
+- AI Chat widget present on all pages (bottom-right corner)
+- Mobile-first design approach
+- Admin wireframes should support mobile access (Dr. Pablo uses phone)
+
+---
+
+**Version:** 2.2.0
+**Stories Covered:** 26 user stories across 6 epochs
+**Date:** December 21, 2025

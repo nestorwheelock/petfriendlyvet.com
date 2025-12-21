@@ -1,186 +1,307 @@
-# Task Breakdown: Pet-Friendly Website
+# Task Breakdown: Pet-Friendly Website v2.2
 
-## Sprint 1: Core Website + Appointments
+## Overview
 
-| Task | Title | Story | Estimate | Status |
-|------|-------|-------|----------|--------|
-| T-001 | Django Project Setup | S-001, S-005 | 4h | Pending |
-| T-002 | Base Templates & Layout | S-001 | 4h | Pending |
-| T-003 | Homepage Implementation | S-001 | 4h | Pending |
-| T-004 | About Page | S-001 | 2h | Pending |
-| T-005 | Services Page | S-001 | 2h | Pending |
-| T-006 | Contact Page with Map | S-001 | 3h | Pending |
-| T-007 | Appointment Models | S-002 | 3h | Pending |
-| T-008 | Appointment Form (HTMX) | S-002 | 4h | Pending |
-| T-009 | Appointment Admin | S-005 | 2h | Pending |
-| T-010 | Email Notifications | S-002 | 3h | Pending |
-| T-011 | Bilingual Content Setup | S-001 | 4h | Pending |
+This document provides a high-level task breakdown organized by epoch.
+Detailed task specifications will be created as each epoch begins.
 
-**Sprint 1 Total:** 35 hours
+**Total: 26 User Stories across 6 Epochs**
+**Reusable Modules: 9 pip-installable Django packages**
 
 ---
 
-## Sprint 2: E-Commerce + Pharmacy
+## Epoch 1: Foundation + AI Core
 
-| Task | Title | Story | Estimate | Status |
-|------|-------|-------|----------|--------|
-| T-012 | Product Models | S-003 | 3h | Pending |
-| T-013 | Category & Product Admin | S-005 | 2h | Pending |
-| T-014 | Store Catalog Pages | S-003 | 4h | Pending |
-| T-015 | Product Detail Page | S-003 | 3h | Pending |
-| T-016 | Shopping Cart (Alpine.js) | S-003 | 5h | Pending |
-| T-017 | Checkout Flow | S-003 | 6h | Pending |
-| T-018 | Stripe Payment Integration | S-003 | 4h | Pending |
-| T-019 | Order Models & Admin | S-003, S-005 | 3h | Pending |
-| T-020 | Order Email Notifications | S-003 | 2h | Pending |
-| T-021 | Pharmacy Information Page | S-004 | 2h | Pending |
+**Stories:** S-001, S-002, S-011, S-023
+**Priority:** Critical
+**Deliverable:** Functional bilingual website with AI chat and migrated data
 
-**Sprint 2 Total:** 34 hours
+### S-001: Foundation + AI Core
+| Task | Title | Estimate | Status |
+|------|-------|----------|--------|
+| T-001 | Django project setup (9 packages) | 4h | Pending |
+| T-002 | Base templates & Tailwind layout | 4h | Pending |
+| T-003 | Authentication (Google OAuth + email) | 4h | Pending |
+| T-004 | Multilingual system (5 core languages) | 4h | Pending |
+| T-005 | Homepage implementation | 4h | Pending |
+| T-006 | About page | 2h | Pending |
+| T-007 | Services page | 2h | Pending |
+| T-008 | Contact page with map | 3h | Pending |
 
----
+### S-002: AI Chat Interface
+| Task | Title | Estimate | Status |
+|------|-------|----------|--------|
+| T-009 | AI service layer (OpenRouter) | 6h | Pending |
+| T-010 | Tool calling framework | 6h | Pending |
+| T-011 | Customer chat widget | 4h | Pending |
+| T-012 | Admin chat interface | 4h | Pending |
+| T-013 | Chat history persistence | 3h | Pending |
 
-## Task Details Summary
+### S-011: Knowledge Base Admin
+| Task | Title | Estimate | Status |
+|------|-------|----------|--------|
+| T-014 | Knowledge base models | 3h | Pending |
+| T-015 | Custom admin for content | 4h | Pending |
+| T-016 | AI context injection | 3h | Pending |
 
-### T-001: Django Project Setup
-- Create Django project structure
-- Configure PostgreSQL
-- Set up Tailwind CSS
-- Include HTMX and Alpine.js
-- Configure i18n for bilingual support
+### S-023: Data Migration (CRITICAL)
+| Task | Title | Estimate | Status |
+|------|-------|----------|--------|
+| T-017 | OkVet.co export research | 4h | Pending |
+| T-018 | Migration models & tracking | 4h | Pending |
+| T-019 | Client import command | 4h | Pending |
+| T-020 | Pet import command | 4h | Pending |
+| T-021 | Medical records import | 6h | Pending |
+| T-022 | Vaccination import | 3h | Pending |
+| T-023 | Migration verification | 4h | Pending |
 
-### T-002: Base Templates & Layout
-- Create base.html template
-- Header with nav and language toggle
-- Footer with contact info
-- Mobile responsive menu
-- Brand colors and typography
-
-### T-003: Homepage Implementation
-- Hero section with CTAs
-- Services overview (3 columns)
-- Dr. Pablo intro section
-- Featured products (optional)
-- Location & hours section
-
-### T-004: About Page
-- Dr. Pablo bio and photo
-- Mission statement
-- Why choose us features
-- Clinic photo gallery
-
-### T-005: Services Page
-- Veterinary services list
-- Service categories
-- Pricing (if public)
-- CTA to book appointment
-
-### T-006: Contact Page with Map
-- Google Maps embed
-- Contact form
-- Business hours
-- Phone, email, WhatsApp links
-
-### T-007: Appointment Models
-- Appointment model with fields
-- Status workflow (Pending, Confirmed, etc.)
-- Service type choices
-- Pet type choices
-
-### T-008: Appointment Form (HTMX)
-- Multi-section form
-- HTMX validation
-- Date picker (no past dates)
-- Success confirmation
-
-### T-009: Appointment Admin
-- List view with filters
-- Status management
-- Calendar view (optional)
-- Quick actions
-
-### T-010: Email Notifications
-- Customer confirmation email
-- Admin notification email
-- Appointment confirmed email
-- Email templates (bilingual)
-
-### T-011: Bilingual Content Setup
-- Translation files (.po)
-- Language middleware
-- URL patterns (/es/, /en/)
-- Content translation
-
-### T-012: Product Models
-- Product model
-- Category model
-- Image handling
-- Stock tracking
-
-### T-013: Category & Product Admin
-- Product CRUD in admin
-- Image upload
-- Inventory management
-- Category management
-
-### T-014: Store Catalog Pages
-- Category listing
-- Product grid
-- Search functionality
-- Filtering and sorting
-
-### T-015: Product Detail Page
-- Product images
-- Description (bilingual)
-- Add to cart button
-- Related products
-
-### T-016: Shopping Cart (Alpine.js)
-- Cart state management
-- Add/remove items
-- Quantity updates (HTMX)
-- Persistent cart (localStorage)
-
-### T-017: Checkout Flow
-- Checkout form
-- Delivery method selection
-- Address fields (for delivery)
-- Order review
-
-### T-018: Stripe Payment Integration
-- Stripe configuration
-- Payment form (Stripe Elements)
-- Payment processing
-- Error handling
-
-### T-019: Order Models & Admin
-- Order model
-- OrderItem model
-- Order status workflow
-- Admin management
-
-### T-020: Order Email Notifications
-- Order confirmation email
-- Admin order notification
-- Order status update emails
-
-### T-021: Pharmacy Information Page
-- Services overview
-- How it works section
-- Medication categories
-- Contact for prescriptions
+**Epoch 1 Subtotal:** ~82 hours
 
 ---
 
-## Total Project Estimate
+## Epoch 2: Appointments + Pets
 
-| Phase | Hours |
-|-------|-------|
-| Sprint 1 | 35h |
-| Sprint 2 | 34h |
-| Testing & QA | 12h |
-| Documentation | 4h |
-| Deployment | 6h |
-| **Total** | **91h** |
+**Stories:** S-003, S-004, S-012, S-013, S-021, S-022
+**Priority:** Critical
+**Deliverable:** Booking, pet records, travel certificates, external services
 
-**Human-equivalent effort:** 91 hours
-**Estimated AI execution:** 6-10 hours actual work
+### S-003: Pet Profiles + Medical Records
+- Pet model with medical history
+- Vaccination tracking
+- Conditions and allergies
+- Weight history
+- Pet profile dashboard
+
+### S-004: Appointment Booking via AI
+- Appointment models
+- Service types and durations
+- Calendar integration
+- AI booking conversation flow
+- Confirmation workflow
+
+### S-012: Notifications & Reminders
+- Reminder models and scheduling
+- Vaccination due reminders
+- Appointment reminders
+- Multi-channel delivery (email, SMS, WhatsApp)
+
+### S-013: Document Management
+- Document upload models
+- OCR/vision processing
+- File organization
+- Integration with pet records
+
+### S-021: External Services
+- Partner directory models
+- Referral tracking
+- Boarding stay tracking
+- Medication handoff workflow
+
+### S-022: Travel Certificates
+- Destination requirements database
+- Travel plan tracking
+- Health certificate generation (PDF)
+- Certificate verification
+
+**Epoch 2 Estimate:** ~100 hours
+
+---
+
+## Epoch 3: E-Commerce + Billing
+
+**Stories:** S-005, S-010, S-020, S-024
+**Priority:** High
+**Deliverable:** Store, pharmacy, billing, inventory
+
+### S-005: E-Commerce Store
+- Product and category models
+- Store catalog pages
+- Shopping cart (Alpine.js)
+- Stripe checkout
+- Order management
+
+### S-010: Pharmacy Management
+- Prescription models
+- Refill workflows
+- Controlled substance tracking
+- AI prescription assistance
+
+### S-020: Billing & Invoicing
+- Invoice models
+- Payment processing (Stripe, cash, card)
+- CFDI (Mexican tax) integration
+- B2B professional accounts
+- Discounts and coupons
+- Prepaid packages and wellness plans
+
+### S-024: Inventory Management
+- Stock level tracking
+- Batch/lot and expiry management
+- Reorder alerts
+- Purchase orders
+- Stock counts and adjustments
+
+**Epoch 3 Estimate:** ~120 hours
+
+---
+
+## Epoch 4: Communications Hub
+
+**Stories:** S-006, S-015, S-025
+**Priority:** High
+**Deliverable:** WhatsApp, SMS, emergency, referrals
+
+### S-006: Omnichannel Communications
+- WhatsApp Business API integration
+- SMS integration (Twilio)
+- Unified inbox
+- Message threading
+- Template management
+
+### S-015: Emergency Services
+- Emergency detection in AI
+- Triage questionnaire
+- On-call schedule management
+- Escalation workflow
+- First aid instructions database
+
+### S-025: Referral Network
+- Specialist directory
+- Visiting specialist schedules
+- Outbound referral workflow
+- Incoming referral tracking
+- Results integration
+
+**Epoch 4 Estimate:** ~80 hours
+
+---
+
+## Epoch 5: CRM + Intelligence + Marketing
+
+**Stories:** S-007, S-009, S-014, S-016, S-018, S-019
+**Priority:** Medium
+**Deliverable:** CRM, reviews, loyalty, SEO, email
+
+### S-007: CRM + Intelligence
+- Owner profile enhancement
+- Communication preferences
+- Purchase history analysis
+- Social media enrichment
+
+### S-009: Competitive Intelligence
+- Competitor tracking
+- Pricing monitoring
+- Visitor IP intelligence
+- Market analysis reports
+
+### S-014: Reviews & Testimonials
+- Review collection system
+- Google Business integration
+- Review moderation
+- Testimonial display
+
+### S-016: Loyalty & Rewards
+- Points system
+- Tier management
+- Referral program
+- Rewards redemption
+
+### S-018: SEO & Content Marketing
+- Blog system
+- Landing pages
+- Schema.org markup
+- Sitemap generation
+
+### S-019: Email Marketing
+- Newsletter subscriptions
+- Campaign builder
+- Segmentation
+- Automated sequences
+- Analytics
+
+**Epoch 5 Estimate:** ~100 hours
+
+---
+
+## Epoch 6: Practice Management
+
+**Stories:** S-008, S-017, S-026
+**Priority:** Medium
+**Deliverable:** Staff tools, reports, accounting
+
+### S-008: Practice Management
+- Staff profiles
+- Scheduling
+- Clinical notes
+- Compliance tracking
+- Audit logs
+
+### S-017: Reports & Analytics
+- Revenue reports
+- Patient statistics
+- Appointment analytics
+- Inventory reports
+- Custom dashboards
+
+### S-026: Accounting
+- Chart of accounts
+- General ledger
+- Accounts payable workflow
+- Accounts receivable integration
+- Bank reconciliation
+- Financial statements
+- Budget tracking
+
+**Epoch 6 Estimate:** ~90 hours
+
+---
+
+## Project Summary
+
+| Epoch | Stories | Estimate | Priority |
+|-------|---------|----------|----------|
+| 1 | 4 | ~82h | Critical |
+| 2 | 6 | ~100h | Critical |
+| 3 | 4 | ~120h | High |
+| 4 | 3 | ~80h | High |
+| 5 | 6 | ~100h | Medium |
+| 6 | 3 | ~90h | Medium |
+| **Total** | **26** | **~572h** | |
+
+### Additional Overhead
+
+| Activity | Estimate |
+|----------|----------|
+| Testing & QA | 60h |
+| Documentation | 20h |
+| Deployment & DevOps | 20h |
+| Project Management | 20h |
+| **Overhead Total** | **120h** |
+
+### Grand Total
+
+**Human-equivalent effort:** ~692 hours
+**Estimated AI execution:** 40-60 hours actual work
+
+---
+
+## Pricing (Using AI-Native Workflow)
+
+```
+Traditional Development Cost:
+692 hours × $50/hour = $34,600.00
+
+AI Automation Discount (65%):
+$34,600.00 × 0.65 = -$22,490.00
+
+Final Amount Due: $12,110.00
+
+Client Savings: $22,490.00 (65% off traditional)
+```
+
+---
+
+**Version:** 2.2.0
+**Stories:** 26
+**Modules:** 9
+**Date:** December 21, 2025
