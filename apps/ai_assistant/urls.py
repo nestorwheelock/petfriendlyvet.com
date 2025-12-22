@@ -10,6 +10,9 @@ urlpatterns = [
     path('quick-actions/', views.get_quick_actions, name='quick_actions'),
     path('history/', views.get_chat_history, name='chat_history'),
 
+    # User conversations (logged-in users)
+    path('my-conversations/', views.user_conversations, name='user_conversations'),
+
     # Admin chat
     path('admin/', views.admin_chat_view, name='admin_chat'),
     path('admin/api/', views.admin_chat_api_view, name='admin_chat_api'),

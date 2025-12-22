@@ -88,6 +88,8 @@ class Message(models.Model):
         ('system', _('System')),
         ('tool', _('Tool')),
     ]
+    # Alias for backwards compatibility
+    ROLES = ROLE_CHOICES
 
     conversation = models.ForeignKey(
         Conversation,

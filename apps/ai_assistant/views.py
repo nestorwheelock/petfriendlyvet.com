@@ -291,3 +291,29 @@ def conversation_list(request):
     return render(request, 'ai_assistant/conversation_list.html', {
         'conversations': conversations,
     })
+
+
+@login_required
+def user_conversations(request):
+    """List conversations for the current logged-in user."""
+    conversations = Conversation.objects.filter(
+        user=request.user
+    ).order_by('-updated_at')
+
+    if request.headers.get('Accept') == 'application/json':
+        data = []
+        for conv in conversations:
+            data.append({
+                'id': conv.id,
+                'session_id': conv.session_id,
+                'language': conv.language,
+                'title': conv.title,
+                'created_at': conv.created_at.isoformat(),
+                'updated_at': conv.updated_at.isoformat(),
+                'message_count': conv.messages.count(),
+            })
+        return JsonResponse({'conversations': data})
+
+    return render(request, 'ai_assistant/user_conversations.html', {
+        'conversations': conversations,
+    })
