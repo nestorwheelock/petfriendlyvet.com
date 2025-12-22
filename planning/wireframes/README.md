@@ -18,16 +18,16 @@ This document contains ASCII wireframes for all pages of the Pet-Friendly websit
 | 06-store.txt | Store Catalog & Product Pages | 3 |
 | 07-cart-checkout.txt | Shopping Cart & Checkout | 3 |
 | 08-pharmacy.txt | Pharmacy Information | 3 |
+| 09-ai-chat.txt | AI Chat Interface (customer + admin) | 1 |
 | 10-competitive-intelligence.txt | Competitor Map & Analysis | 5 |
+| 11-pet-profile.txt | Pet Profile Dashboard | 2 |
+| 12-travel-certificates.txt | Travel Certificate Request Flow | 2 |
+| 13-external-services.txt | Partner Directory & Referrals | 2 |
 
 ### Wireframes Needed (To Be Created)
 
 | Wireframe File | Page(s) | Epoch | Story |
 |---------------|---------|-------|-------|
-| 09-ai-chat.txt | AI Chat Interface (customer + admin) | 1 | S-002 |
-| 11-pet-profile.txt | Pet Profile Dashboard | 2 | S-003 |
-| 12-travel-certificates.txt | Travel Certificate Request Flow | 2 | S-022 |
-| 13-external-services.txt | Partner Directory & Referrals | 2 | S-021 |
 | 14-inventory-admin.txt | Inventory Management Dashboard | 3 | S-024 |
 | 15-billing-admin.txt | Billing & Invoice Management | 3 | S-020 |
 | 16-communications-inbox.txt | Unified Inbox (WhatsApp, SMS, Email) | 4 | S-006 |
