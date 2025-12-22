@@ -1,0 +1,59 @@
+#!/bin/bash
+# Deployment Configuration Template
+# Copy this file to deploy.conf and customize for your project
+
+# =============================================================================
+# Server Settings
+# =============================================================================
+REMOTE_HOST="root@YOUR_SERVER_IP"
+REMOTE_PATH="/root/your-project"
+REMOTE_PORT="8000"
+SITE_URL="https://your-domain.com"
+REMOTE_PASSWORD="your-ssh-password"
+
+# =============================================================================
+# Database Settings
+# =============================================================================
+DB_CONTAINER="your-db-container"
+DB_NAME="your_database"
+DB_USER="your_user"
+DB_PASSWORD="your_db_password"
+
+# Local Docker database
+LOCAL_DB_CONTAINER="your-local-db-container"
+LOCAL_DB_USER="your_local_user"
+LOCAL_DB_PASSWORD="your_local_password"
+
+# =============================================================================
+# Media Optimization Settings
+# =============================================================================
+# Image settings
+IMAGE_MAX_WIDTH=1920
+IMAGE_QUALITY=85
+THUMB_WIDTH=400
+THUMB_QUALITY=80
+
+# Video settings (ffmpeg)
+VIDEO_MAX_HEIGHT=1080
+VIDEO_CRF=28
+USE_NVENC=true  # Set to false if no NVIDIA GPU
+
+# =============================================================================
+# Sync Excludes
+# =============================================================================
+EXCLUDE_PATTERNS=(
+    ".git"
+    "__pycache__"
+    "*.pyc"
+    ".env"
+    "*.sqlite3"
+    "node_modules"
+    ".pytest_cache"
+    ".coverage"
+)
+
+# =============================================================================
+# Backup Settings
+# =============================================================================
+BACKUP_DIR="$HOME/.deploy_backups/your-project"
+KEEP_BACKUPS=5

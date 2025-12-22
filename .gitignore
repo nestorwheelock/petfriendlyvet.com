@@ -92,6 +92,9 @@ credentials.json
 *.sqlite3
 .env*
 
+# Deployment secrets
+scripts/deploy.conf
+
 # Google/Cloud credentials
 client_secret*.json
 service_account*.json
