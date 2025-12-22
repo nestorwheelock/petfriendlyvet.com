@@ -1,7 +1,20 @@
 """Production settings for Pet-Friendly Vet project."""
+import os
 from .base import *
 
 DEBUG = False
+
+# Subdirectory deployment support (e.g., petfriendlyvet.com/dev)
+# Set SCRIPT_NAME environment variable to deploy under a URL prefix
+SCRIPT_NAME = os.getenv('SCRIPT_NAME', '')
+if SCRIPT_NAME:
+    FORCE_SCRIPT_NAME = SCRIPT_NAME
+    # Prefix static and media URLs for subdirectory deployment
+    STATIC_URL = f'{SCRIPT_NAME}/static/'
+    MEDIA_URL = f'{SCRIPT_NAME}/media/'
+    # Update login redirect URLs
+    LOGIN_REDIRECT_URL = f'{SCRIPT_NAME}/'
+    LOGOUT_REDIRECT_URL = f'{SCRIPT_NAME}/'
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True

@@ -10,6 +10,8 @@ services:
       - DJANGO_DEBUG=False
       - POSTGRES_HOST=db
       - REDIS_URL=redis://redis:6379/0
+      # Subdirectory deployment: set SCRIPT_NAME for /dev prefix
+      - SCRIPT_NAME=${SCRIPT_NAME:-}
     env_file:
       - .env
     volumes:

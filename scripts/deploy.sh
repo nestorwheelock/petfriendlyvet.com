@@ -10,6 +10,13 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 # Load configuration
 source "$SCRIPT_DIR/deploy.conf"
 
+# Derive container name from project directory
+PROJECT_NAME="$(basename "$PROJECT_DIR")"
+# Remove .com suffix and convert to container-friendly name
+CONTAINER_PREFIX="${PROJECT_NAME%.com}"
+CONTAINER_PREFIX="${CONTAINER_PREFIX//./-}"
+WEB_CONTAINER="${CONTAINER_PREFIX}-web-1"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -93,17 +100,19 @@ cmd_status() {
     ssh_cmd "cd $REMOTE_PATH && docker compose ps"
     echo ""
     log_info "Testing site response..."
-    local status=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" 2>/dev/null || echo "000")
+    # Use DEPLOY_URL which includes SCRIPT_NAME if set
+    local check_url="${DEPLOY_URL:-$SITE_URL}"
+    local status=$(curl -s -o /dev/null -w "%{http_code}" "$check_url" 2>/dev/null || echo "000")
     if [ "$status" = "200" ]; then
-        log_success "Site responding: $SITE_URL (HTTP $status)"
+        log_success "Site responding: $check_url (HTTP $status)"
     else
-        log_error "Site issue: $SITE_URL (HTTP $status)"
+        log_error "Site issue: $check_url (HTTP $status)"
     fi
 }
 
 cmd_logs() {
     log_info "Tailing production logs..."
-    ssh_cmd "docker logs nestorwheelock-web-1 --tail 50 -f" 60
+    ssh_cmd "docker logs $WEB_CONTAINER --tail 50 -f" 60
 }
 
 cmd_db_pull() {
@@ -172,7 +181,7 @@ cmd_media_pull() {
 
     # Create tarball on server
     log_info "Creating media archive on server..."
-    ssh_cmd "docker exec nestorwheelock-web-1 tar -czf /tmp/media.tar.gz -C /app media && docker cp nestorwheelock-web-1:/tmp/media.tar.gz /root/media_export.tar.gz"
+    ssh_cmd "docker exec $WEB_CONTAINER tar -czf /tmp/media.tar.gz -C /app media && docker cp $WEB_CONTAINER:/tmp/media.tar.gz /root/media_export.tar.gz"
 
     # Download
     log_info "Downloading media (this may take a while)..."
@@ -207,7 +216,7 @@ cmd_media_push() {
 
     # Extract on server
     log_info "Extracting to production..."
-    ssh_cmd "docker cp /root/media_import.tar.gz nestorwheelock-web-1:/tmp/ && docker exec nestorwheelock-web-1 tar -xzf /tmp/media.tar.gz -C /app/"
+    ssh_cmd "docker cp /root/media_import.tar.gz $WEB_CONTAINER:/tmp/ && docker exec $WEB_CONTAINER tar -xzf /tmp/media.tar.gz -C /app/"
     ssh_cmd "rm /root/media_import.tar.gz"
 
     # Cleanup
@@ -252,11 +261,11 @@ cmd_code() {
 
     # Run migrations
     log_info "Running migrations..."
-    ssh_cmd "docker exec nestorwheelock-web-1 python manage.py migrate" 120
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py migrate" 120
 
     # Collect static
     log_info "Collecting static files..."
-    ssh_cmd "docker exec nestorwheelock-web-1 python manage.py collectstatic --noinput" 60
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py collectstatic --noinput" 60
 
     # Cleanup
     rm "$code_tar"
