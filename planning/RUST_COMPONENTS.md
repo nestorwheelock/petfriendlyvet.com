@@ -3,7 +3,7 @@
 ## Business Model: Modular Licensing
 
 Each Rust component is:
-1. **Standalone pip package** (e.g., `pip install pfv-crypto`)
+1. **Standalone pip package** (e.g., `pip install scc-crypto`)
 2. **Independently licensable** (buy only what you need)
 3. **Portable** (works with any Django/Python project)
 4. **Bundled in Pet-Friendly** (full suite included)
@@ -12,26 +12,26 @@ Each Rust component is:
 
 | Component | Standalone | Bundle |
 |-----------|------------|--------|
-| pfv-license | Free (required) | Included |
-| pfv-crypto | $99/year | Included |
-| pfv-image | $149/year | Included |
-| pfv-pdf | $199/year | Included |
-| pfv-search | $149/year | Included |
-| pfv-export | $99/year | Included |
-| pfv-ai | $199/year | Included |
+| scc-license | Free (required) | Included |
+| scc-crypto | $99/year | Included |
+| scc-image | $149/year | Included |
+| scc-pdf | $199/year | Included |
+| scc-search | $149/year | Included |
+| scc-export | $99/year | Included |
+| scc-ai | $199/year | Included |
 | **All Components** | $893/year | **$499/year** |
 | **Pet-Friendly Full** | - | **$999/year** (app + components) |
 
 ### Package Names (PyPI)
 
 ```
-pfv-license      → Free, required for all others
-pfv-crypto       → southcity-crypto
-pfv-image        → southcity-image
-pfv-pdf          → southcity-pdf
-pfv-search       → southcity-search
-pfv-export       → southcity-export
-pfv-ai           → southcity-ai
+scc-license      → Free, required for all others
+scc-crypto       → southcity-crypto
+scc-image        → southcity-image
+scc-pdf          → southcity-pdf
+scc-search       → southcity-search
+scc-export       → southcity-export
+scc-ai           → southcity-ai
 ```
 
 ---
@@ -75,15 +75,15 @@ Background: Celery Task → Worker → Result
 
 ## Proposed Rust Components
 
-### 1. pfv-license (Already Created)
+### 1. scc-license (Already Created)
 **Purpose:** Primary license validation at startup
-**Location:** `rust/pfv-license/`
+**Location:** `rust/scc-license/`
 **Called From:** Django settings.py
 **If Missing:** App won't start
 
 ---
 
-### 2. pfv-crypto
+### 2. scc-crypto
 **Purpose:** Encryption & security operations
 **Legitimate Value:**
 - Encrypt sensitive pet medical data at rest
@@ -112,7 +112,7 @@ pub fn encrypt_field(plaintext: &str, key: &[u8]) -> Result<String, Error> {
 **Django Integration:**
 ```python
 # core/crypto.py
-from pfv_crypto import encrypt_field, decrypt_field, hash_password
+from scc_crypto import encrypt_field, decrypt_field, hash_password
 
 class EncryptedTextField(models.TextField):
     def get_prep_value(self, value):
@@ -121,7 +121,7 @@ class EncryptedTextField(models.TextField):
 
 ---
 
-### 3. pfv-image
+### 3. scc-image
 **Purpose:** Image processing
 **Legitimate Value:**
 - Thumbnail generation (10-50x faster than Pillow)
@@ -153,7 +153,7 @@ pub fn generate_thumbnail(input: &[u8], size: u32) -> Result<Vec<u8>, Error> {
 
 ---
 
-### 4. pfv-pdf
+### 4. scc-pdf
 **Purpose:** PDF document generation
 **Legitimate Value:**
 - Invoices and receipts
@@ -186,7 +186,7 @@ pub fn generate_invoice(data: &InvoiceData) -> Result<Vec<u8>, Error> {
 
 ---
 
-### 5. pfv-search
+### 5. scc-search
 **Purpose:** Fast text search and fuzzy matching
 **Legitimate Value:**
 - Search pets by name (fuzzy: "Luna" finds "Lunita")
@@ -206,7 +206,7 @@ pub fn generate_invoice(data: &InvoiceData) -> Result<Vec<u8>, Error> {
 
 ---
 
-### 6. pfv-export
+### 6. scc-export
 **Purpose:** Data export to CSV/Excel
 **Legitimate Value:**
 - Export client lists
@@ -226,7 +226,7 @@ pub fn generate_invoice(data: &InvoiceData) -> Result<Vec<u8>, Error> {
 
 ---
 
-### 7. pfv-ai
+### 7. scc-ai
 **Purpose:** AI integration helpers
 **Legitimate Value:**
 - Parse AI responses faster
@@ -249,13 +249,13 @@ pub fn generate_invoice(data: &InvoiceData) -> Result<Vec<u8>, Error> {
 
 | Priority | Component | Epoch | Why |
 |----------|-----------|-------|-----|
-| 1 | pfv-license | 1 | Startup gate |
-| 2 | pfv-crypto | 1 | Auth & encryption (core) |
-| 3 | pfv-pdf | 3 | Invoices (revenue-critical) |
-| 4 | pfv-image | 2 | Pet photos (visible) |
-| 5 | pfv-export | 3 | Reports (business-critical) |
-| 6 | pfv-search | 2 | Search (UX-critical) |
-| 7 | pfv-ai | 1 | AI features (differentiator) |
+| 1 | scc-license | 1 | Startup gate |
+| 2 | scc-crypto | 1 | Auth & encryption (core) |
+| 3 | scc-pdf | 3 | Invoices (revenue-critical) |
+| 4 | scc-image | 2 | Pet photos (visible) |
+| 5 | scc-export | 3 | Reports (business-critical) |
+| 6 | scc-search | 2 | Search (UX-critical) |
+| 7 | scc-ai | 1 | AI features (differentiator) |
 
 ---
 
@@ -270,7 +270,7 @@ import json
 
 def generate_pdf(invoice_data: dict) -> bytes:
     result = subprocess.run(
-        ['pfv-pdf', 'invoice'],
+        ['scc-pdf', 'invoice'],
         input=json.dumps(invoice_data).encode(),
         capture_output=True,
         check=True
@@ -285,10 +285,10 @@ def generate_pdf(invoice_data: dict) -> bytes:
 
 ```python
 # Rust compiled as native Python module
-import pfv_core
+import scc_core
 
 def generate_pdf(invoice_data: dict) -> bytes:
-    return pfv_core.pdf.generate_invoice(invoice_data)
+    return scc_core.pdf.generate_invoice(invoice_data)
 ```
 
 **Pros:** Native speed, no process overhead
@@ -306,11 +306,11 @@ def generate_pdf(invoice_data: dict) -> bytes:
 ### Layered Verification
 
 ```
-Layer 1: Startup (pfv-license)
+Layer 1: Startup (scc-license)
          ↓ App starts
 Layer 2: Per-request (middleware checks token from Layer 1)
          ↓ Request proceeds
-Layer 3: Per-operation (pfv-crypto, pfv-pdf verify independently)
+Layer 3: Per-operation (scc-crypto, scc-pdf verify independently)
          ↓ Operation completes or degrades
 ```
 
@@ -318,13 +318,13 @@ Layer 3: Per-operation (pfv-crypto, pfv-pdf verify independently)
 
 | Component | Licensed | Unlicensed |
 |-----------|----------|------------|
-| pfv-license | App runs | App exits with error |
-| pfv-crypto | Normal operation | Raises exception |
-| pfv-image | Full quality | Watermarked images |
-| pfv-pdf | Clean documents | "DEMO" watermark |
-| pfv-export | Full export | Max 100 rows |
-| pfv-search | Full results | First 10 results only |
-| pfv-ai | Normal responses | "[UNLICENSED]" prefix |
+| scc-license | App runs | App exits with error |
+| scc-crypto | Normal operation | Raises exception |
+| scc-image | Full quality | Watermarked images |
+| scc-pdf | Clean documents | "DEMO" watermark |
+| scc-export | Full export | Max 100 rows |
+| scc-search | Full results | First 10 results only |
+| scc-ai | Normal responses | "[UNLICENSED]" prefix |
 
 ---
 
@@ -336,10 +336,10 @@ Layer 3: Per-operation (pfv-crypto, pfv-pdf verify independently)
 |------------------------|------------|
 | Find all Rust binaries | Easy |
 | Understand what each does | Medium |
-| Rewrite pfv-license in Python | Easy |
-| Rewrite pfv-crypto in Python | Medium (crypto is tricky) |
-| Rewrite pfv-pdf in Python | Hard (PDF generation sucks) |
-| Rewrite pfv-image in Python | Medium (use Pillow, slower) |
+| Rewrite scc-license in Python | Easy |
+| Rewrite scc-crypto in Python | Medium (crypto is tricky) |
+| Rewrite scc-pdf in Python | Hard (PDF generation sucks) |
+| Rewrite scc-image in Python | Medium (use Pillow, slower) |
 | Rewrite all 6+ components | **"Fuck it, buy license"** |
 
 **Time estimate to bypass:** 20-40 hours of skilled work
@@ -353,18 +353,18 @@ Layer 3: Per-operation (pfv-crypto, pfv-pdf verify independently)
 ```
 rust/
 ├── Cargo.toml              # Workspace config
-├── pfv-license/            # ✅ Created
+├── scc-license/            # ✅ Created
 │   └── src/
-├── pfv-crypto/             # 🔲 Epoch 1
+├── scc-crypto/             # 🔲 Epoch 1
 │   ├── Cargo.toml
 │   └── src/
 │       ├── lib.rs          # Library (for PyO3)
 │       └── main.rs         # CLI binary
-├── pfv-image/              # 🔲 Epoch 2
-├── pfv-pdf/                # 🔲 Epoch 3
-├── pfv-search/             # 🔲 Epoch 2
-├── pfv-export/             # 🔲 Epoch 3
-└── pfv-ai/                 # 🔲 Epoch 1
+├── scc-image/              # 🔲 Epoch 2
+├── scc-pdf/                # 🔲 Epoch 3
+├── scc-search/             # 🔲 Epoch 2
+├── scc-export/             # 🔲 Epoch 3
+└── scc-ai/                 # 🔲 Epoch 1
 ```
 
 ---
@@ -385,10 +385,10 @@ southcity-crypto/
 │       ├── __init__.py     # Python API
 │       ├── _core.py        # Calls Rust binary
 │       └── bin/
-│           ├── pfv-crypto-linux-x64      # Linux binary
-│           ├── pfv-crypto-darwin-x64     # macOS Intel
-│           ├── pfv-crypto-darwin-arm64   # macOS Apple Silicon
-│           └── pfv-crypto-windows.exe    # Windows
+│           ├── scc-crypto-linux-x64      # Linux binary
+│           ├── scc-crypto-darwin-x64     # macOS Intel
+│           ├── scc-crypto-darwin-arm64   # macOS Apple Silicon
+│           └── scc-crypto-windows.exe    # Windows
 └── rust/                   # Source (visible but binary is what runs)
     └── src/
         └── main.rs
@@ -437,11 +437,11 @@ def _get_binary():
     machine = platform.machine().lower()
 
     if system == "linux":
-        name = "pfv-crypto-linux-x64"
+        name = "scc-crypto-linux-x64"
     elif system == "darwin":
-        name = "pfv-crypto-darwin-arm64" if "arm" in machine else "pfv-crypto-darwin-x64"
+        name = "scc-crypto-darwin-arm64" if "arm" in machine else "scc-crypto-darwin-x64"
     elif system == "windows":
-        name = "pfv-crypto-windows.exe"
+        name = "scc-crypto-windows.exe"
     else:
         raise RuntimeError(f"Unsupported platform: {system}")
 
@@ -569,12 +569,12 @@ Add to existing tasks:
 | Task | Rust Integration |
 |------|------------------|
 | T-001 Project Setup | Include Rust workspace in project structure |
-| T-003 Authentication | Use pfv-crypto for password hashing |
-| T-009 AI Service | Use pfv-ai for response parsing |
-| T-026 Pet Views | Use pfv-image for photo processing |
-| T-040 Billing | Use pfv-pdf for invoice generation |
-| T-041 Inventory | Use pfv-export for inventory exports |
-| T-063 Reports | Use pfv-pdf and pfv-export |
+| T-003 Authentication | Use scc-crypto for password hashing |
+| T-009 AI Service | Use scc-ai for response parsing |
+| T-026 Pet Views | Use scc-image for photo processing |
+| T-040 Billing | Use scc-pdf for invoice generation |
+| T-041 Inventory | Use scc-export for inventory exports |
+| T-063 Reports | Use scc-pdf and scc-export |
 
 ---
 
@@ -595,7 +595,7 @@ COPY rust/ .
 RUN cargo build --release
 
 FROM python:3.12
-COPY --from=rust-builder /rust/target/release/pfv-* /usr/local/bin/
+COPY --from=rust-builder /rust/target/release/scc-* /usr/local/bin/
 # ... rest of Django setup
 ```
 
@@ -609,13 +609,13 @@ COPY --from=rust-builder /rust/target/release/pfv-* /usr/local/bin/
 ## Summary
 
 **7 Rust components** embedded throughout the app:
-1. **pfv-license** - Startup gate
-2. **pfv-crypto** - Security (can't remove without breaking auth)
-3. **pfv-image** - Photos (visible degradation)
-4. **pfv-pdf** - Documents (watermarked if unlicensed)
-5. **pfv-search** - Search (limited results)
-6. **pfv-export** - Exports (row limits)
-7. **pfv-ai** - AI features (obvious "[UNLICENSED]" text)
+1. **scc-license** - Startup gate
+2. **scc-crypto** - Security (can't remove without breaking auth)
+3. **scc-image** - Photos (visible degradation)
+4. **scc-pdf** - Documents (watermarked if unlicensed)
+5. **scc-search** - Search (limited results)
+6. **scc-export** - Exports (row limits)
+7. **scc-ai** - AI features (obvious "[UNLICENSED]" text)
 
 **Result:** Another developer looks at this and thinks:
 > "I'd have to rewrite 7 Rust components to remove licensing. That's like 40 hours of work. The license is $500. I'll just pay."

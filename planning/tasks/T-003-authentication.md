@@ -53,6 +53,33 @@ class User(AbstractUser):
 - [ ] Rate limiting prevents abuse
 - [ ] User profile shows auth method used
 
+### Acceptance Criteria
+
+**AC-1: Google OAuth Login**
+**Given** I am on the login page
+**When** I click "Sign in with Google" and authorize
+**Then** I am logged in and redirected to the dashboard
+
+**AC-2: Email Magic Link**
+**Given** I enter my email on the login page
+**When** I click the magic link sent to my email
+**Then** I am logged in without entering a password
+
+**AC-3: Phone/SMS Verification**
+**Given** I enter my phone number for verification
+**When** I enter the 6-digit code from SMS
+**Then** my phone is verified and I am logged in
+
+**AC-4: Session Persistence**
+**Given** I am logged in and close the browser
+**When** I reopen the browser and visit the site
+**Then** I remain logged in until session expires
+
+**AC-5: Multi-Device Sessions**
+**Given** I am logged in on my phone
+**When** I log in on my laptop
+**Then** both sessions remain active independently
+
 ### Definition of Done
 - [ ] All three auth methods working
 - [ ] Users can switch between auth methods

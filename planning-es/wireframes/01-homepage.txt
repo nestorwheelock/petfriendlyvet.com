@@ -1,0 +1,231 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        PÁGINA DE INICIO - VISTA ESCRITORIO                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO                                                                    │
+│ ┌─────────────────┐  ┌──────────────────────────────┐  ┌──────────────────┐  │
+│ │  [LOGO]         │  │  Inicio | Servicios | Tienda │  │  ES|EN  [🛒 0]   │  │
+│ │  Pet-Friendly   │  │  Farmacia | Nosotros | Contacto│ │                  │  │
+│ └─────────────────┘  └──────────────────────────────┘  └──────────────────┘  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECCIÓN HÉROE                                                                 │
+│ ┌──────────────────────────────────────────────────────────────────────────┐ │
+│ │                                                                          │ │
+│ │  [Fondo: Foto de la clínica o imagen amigable de mascota]               │ │
+│ │                                                                          │ │
+│ │     ┌─────────────────────────────────────────────────────────────┐     │ │
+│ │     │  CUIDAMOS A TU MASCOTA COMO FAMILIA                         │     │ │
+│ │     │  We care for your pet like family                           │     │ │
+│ │     │                                                             │     │ │
+│ │     │  Clínica veterinaria de confianza en Puerto Morelos         │     │ │
+│ │     │  Your trusted vet clinic in Puerto Morelos                  │     │ │
+│ │     │                                                             │     │ │
+│ │     │  [  AGENDAR CITA  ]    [  VER TIENDA  ]                    │     │ │
+│ │     │     (Botón azul)         (Botón verde)                      │     │ │
+│ │     └─────────────────────────────────────────────────────────────┘     │ │
+│ │                                                                          │ │
+│ └──────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ RESUMEN DE SERVICIOS - 3 COLUMNAS                                            │
+│                                                                               │
+│  ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐      │
+│  │      [Ícono]       │  │      [Ícono]       │  │      [Ícono]       │      │
+│  │    CLÍNICA         │  │    FARMACIA        │  │     TIENDA         │      │
+│  │                    │  │                    │  │                    │      │
+│  │ Consultas, vacunas,│  │ Medicamentos,      │  │ Alimentos,         │      │
+│  │ cirugías y más     │  │ vitaminas y        │  │ juguetes y         │      │
+│  │                    │  │ prevención         │  │ accesorios         │      │
+│  │                    │  │                    │  │                    │      │
+│  │  [ Ver Servicios ] │  │  [ Más Info ]      │  │  [ Comprar Ahora ] │      │
+│  └────────────────────┘  └────────────────────┘  └────────────────────┘      │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECCIÓN SOBRE NOSOTROS                                                        │
+│                                                                               │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐  │
+│  │                                │  │                                    │  │
+│  │    [Foto del Dr. Pablo]        │  │  CONOCE AL DR. PABLO               │  │
+│  │                                │  │  Meet Dr. Pablo                    │  │
+│  │                                │  │                                    │  │
+│  │                                │  │  [Texto breve de biografía - 2-3   │  │
+│  │                                │  │   oraciones sobre la experiencia   │  │
+│  │                                │  │   del Dr. Pablo y su compromiso    │  │
+│  │                                │  │   con el cuidado de mascotas]      │  │
+│  │                                │  │                                    │  │
+│  │                                │  │  [ Conocer Más → ]                 │  │
+│  └────────────────────────────────┘  └────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PRODUCTOS DESTACADOS (Opcional - puede ocultarse si no hay productos aún)    │
+│                                                                               │
+│  PRODUCTOS DESTACADOS / Featured Products                                     │
+│                                                                               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐                      │
+│  │  [Img]   │  │  [Img]   │  │  [Img]   │  │  [Img]   │                      │
+│  │          │  │          │  │          │  │          │                      │
+│  │ Nombre   │  │ Nombre   │  │ Nombre   │  │ Nombre   │                      │
+│  │ Producto │  │ Producto │  │ Producto │  │ Producto │                      │
+│  │ $XXX MXN │  │ $XXX MXN │  │ $XXX MXN │  │ $XXX MXN │                      │
+│  │          │  │          │  │          │  │          │                      │
+│  │[Agregar] │  │[Agregar] │  │[Agregar] │  │[Agregar] │                      │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘                      │
+│                                                                               │
+│                    [ Ver Toda la Tienda → ]                                   │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ UBICACIÓN Y HORARIO                                                           │
+│                                                                               │
+│  ┌────────────────────────────────────┐  ┌────────────────────────────────┐  │
+│  │                                    │  │                                │  │
+│  │     [Mapa de Google Incrustado]    │  │  HORARIO / Hours               │  │
+│  │                                    │  │                                │  │
+│  │     Puerto Morelos                 │  │  Lunes - Viernes: 9am - 7pm    │  │
+│  │     Quintana Roo                   │  │  Sábado: 9am - 2pm             │  │
+│  │                                    │  │  Domingo: Cerrado              │  │
+│  │                                    │  │                                │  │
+│  │                                    │  │  EMERGENCIAS / Emergency       │  │
+│  │                                    │  │  [Número de teléfono]          │  │
+│  │                                    │  │                                │  │
+│  │                                    │  │  [ WhatsApp 📱 ]               │  │
+│  └────────────────────────────────────┘  └────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PIE DE PÁGINA                                                                 │
+│                                                                               │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐            │
+│  │ Pet-Friendly     │  │ ENLACES          │  │ CONTACTO         │            │
+│  │ [Logo]           │  │                  │  │                  │            │
+│  │                  │  │ Inicio           │  │ [Dirección]      │            │
+│  │ Clínica          │  │ Servicios        │  │ [Teléfono]       │            │
+│  │ Farmacia         │  │ Tienda           │  │ [Email]          │            │
+│  │ Tienda           │  │ Contacto         │  │                  │            │
+│  │                  │  │ Citas            │  │ [Íconos Redes]   │            │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘            │
+│                                                                               │
+│  ────────────────────────────────────────────────────────────────────────    │
+│  © 2025 Pet-Friendly. Todos los derechos reservados.                         │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        PÁGINA DE INICIO - VISTA MÓVIL                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────┐
+│ ENCABEZADO              │
+│ [Logo]    [☰] [🛒] ES|EN│
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ HÉROE                   │
+│                         │
+│ CUIDAMOS A TU           │
+│ MASCOTA COMO            │
+│ FAMILIA                 │
+│                         │
+│ Clínica veterinaria     │
+│ de confianza en         │
+│ Puerto Morelos          │
+│                         │
+│ [  AGENDAR CITA   ]     │
+│                         │
+│ [   VER TIENDA    ]     │
+│                         │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ SERVICIOS (Apilados)    │
+│                         │
+│ ┌─────────────────────┐ │
+│ │ [Ícono] CLÍNICA     │ │
+│ │ Consultas, vacunas, │ │
+│ │ cirugías y más      │ │
+│ │ [ Ver Servicios ]   │ │
+│ └─────────────────────┘ │
+│                         │
+│ ┌─────────────────────┐ │
+│ │ [Ícono] FARMACIA    │ │
+│ │ Medicamentos y      │ │
+│ │ prevención          │ │
+│ │ [ Más Info ]        │ │
+│ └─────────────────────┘ │
+│                         │
+│ ┌─────────────────────┐ │
+│ │ [Ícono] TIENDA      │ │
+│ │ Alimentos y         │ │
+│ │ accesorios          │ │
+│ │ [ Comprar Ahora ]   │ │
+│ └─────────────────────┘ │
+│                         │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ DR. PABLO               │
+│                         │
+│ [Foto]                  │
+│                         │
+│ CONOCE AL DR. PABLO     │
+│                         │
+│ [Texto breve de bio]    │
+│                         │
+│ [ Conocer Más → ]       │
+│                         │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ UBICACIÓN               │
+│                         │
+│ [Mapa - Ancho completo] │
+│                         │
+│ HORARIO                 │
+│ Lun-Vie: 9am-7pm        │
+│ Sáb: 9am-2pm            │
+│ Dom: Cerrado            │
+│                         │
+│ [ WhatsApp 📱 ]         │
+│ [ Llamar ☎️ ]           │
+│                         │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ PIE DE PÁGINA           │
+│ (Secciones apiladas)    │
+│                         │
+│ [Logo]                  │
+│                         │
+│ Enlaces                 │
+│ • Inicio                │
+│ • Servicios             │
+│ • Tienda                │
+│ • Contacto              │
+│                         │
+│ Contacto                │
+│ [Dirección]             │
+│ [Teléfono]              │
+│                         │
+│ [Íconos Redes]          │
+│                         │
+│ © 2025 Pet-Friendly     │
+└─────────────────────────┘
+
+
+NOTAS:
+- El fondo del héroe debe tener superposición para legibilidad del texto
+- El menú móvil se desliza desde la derecha (menú hamburguesa)
+- Todos los CTAs deben tener tamaño táctil en móvil (mín 44px)
+- Carga diferida de imágenes para rendimiento
+- Considerar encabezado fijo al desplazar

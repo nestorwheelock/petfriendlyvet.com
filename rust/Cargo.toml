@@ -1,14 +1,14 @@
 [workspace]
 resolver = "2"
 members = [
-    "pfv-license",
+    "scc-license",
     # Future components (uncomment when created):
-    # "pfv-crypto",
-    # "pfv-image",
-    # "pfv-pdf",
-    # "pfv-search",
-    # "pfv-export",
-    # "pfv-ai",
+    # "scc-crypto",
+    # "scc-image",
+    # "scc-pdf",
+    # "scc-search",
+    # "scc-export",
+    # "scc-ai",
 ]
 
 [workspace.package]

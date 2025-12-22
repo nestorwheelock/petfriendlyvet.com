@@ -720,6 +720,33 @@ class TestDjangoChecks:
         # If this doesn't raise, migrations are up to date
 ```
 
+## Acceptance Criteria
+
+### AC-1: Django Application Starts Successfully
+**Given** the project is set up with all dependencies installed
+**When** I run `python manage.py runserver`
+**Then** the server starts without errors on port 8000
+
+### AC-2: Database Connection Works
+**Given** PostgreSQL is running and configured in .env
+**When** I run `python manage.py migrate`
+**Then** all migrations apply successfully without errors
+
+### AC-3: All Django Apps Load
+**Given** the project is configured
+**When** I run `python manage.py check`
+**Then** it reports "System check identified no issues"
+
+### AC-4: Rust License Validator Works
+**Given** Rust is installed and components are built
+**When** I run `scc-license license.key`
+**Then** it returns valid JSON with license information
+
+### AC-5: Development Environment Ready
+**Given** the project is fully set up
+**When** a new developer clones and follows README instructions
+**Then** they can start the server within 15 minutes
+
 ## Definition of Done
 - [ ] `python manage.py check` passes with no issues
 - [ ] `python manage.py runserver` starts without errors
@@ -738,6 +765,191 @@ class TestDjangoChecks:
 - PostgreSQL 15+
 - Redis 7+
 - Node.js 18+ (for Tailwind CSS)
+- Rust 1.70+ (for SCC components)
+
+## Rust Workspace Setup (SCC Components)
+
+### Overview
+South City Computer (SCC) Rust components provide performance-critical functionality with embedded license verification. These are reusable across all SCC projects and will be distributed as standalone pip packages.
+
+See: [RUST_COMPONENTS.md](../RUST_COMPONENTS.md) and [LICENSING.md](../LICENSING.md)
+
+### Rust Workspace Structure
+```
+rust/
+├── Cargo.toml                 # Workspace root
+├── README.md
+└── scc-license/              # License validation (first component)
+    ├── Cargo.toml
+    └── src/
+        ├── main.rs           # License validator binary
+        └── bin/
+            └── generate.rs   # License generator (internal use)
+```
+
+### Required Build Steps
+
+**1. Install Rust toolchain:**
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+```
+
+**2. Build SCC components:**
+```bash
+cd rust
+cargo build --release
+```
+
+**3. Verify binaries created:**
+```bash
+ls -la target/release/scc-license
+ls -la target/release/scc-license-generate
+```
+
+**4. Generate development license:**
+```bash
+./target/release/scc-license-generate \
+    --licensee "Development" \
+    --email "dev@localhost" \
+    --type developer \
+    --domains "localhost,127.0.0.1" \
+    --days 365 \
+    --output license.key
+```
+
+### Django Integration
+
+**Environment variable (.env.example addition):**
+```bash
+# SCC License
+SCC_LICENSE_FILE=license.key
+```
+
+**License validation at Django startup (apps/core/apps.py):**
+```python
+"""Core app configuration with license validation."""
+import os
+import subprocess
+import json
+from django.apps import AppConfig
+from django.core.exceptions import ImproperlyConfigured
+
+
+class CoreConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.core'
+
+    def ready(self):
+        self._validate_license()
+
+    def _validate_license(self):
+        """Validate SCC license at startup."""
+        license_file = os.getenv('SCC_LICENSE_FILE', 'license.key')
+        validator_path = os.getenv('SCC_LICENSE_BINARY', 'rust/target/release/scc-license')
+
+        # Skip in test mode
+        if os.getenv('DJANGO_SETTINGS_MODULE', '').endswith('.test'):
+            return
+
+        if not os.path.exists(validator_path):
+            raise ImproperlyConfigured(
+                f"SCC license validator not found at {validator_path}. "
+                "Build with: cd rust && cargo build --release"
+            )
+
+        try:
+            result = subprocess.run(
+                [validator_path, license_file],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode != 0:
+                raise ImproperlyConfigured(
+                    f"License validation failed: {result.stderr}"
+                )
+
+            # Parse license info for features
+            license_info = json.loads(result.stdout)
+            os.environ['SCC_LICENSE_TYPE'] = license_info.get('license_type', 'unknown')
+            os.environ['SCC_LICENSEE'] = license_info.get('licensee', 'unknown')
+
+        except subprocess.TimeoutExpired:
+            raise ImproperlyConfigured("License validation timed out")
+        except json.JSONDecodeError:
+            raise ImproperlyConfigured("Invalid license response format")
+```
+
+### Deliverables (Rust Setup)
+- [ ] Rust toolchain installed
+- [ ] `cargo build --release` completes successfully
+- [ ] scc-license binary validates licenses
+- [ ] scc-license-generate creates valid license files
+- [ ] Development license.key generated
+- [ ] Django startup validates license
+- [ ] SCC_LICENSE_FILE in .env.example
+
+### Test Cases (Rust Integration)
+```python
+# tests/test_license_integration.py
+import pytest
+import subprocess
+import os
+from pathlib import Path
+
+
+class TestLicenseIntegration:
+    @pytest.fixture
+    def rust_binary_path(self):
+        return Path(__file__).resolve().parent.parent / 'rust' / 'target' / 'release' / 'scc-license'
+
+    def test_license_binary_exists(self, rust_binary_path):
+        """Verify scc-license binary was built."""
+        assert rust_binary_path.exists(), "Run: cd rust && cargo build --release"
+
+    def test_license_validates_valid_file(self, rust_binary_path, tmp_path):
+        """Test that a valid license file passes validation."""
+        # Generate test license
+        generator = rust_binary_path.parent / 'scc-license-generate'
+        license_path = tmp_path / 'test.key'
+
+        result = subprocess.run([
+            str(generator),
+            '--licensee', 'Test',
+            '--email', 'test@test.com',
+            '--type', 'developer',
+            '--domains', 'localhost',
+            '--days', '1',
+            '--output', str(license_path)
+        ], capture_output=True)
+
+        assert result.returncode == 0
+
+        # Validate it
+        result = subprocess.run(
+            [str(rust_binary_path), str(license_path)],
+            capture_output=True,
+            text=True
+        )
+
+        assert result.returncode == 0
+        assert 'Test' in result.stdout
+
+    def test_license_rejects_invalid_file(self, rust_binary_path, tmp_path):
+        """Test that an invalid license file fails."""
+        invalid_license = tmp_path / 'invalid.key'
+        invalid_license.write_text('{"version": 1, "payload": "invalid", "signature": "wrong"}')
+
+        result = subprocess.run(
+            [str(rust_binary_path), str(invalid_license)],
+            capture_output=True,
+            text=True
+        )
+
+        assert result.returncode != 0
+```
 
 ## Estimated Effort
-4 hours
+5 hours (including Rust setup)

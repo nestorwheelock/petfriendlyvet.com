@@ -1,5 +1,19 @@
 # Project Charter: Pet-Friendly Veterinary Clinic Website
 
+---
+
+## SPEC APPROVAL STATUS
+
+| Gate | Status | Date | Approver |
+|------|--------|------|----------|
+| **CLIENT APPROVAL GATE #1** | **APPROVED** | December 22, 2025 | Nestor Wheelock |
+
+**Scope is now LOCKED.** Changes require new approval cycle.
+
+**Ready for:** BUILD Phase
+
+---
+
 ## Project Overview
 
 **Project Name:** petfriendlyvet.com

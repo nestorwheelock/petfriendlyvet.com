@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Servicios" %}{% endblock %}
+
+{% block meta_description %}{% trans "Servicios veterinarios en Pet-Friendly: clínica, farmacia, tienda de mascotas, laboratorio, cirugía y más en Puerto Morelos." %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-primary-500 to-primary-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl lg:text-5xl font-bold mb-4">{% trans "Nuestros Servicios" %}</h1>
+        <p class="text-xl text-primary-100">{% trans "Todo lo que tu mascota necesita en un solo lugar" %}</p>
+    </div>
+</section>
+
+<!-- Clinic Services -->
+<section class="py-16" id="clinica">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">{% trans "Clínica Veterinaria" %}</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Consultation -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Consulta General" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Examen físico completo, diagnóstico y tratamiento de enfermedades comunes." %}</p>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Examen físico" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Diagnóstico" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Plan de tratamiento" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vaccination -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Vacunación" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Esquema completo de vacunas para perros y gatos de todas las edades." %}</p>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Vacunas para cachorros" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Refuerzos anuales" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Antirrábica" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Surgery -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Cirugía" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Procedimientos quirúrgicos con anestesia segura y cuidados post-operatorios." %}</p>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Esterilización" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Cirugía de tejidos blandos" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Extracciones dentales" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Laboratory -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Laboratorio" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Análisis clínicos para diagnóstico preciso y monitoreo de salud." %}</p>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Análisis de sangre" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Análisis de orina" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Citología" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Deworming -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Desparasitación" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Tratamientos internos y externos para mantener a tu mascota libre de parásitos." %}</p>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Desparasitación interna" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Control de pulgas y garrapatas" %}
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-secondary-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Prevención mensual" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Emergency -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 border-l-4 border-l-red-500">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">{% trans "Emergencias" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Atención de urgencias durante horario de operación. Contáctanos inmediatamente." %}</p>
+                <a href="tel:+529983162438" class="inline-flex items-center text-red-600 font-semibold hover:text-red-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    +52 998 316 2438
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pharmacy -->
+<section class="py-16 bg-gray-50" id="farmacia">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-secondary-100 rounded-full flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">{% trans "Farmacia Veterinaria" %}</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <p class="text-lg text-gray-600 mb-6">
+                    {% trans "Contamos con una farmacia veterinaria completa con medicamentos de alta calidad para el tratamiento de tu mascota." %}
+                </p>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-secondary-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{% trans "Medicamentos" %}</h4>
+                            <p class="text-gray-600">{% trans "Antibióticos, antiinflamatorios, antiparasitarios y más" %}</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-secondary-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{% trans "Suplementos" %}</h4>
+                            <p class="text-gray-600">{% trans "Vitaminas, probióticos y suplementos nutricionales" %}</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-secondary-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{% trans "Productos especializados" %}</h4>
+                            <p class="text-gray-600">{% trans "Shampoos medicados, soluciones oftálmicas y más" %}</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">{% trans "Servicio de farmacia" %}</h3>
+                <p class="text-gray-600 mb-6">
+                    {% trans "Todos los medicamentos recetados por el Dr. Pablo están disponibles en nuestra farmacia, asegurando la continuidad del tratamiento de tu mascota." %}
+                </p>
+                <div class="bg-secondary-50 text-secondary-700 p-4 rounded-lg">
+                    <p class="text-sm">
+                        <strong>{% trans "Nota:" %}</strong> {% trans "Algunos medicamentos requieren receta veterinaria." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pet Store -->
+<section class="py-16" id="tienda">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">{% trans "Tienda de Mascotas" %}</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{% trans "Alimentos" %}</h3>
+                <p class="text-gray-600 text-sm">{% trans "Alimentos premium y dietas especializadas" %}</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{% trans "Accesorios" %}</h3>
+                <p class="text-gray-600 text-sm">{% trans "Collares, correas, camas y más" %}</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{% trans "Juguetes" %}</h3>
+                <p class="text-gray-600 text-sm">{% trans "Juguetes seguros y divertidos" %}</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{% trans "Higiene" %}</h3>
+                <p class="text-gray-600 text-sm">{% trans "Shampoos, cepillos y cuidado dental" %}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-primary-500 text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">{% trans "¿Necesitas una cita?" %}</h2>
+        <p class="text-xl text-primary-100 mb-8">
+            {% trans "Contáctanos para agendar una cita o resolver tus dudas" %}
+        </p>
+        <a href="{% url 'core:contact' %}" class="btn-primary bg-white text-primary-600 hover:bg-gray-100">
+            {% trans "Contactar" %}
+        </a>
+    </div>
+</section>
+{% endblock %}

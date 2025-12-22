@@ -121,6 +121,33 @@ class AIUsage(models.Model):
 - [ ] Language switching works
 - [ ] Fallback responses work
 
+### Acceptance Criteria
+
+**AC-1: Basic Chat Works**
+**Given** a valid OpenRouter API key is configured
+**When** I send a message to the AI service
+**Then** I receive a coherent response in the configured language
+
+**AC-2: Streaming Responses**
+**Given** streaming mode is enabled
+**When** I send a message to the AI service
+**Then** I receive tokens incrementally as they are generated
+
+**AC-3: Rate Limiting**
+**Given** I am a user subject to rate limits
+**When** I exceed 50 requests per hour
+**Then** I receive a rate limit error with retry-after time
+
+**AC-4: Cost Tracking**
+**Given** I send a message to the AI service
+**When** the response is complete
+**Then** the token count and cost are recorded in the database
+
+**AC-5: Error Recovery**
+**Given** the AI service experiences a transient error
+**When** the first request fails
+**Then** it retries with exponential backoff up to 3 times
+
 ### Definition of Done
 - [ ] OpenRouter client working
 - [ ] Streaming and non-streaming modes

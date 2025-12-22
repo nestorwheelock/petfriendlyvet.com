@@ -1,0 +1,712 @@
+# Wireframe: Bandeja de Comunicaciones (Mensajería Unificada)
+# Historia: S-006 Comunicaciones Omnicanal
+# Época: 4 (Centro de Comunicaciones)
+# Módulo: django-omnichannel
+
+================================================================
+                    BANDEJA UNIFICADA - ESCRITORIO
+================================================================
+
+URL: /admin/communications/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES | Bandeja | Plantillas | Configuración  |
++------------------------------------------------------------------+
+|                                                                    |
+|  +----------------+  +------------------------------------------+  |
+|  | CANALES        |  | BANDEJA                       [Redactar]  |  |
+|  |----------------|  |------------------------------------------|  |
+|  | Todos (47)     |  | Filtrar: [Todos v] [No leídos v] [Buscar...]|
+|  | No leídos (12) |  |------------------------------------------|  |
+|  |----------------|  |                                          |  |
+|  | [email] (15)   |  | [*] María García              hace 2 min  |  |
+|  | [sms] (18)     |  |     [whatsapp] Re: Cita de Luna          |  |
+|  | [whatsapp](14) |  |     "Sí, confirmo para mañana a las..."  |  |
+|  |----------------|  |------------------------------------------|  |
+|  | ESTADO         |  | [ ] John Smith                hace 15 min |  |
+|  |----------------|  |     [sms] Entrante                       |  |
+|  | Requiere       |  |     "¿A qué hora puedo recoger el med..." |  |
+|  | Respuesta (5)  |  |------------------------------------------|  |
+|  | En espera (8)  |  | [ ] Pet Rescue Org            hace 45 min |  |
+|  | Resuelto (24)  |  |     [email] Confirmación de pedido       |  |
+|  |----------------|  |     "Gracias por su pedido #2025..."     |  |
+|  | MARCADOS       |  |------------------------------------------|  |
+|  |----------------|  | [*] Ana López                  hace 1 hr  |  |
+|  | Urgente (2)    |  |     [whatsapp] Recordatorio vacunación   |  |
+|  | Seguimiento(3) |  |     "¡Hola! Le recordamos que Milo..."   |  |
+|  |                |  |------------------------------------------|  |
+|  |                |  | [ ] Dr. Martínez (B2B)        hace 2 hrs  |  |
+|  |                |  |     [email] Resultados de lab listos     |  |
+|  |                |  |     "Resultados citología para muestras..."|
+|  |                |  |------------------------------------------|  |
+|  |                |  | [*] Carlos Ruiz               hace 3 hrs  |  |
+|  |                |  |     [sms] Cambio de cita                 |  |
+|  |                |  |     "Puedo cambiar mi cita de..."        |  |
+|  |                |  |------------------------------------------|  |
+|  |                |  |                                          |  |
+|  |                |  | [<< Ant]  Página 1 de 8  [Sig >>]        |  |
+|  +----------------+  +------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+Leyenda:
+  [*] = Mensaje no leído
+  [email] = Ícono de correo
+  [sms] = Ícono de SMS/Texto
+  [whatsapp] = Ícono de WhatsApp
+
+
+================================================================
+                    VISTA DE HILO DE CONVERSACIÓN
+================================================================
+
+URL: /admin/communications/thread/maria-garcia/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > María García               [<< Atrás] |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | MARÍA GARCÍA                                                  |  |
+|  |--------------------------------------------------------------|  |
+|  | Teléfono: +52 998 123 4567  | Email: maria@email.com        |  |
+|  | Mascotas: Luna (Golden Retriever), Milo (Gato)              |  |
+|  | Preferencias: WhatsApp (principal), Email                    |  |
+|  | [Ver Perfil] [Ver Mascotas] [Ver Citas]                      |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CONVERSACIÓN                            Canal: [Todos v]          |
+|  +--------------------------------------------------------------+  |
+|  |                                                               |  |
+|  |  21 dic 2025                                                  |  |
+|  |  ---------------------------------------------------------    |  |
+|  |                                                               |  |
+|  |  [whatsapp] SALIENTE                           10:00 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | ¡Hola María! Le recordamos que Luna tiene cita        |    |  |
+|  |  | mañana 22 de diciembre a las 10:00 AM para su         |    |  |
+|  |  | revisión general.                                      |    |  |
+|  |  |                                                        |    |  |
+|  |  | Responda SÍ para confirmar o llame para cambiar.      |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [marcas] Entregado, Leído 10:15 AM                           |  |
+|  |                                                               |  |
+|  |  [whatsapp] ENTRANTE                            10:18 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Sí, confirmo para mañana a las 10. ¡Gracias!           |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |                                                               |  |
+|  |  [whatsapp] SALIENTE (Auto)                    10:18 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | ¡Perfecto! Cita confirmada para Luna el 22 de         |    |  |
+|  |  | diciembre a las 10:00 AM.                              |    |  |
+|  |  |                                                        |    |  |
+|  |  | ¡Dr. Pablo los espera!                                 |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [marcas] Entregado, Leído 10:20 AM                           |  |
+|  |                                                               |  |
+|  |  19 dic 2025                                                  |  |
+|  |  ---------------------------------------------------------    |  |
+|  |                                                               |  |
+|  |  [email] SALIENTE                               3:45 PM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Asunto: Vacunación pendiente - Luna                    |    |  |
+|  |  |                                                        |    |  |
+|  |  | Estimada María, le recordamos que Luna tiene          |    |  |
+|  |  | pendiente su vacuna de refuerzo...                    |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [marca] Entregado                                            |  |
+|  |                                                               |  |
+|  |  [Cargar mensajes anteriores...]                              |  |
+|  |                                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REDACTAR RESPUESTA                                                |
+|  +--------------------------------------------------------------+  |
+|  | Canal: [whatsapp v]  Plantilla: [Ninguna - Texto libre v]   |  |
+|  |--------------------------------------------------------------|  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  |--------------------------------------------------------------|  |
+|  | [ ] Asistencia IA    [Adjuntar] [Respuestas rápidas v] [Enviar]|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    REDACTAR NUEVO MENSAJE
+================================================================
+
+URL: /admin/communications/compose/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > Redactar Mensaje                        |
++------------------------------------------------------------------+
+|                                                                    |
+|  PARA                                                              |
+|  +--------------------------------------------------------------+  |
+|  | [Buscar cliente...___________________________]                |  |
+|  | O seleccionar: [Recientes v] [Con citas v] [Todos los clientes v]|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Seleccionado: María García (maria@email.com, +52 998 123 4567)   |
+|                                                                    |
+|  CANAL                                                             |
+|  +--------------------------------------------------------------+  |
+|  | (*) WhatsApp  [Preferido]                                     |  |
+|  | ( ) SMS                                                       |  |
+|  | ( ) Email                                                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  MENSAJE                                                           |
+|  +--------------------------------------------------------------+  |
+|  | Usar Plantilla: [Ninguna - Texto libre            v]         |  |
+|  |                 [Recordatorio de Cita             ]          |  |
+|  |                 [Vacuna Vencida                   ]          |  |
+|  |                 [Pedido Listo para Recoger        ]          |  |
+|  |                 [Renovación de Receta             ]          |  |
+|  |                 [Recordatorio de Pago             ]          |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Asunto (solo Email):                                          |  |
+|  | [________________________________________________]            |  |
+|  |                                                               |  |
+|  | Mensaje:                                                      |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  |                                                               |  |
+|  | Variables: {nombre_dueño} {nombre_mascota} {fecha_cita}      |  |
+|  |            {hora_cita} {nombre_servicio} {tel_clinica}       |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  OPCIONES                                                          |
+|  +--------------------------------------------------------------+  |
+|  | [ ] Programar para después: [Selector de Fecha/Hora    ]     |  |
+|  | [ ] Solicitar confirmación                                    |  |
+|  | [ ] Habilitar escalamiento (enviar por otros canales si no hay respuesta)|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancelar ]   [ Vista Previa ]   [ Enviar Ahora ]               |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    PLANTILLAS DE MENSAJES
+================================================================
+
+URL: /admin/communications/templates/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > Plantillas             [+ Nueva Plantilla]|
++------------------------------------------------------------------+
+|                                                                    |
+|  CATEGORÍAS DE PLANTILLAS                                          |
+|  +--------------------------------------------------------------+  |
+|  | Citas (5) | Pedidos (3) | Recordatorios (4) | General (2)   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  PLANTILLAS DE CITAS                                               |
+|  +--------------------------------------------------------------+  |
+|  | NOMBRE                  | CANALES          | ESTADO  | ACCIONES |
+|  |-------------------------|------------------|---------|---------|
+|  | Recordatorio de Cita    | [w] [s] [e]      | Activo  | [Editar]|
+|  | Cita Confirmada         | [w] [s] [e]      | Activo  | [Editar]|
+|  | Cita Cancelada          | [w] [e]          | Activo  | [Editar]|
+|  | Cita Reagendada         | [w] [s] [e]      | Activo  | [Editar]|
+|  | Seguimiento No-Show     | [e]              | Activo  | [Editar]|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Leyenda: [w]=WhatsApp [s]=SMS [e]=Email                           |
+|                                                                    |
+|  PLANTILLAS DE RECORDATORIOS                                       |
+|  +--------------------------------------------------------------+  |
+|  | NOMBRE                  | CANALES          | ESTADO  | ACCIONES |
+|  |-------------------------|------------------|---------|---------|
+|  | Vacuna Vencida          | [w] [s] [e]      | Activo  | [Editar]|
+|  | Renovación de Receta    | [w] [s]          | Activo  | [Editar]|
+|  | Visita de Seguimiento   | [w] [e]          | Activo  | [Editar]|
+|  | Chequeo Anual Vencido   | [e]              | Activo  | [Editar]|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    EDITOR DE PLANTILLAS
+================================================================
+
+URL: /admin/communications/templates/appointment-reminder/edit/
+
++------------------------------------------------------------------+
+|  [Logo]  PLANTILLAS > Editar: Recordatorio de Cita                |
++------------------------------------------------------------------+
+|                                                                    |
+|  INFORMACIÓN DE PLANTILLA                                          |
+|  +--------------------------------------------------------------+  |
+|  | Nombre: [Recordatorio de Cita___________________________]    |  |
+|  | Tipo: [Citas v]                                               |  |
+|  | Estado: [x] Activo                                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CANALES                                                           |
+|  +--------------------------------------------------------------+  |
+|  | [x] WhatsApp  [x] SMS  [x] Email                              |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  VERSIÓN EMAIL                                                     |
+|  +--------------------------------------------------------------+  |
+|  | Asunto (ES): [Recordatorio: Cita para {nombre_mascota}___]   |  |
+|  | Asunto (EN): [Reminder: Appointment for {nombre_mascota}__]  |  |
+|  |--------------------------------------------------------------|  |
+|  | Cuerpo (ES):                                                  |  |
+|  | Hola {nombre_dueño},                                          |  |
+|  |                                                               |  |
+|  | Le recordamos que {nombre_mascota} tiene cita el              |  |
+|  | {fecha_cita} a las {hora_cita} para                           |  |
+|  | {nombre_servicio}.                                            |  |
+|  |                                                               |  |
+|  | Ubicación: {direccion_clinica}                                |  |
+|  | Teléfono: {tel_clinica}                                       |  |
+|  |                                                               |  |
+|  | ¡Dr. Pablo los espera!                                        |  |
+|  |                                                               |  |
+|  | [Vista Previa ES] [Vista Previa EN]                           |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  VERSIÓN SMS (límite 160 caracteres)                               |
+|  +--------------------------------------------------------------+  |
+|  | (ES): Pet-Friendly: Cita para {nombre_mascota} mañana        |  |
+|  |       {hora_cita}. Responda SÍ para confirmar.               |  |
+|  |       Tel: {tel_clinica}                                      |  |
+|  |       [145/160 chars]                                         |  |
+|  |--------------------------------------------------------------|  |
+|  | (EN): Pet-Friendly: Appointment for {nombre_mascota} tomorrow |  |
+|  |       at {hora_cita}. Reply YES to confirm.                  |  |
+|  |       Tel: {tel_clinica}                                      |  |
+|  |       [138/160 chars]                                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  VERSIÓN WHATSAPP (Plantilla debe ser aprobada por Meta)           |
+|  +--------------------------------------------------------------+  |
+|  | Nombre de Plantilla: appointment_reminder_v1                  |  |
+|  | Estado: [Aprobada] Aprobada el 1 dic 2025                    |  |
+|  |--------------------------------------------------------------|  |
+|  | Encabezado: [Ninguno v]                                       |  |
+|  | Cuerpo:                                                       |  |
+|  | ¡Hola {{1}}! Le recordamos que {{2}} tiene cita el {{3}}     |  |
+|  | a las {{4}} para {{5}}.                                       |  |
+|  |                                                               |  |
+|  | Responda SÍ para confirmar o NO para cancelar.                |  |
+|  |                                                               |  |
+|  | Variables: 1=nombre_dueño, 2=nombre_mascota, 3=fecha, 4=hora, 5=servicio|
+|  | Pie de página: [Veterinaria Pet-Friendly v]                  |  |
+|  | Botones: [Respuesta Rápida: SÍ] [Respuesta Rápida: NO]       |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  VARIABLES DISPONIBLES                                             |
+|  +--------------------------------------------------------------+  |
+|  | {nombre_dueño}    | {nombre_mascota}  | {especie_mascota}     |  |
+|  | {fecha_cita}      | {hora_cita}       | {nombre_servicio}     |  |
+|  | {nombre_clinica}  | {tel_clinica}     | {direccion_clinica}   |  |
+|  | {total_factura}   | {num_pedido}      | {enlace_confirmacion} |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancelar ]   [ Guardar Borrador ]   [ Guardar y Activar ]      |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    REGLAS DE ESCALAMIENTO
+================================================================
+
+URL: /admin/communications/escalation/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > Reglas de Escalamiento                  |
++------------------------------------------------------------------+
+|                                                                    |
+|  RECORDATORIOS DE CITAS                                            |
+|  +--------------------------------------------------------------+  |
+|  | Cuando se requiera confirmación, escalar de la siguiente manera:|
+|  |                                                               |  |
+|  | Paso 1: 24 horas antes                                        |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Canal: [Email           v]                            |     |  |
+|  | | Esperar: [2   ] horas antes de escalar                |     |  |
+|  | | [x] Habilitado                                        |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (si no hay confirmación)                       |  |
+|  |                                                               |  |
+|  | Paso 2: 22 horas antes                                        |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Canal: [SMS             v]                            |     |  |
+|  | | Esperar: [2   ] horas antes de escalar                |     |  |
+|  | | [x] Habilitado                                        |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (si no hay confirmación)                       |  |
+|  |                                                               |  |
+|  | Paso 3: 20 horas antes                                        |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Canal: [WhatsApp        v]                            |     |  |
+|  | | Esperar: [18  ] horas (hasta 2h antes)                |     |  |
+|  | | [x] Habilitado                                        |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (si no hay confirmación)                       |  |
+|  |                                                               |  |
+|  | Paso 4: 2 horas antes (Final)                                 |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Canal: [WhatsApp        v]                            |     |  |
+|  | | Acción:  [x] Marcar para atención del personal        |     |  |
+|  | | [x] Habilitado                                        |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |                                                               |  |
+|  | [+ Agregar Paso]                                              |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECORDATORIOS DE VACUNACIÓN                                       |
+|  +--------------------------------------------------------------+  |
+|  | [Configuración de escalamiento similar...]                    |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Guardar Todas las Reglas ]                                      |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    MENSAJES PROGRAMADOS
+================================================================
+
+URL: /admin/communications/scheduled/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > Mensajes Programados   [+ Programar Nuevo]|
++------------------------------------------------------------------+
+|                                                                    |
+|  PRÓXIMOS (Próximas 24 Horas)                                      |
+|  +--------------------------------------------------------------+  |
+|  | HORA       | DESTINATARIO | TIPO              | CANAL | ACC  |  |
+|  |------------|--------------|-------------------|---------|-----|  |
+|  | Hoy 2PM    | María García | Rec. Cita         | [w]     | [X] |  |
+|  | Hoy 4PM    | John Smith   | Vacuna Vencida    | [e]     | [X] |  |
+|  | Hoy 6PM    | Ana López    | Reno. Receta      | [s]     | [X] |  |
+|  | Mañana 8AM | Carlos Ruiz  | Rec. Cita         | [w]     | [X] |  |
+|  | Mañana 9AM | Lisa Chen    | Pedido Listo      | [w]     | [X] |  |
+|  | Mañana 10AM| Pet Rescue   | Rec. Cita         | [e]     | [X] |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ESCALAMIENTOS PENDIENTES                                          |
+|  +--------------------------------------------------------------+  |
+|  | ORIGINAL   | DESTINATARIO | ESTADO            | PRÓXIMO PASO    |
+|  |------------|--------------|-------------------|---------------|  |
+|  | 21 dic 10A | Roberto Díaz | Email enviado, sin| SMS en 1hr    |
+|  |            |              | confirmación      |               |  |
+|  | 21 dic 9A  | Emma Wilson  | Email+SMS enviado,| WhatsApp ahora|
+|  |            |              | sin confirmación  | [Enviar Ahora]|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ESPERANDO CONFIRMACIÓN (Enviado, sin respuesta)                   |
+|  +--------------------------------------------------------------+  |
+|  | ENVIADO    | DESTINATARIO | CANAL | PARA            | MARCA  |
+|  |------------|--------------|---------|-----------------|-------|
+|  | Hace 2 hrs | Roberto Díaz | [e]     | Cita 22 dic 10A | [!]   |
+|  | Hace 3 hrs | Emma Wilson  | [s]     | Cita 22 dic 2P  | [!]   |
+|  | Hace 5 hrs | Mike Brown   | [w]     | Cita 22 dic 4P  | [!!]  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    PANEL DE ESTADO DE ENTREGA
+================================================================
+
+URL: /admin/communications/status/
+
++------------------------------------------------------------------+
+|  [Logo]  COMUNICACIONES > Estado de Entrega                       |
++------------------------------------------------------------------+
+|                                                                    |
+|  MÉTRICAS DE ENTREGA (Últimos 7 Días)                             |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|  | ENVIADOS    | | ENTREGADOS  | | LEÍDOS      | | FALLIDOS    |   |
+|  |    347      | |    342      | |    298      | |     5       |   |
+|  |   Total     | |   98.6%     | |   85.8%     | |   1.4%      |   |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|                                                                    |
+|  POR CANAL                                                         |
+|  +--------------------------------------------------------------+  |
+|  | CANAL     | ENVIADO | ENTREGADO | LEÍDO  | FALLIDO | TASA     |
+|  |-----------|---------|-----------|--------|---------|----------|
+|  | WhatsApp  | 145     |    145    |  140   |   0     | 100%/97% |
+|  | SMS       | 112     |    110    |   95   |   2     | 98% / 85%|
+|  | Email     |  90     |     87    |   63   |   3     | 97% / 70%|
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  MENSAJES FALLIDOS                                [Reintentar Todos]|
+|  +--------------------------------------------------------------+  |
+|  | FECHA   | DESTINATARIO | CANAL | ERROR            | ACCIÓN    |
+|  |---------|--------------|---------|------------------|--------|  |
+|  | 21 dic  | bad@email.co | [e]     | Dirección inválida|[Elim] |
+|  | 20 dic  | +52999000000 | [s]     | Número no válido | [Edit]|
+|  | 20 dic  | +52998111222 | [s]     | Rechazado carrier|[Reintentar]|
+|  | 19 dic  | old@test.com | [e]     | Buzón lleno      |[Reintentar]|
+|  | 19 dic  | +52998333444 | [w]     | No en WhatsApp   | [SMS] |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ESTADÍSTICAS DE CONFIRMACIÓN                                      |
+|  +--------------------------------------------------------------+  |
+|  | Recordatorios de citas enviados: 89                           |
+|  | Confirmados:                      76 (85%)                    |
+|  | Sin respuesta:                    10 (11%)                    |
+|  | Cancelados:                        3 (3%)                     |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    VISTA MÓVIL - BANDEJA
+================================================================
+
++--------------------------------+
+|  [=] Pet-Friendly     [Buscar] |
++--------------------------------+
+|  BANDEJA              [Redactar]|
+|                                |
+|  FILTRAR: [Todos v] [No leídos v]|
+|                                |
+|  +----------------------------+|
+|  | [*] María García    2m    ||
+|  | [whatsapp]                 ||
+|  | Sí, confirmo para mañ...   ||
+|  +----------------------------+|
+|  | [ ] John Smith      15m   ||
+|  | [sms]                      ||
+|  | ¿A qué hora puedo reco...  ||
+|  +----------------------------+|
+|  | [ ] Pet Rescue      45m   ||
+|  | [email]                    ||
+|  | Gracias por su pedi...     ||
+|  +----------------------------+|
+|  | [*] Ana López       1h    ||
+|  | [whatsapp]                 ||
+|  | ¡Hola! Le recordamos q...  ||
+|  +----------------------------+|
+|  | [ ] Dr. Martínez    2h    ||
+|  | [email]                    ||
+|  | Resultados citología...    ||
+|  +----------------------------+|
+|  | [*] Carlos Ruiz     3h    ||
+|  | [sms]                      ||
+|  | Puedo cambiar mi cita...   ||
+|  +----------------------------+|
+|                                |
+|  [Cargar Más]                  |
+|                                |
++--------------------------------+
+| [Inicio] [Bandeja] [Citas] [+] |
++--------------------------------+
+
+
+================================================================
+                    VISTA MÓVIL - CONVERSACIÓN
+================================================================
+
++--------------------------------+
+|  [<] María García     [Llamar] |
++--------------------------------+
+|                                |
+|  21 dic 2025                   |
+|  ─────────────────────          |
+|                                |
+|  [whatsapp] 10:00 AM           |
+|  +----------------------------+|
+|  | ¡Hola María! Le recorda-   ||
+|  | mos que Luna tiene cita   ||
+|  | mañana 22 de diciembre... ||
+|  +----------------------------+|
+|  [marcas] Leído 10:15          |
+|                                |
+|                     10:18 AM   |
+|  +----------------------------+|
+|  | Sí, confirmo para mañana  ||
+|  | a las 10. ¡Gracias!       ||
+|  +----------------------------+|
+|                                |
+|  [whatsapp] 10:18 AM           |
+|  +----------------------------+|
+|  | ¡Perfecto! Cita confirmada||
+|  | para Luna el 22 de dic... ||
+|  +----------------------------+|
+|  [marcas] Leído 10:20          |
+|                                |
+|  [Cargar anteriores...]        |
+|                                |
++--------------------------------+
+| Canal: [whatsapp v]            |
+| +----------------------------+ |
+| | Escribir mensaje...        | |
+| +----------------------------+ |
+| [Adjuntar] [Plantillas] [Enviar]|
++--------------------------------+
+
+
+================================================================
+                    VISTA MÓVIL - REDACCIÓN RÁPIDA
+================================================================
+
++--------------------------------+
+|  [<] NUEVO MENSAJE             |
++--------------------------------+
+|                                |
+|  PARA:                         |
+|  [Buscar cliente...           ]|
+|                                |
+|  Seleccionado: María García    |
+|  +52 998 123 4567              |
+|                                |
+|  CANAL:                        |
+|  +----------------------------+|
+|  | (*) WhatsApp [Preferido]   ||
+|  | ( ) SMS                    ||
+|  | ( ) Email                  ||
+|  +----------------------------+|
+|                                |
+|  PLANTILLA:                    |
+|  [Recordatorio de Cita     v ] |
+|                                |
+|  MENSAJE:                      |
+|  +----------------------------+|
+|  | ¡Hola María! Le recordamos||
+|  | que Luna tiene cita el    ||
+|  | 23 de diciembre a las     ||
+|  | 10:00 AM para revisión.   ||
+|  |                           ||
+|  | Responda SÍ para confirmar||
+|  +----------------------------+|
+|                                |
+|  [ ] Solicitar confirmación    |
+|  [ ] Habilitar escalamiento    |
+|                                |
+|  [ Cancelar ]   [ Enviar Ahora ]|
+|                                |
++--------------------------------+
+
+
+================================================================
+                    PANEL DE RESPUESTAS RÁPIDAS
+================================================================
+
+Las respuestas rápidas aparecen al redactar:
+
++--------------------------------------------------------------+
+| RESPUESTAS RÁPIDAS                                   [Editar]|
+|--------------------------------------------------------------|
+| [Confirmo la cita]                                            |
+| [Sí, gracias]                                                 |
+| [Necesito cambiar la cita]                                    |
+| [Llego en 10 minutos]                                         |
+| [Puede pasar a recoger su pedido]                             |
+| [Los resultados están listos]                                 |
+| [Por favor llame a la clínica]                                |
++--------------------------------------------------------------+
+
+
+================================================================
+                    NOTAS TÉCNICAS DE IMPLEMENTACIÓN
+================================================================
+
+1. INTERACCIONES HTMX:
+   - Lista de bandeja: hx-get="/communications/inbox/"
+     hx-trigger="load, every 30s" para actualizaciones en tiempo real
+   - Vista de hilo: hx-get="/communications/thread/{id}/"
+     con scroll infinito para historial
+   - Enviar mensaje: hx-post="/communications/send/"
+     hx-target="#message-sent-feedback"
+   - Búsqueda: hx-get="/communications/search/"
+     hx-trigger="keyup changed delay:300ms"
+
+2. WEBSOCKETS:
+   - Notificaciones de mensajes entrantes en tiempo real
+   - Actualizaciones de estado de entrega
+   - Indicadores de escritura (WhatsApp)
+   - Indicador de estado de conexión
+
+3. INTEGRACIÓN TWILIO:
+   - Envío de SMS via REST API
+   - Webhook para recibos de entrega
+   - Webhook para SMS entrantes
+   - Formato de número (E.164)
+
+4. API DE WHATSAPP BUSINESS:
+   - Mensajes de plantilla (pre-aprobados)
+   - Mensajes de sesión (ventana de 24 horas)
+   - Webhook para mensajes entrantes
+   - Webhook para recibos de entrega/lectura
+   - Soporte de medios (imágenes, documentos)
+
+5. INTEGRACIÓN EMAIL:
+   - Backend de email de Django
+   - Plantillas de email HTML
+   - Seguimiento de apertura/clic (opcional)
+   - Manejo de rebotes
+
+6. MOTOR DE ESCALAMIENTO:
+   - Tareas Celery para envíos programados
+   - Celery beat para verificaciones de escalamiento
+   - Máquina de estados para flujo de escalamiento
+   - Seguimiento de confirmaciones
+
+7. OPTIMIZACIÓN MÓVIL:
+   - Burbujas de mensaje táctiles
+   - Acciones de deslizamiento (marcar leído, responder)
+   - Pull-to-refresh en bandeja
+   - Auto-enfoque de teclado al redactar
+
+8. INTEGRACIÓN IA:
+   - IA puede leer mensajes entrantes
+   - IA puede redactar y enviar respuestas
+   - IA puede verificar estado de confirmación
+   - Respuestas sugeridas basadas en contexto
+
+9. PERMISOS:
+   - Ver bandeja: todo el personal
+   - Enviar mensajes: todo el personal
+   - Editar plantillas: gerente + propietario
+   - Configurar escalamiento: solo propietario
+   - Acceso a API de WhatsApp: solo sistema
+
+10. PISTA DE AUDITORÍA:
+    - Todos los mensajes registrados
+    - Estado de entrega rastreado
+    - Acciones del personal registradas
+    - Llamadas API registradas
+
+================================================================
+                    HISTORIAL DE VERSIONES
+================================================================
+
+v1.0.0 - 21 de diciembre de 2025
+- Creación inicial del wireframe
+- Bandeja unificada con filtrado de canales
+- Vista de hilo de conversación
+- Redacción de mensajes con plantillas
+- Editor de plantillas (Email, SMS, WhatsApp)
+- Configuración de reglas de escalamiento
+- Vista de mensajes programados
+- Panel de estado de entrega
+- Vistas optimizadas para móvil
+- Panel de respuestas rápidas
+
+================================================================

@@ -1,0 +1,14 @@
+{
+  "name": "petfriendlyvet",
+  "version": "1.0.0",
+  "description": "Pet-Friendly Veterinary Clinic Website",
+  "scripts": {
+    "dev": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
+    "build": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4",
+    "@tailwindcss/forms": "^0.5",
+    "@tailwindcss/typography": "^0.5"
+  }
+}

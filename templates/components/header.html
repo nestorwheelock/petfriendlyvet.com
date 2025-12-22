@@ -1,0 +1,90 @@
+{% load static i18n %}
+<header class="bg-white shadow-sm sticky top-0 z-40">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="{% url 'core:home' %}" class="flex items-center">
+                    <img src="{% static 'images/logo.png' %}" alt="Pet-Friendly Vet" class="h-10 w-auto">
+                    <span class="ml-2 text-xl font-bold text-primary-500 hidden sm:block">Pet-Friendly</span>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'core:home' %}" class="nav-link">{% trans "Inicio" %}</a>
+                <a href="{% url 'core:services' %}" class="nav-link">{% trans "Servicios" %}</a>
+                <a href="{% url 'core:about' %}" class="nav-link">{% trans "Nosotros" %}</a>
+                <a href="{% url 'core:contact' %}" class="nav-link">{% trans "Contacto" %}</a>
+            </div>
+
+            <!-- Right side items -->
+            <div class="flex items-center space-x-4">
+                <!-- Language Switcher -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex items-center text-gray-600 hover:text-primary-500">
+                        <span class="text-sm font-medium uppercase">{{ LANGUAGE_CODE }}</span>
+                        <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-24 bg-white rounded-lg shadow-lg py-1 z-50">
+                        {% get_available_languages as languages %}
+                        {% for lang_code, lang_name in languages %}
+                        <a href="#" onclick="document.getElementById('lang-form-{{ lang_code }}').submit(); return false;"
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            {{ lang_name }}
+                        </a>
+                        <form id="lang-form-{{ lang_code }}" action="{% url 'set_language' %}" method="post" class="hidden">
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="{{ lang_code }}">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                        </form>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Cart Icon -->
+                <a href="#" class="text-gray-600 hover:text-primary-500 relative" aria-label="{% trans 'Carrito' %}">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span id="cart-count" class="hidden absolute -top-1 -right-1 bg-secondary-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                </a>
+
+                <!-- User Menu / Login -->
+                {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="text-gray-600 hover:text-primary-500">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn-primary text-sm">
+                    {% trans "Ingresar" %}
+                </a>
+                {% endif %}
+
+                <!-- Mobile menu button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-lg text-gray-600 hover:text-primary-500 hover:bg-gray-100">
+                    <svg x-show="!mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg x-show="mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div x-show="mobileMenuOpen" x-transition class="md:hidden border-t border-gray-100 py-4">
+            <div class="flex flex-col space-y-4">
+                <a href="{% url 'core:home' %}" class="nav-link">{% trans "Inicio" %}</a>
+                <a href="{% url 'core:services' %}" class="nav-link">{% trans "Servicios" %}</a>
+                <a href="{% url 'core:about' %}" class="nav-link">{% trans "Nosotros" %}</a>
+                <a href="{% url 'core:contact' %}" class="nav-link">{% trans "Contacto" %}</a>
+            </div>
+        </div>
+    </nav>
+</header>

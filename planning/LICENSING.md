@@ -34,7 +34,7 @@ Pet-Friendly Veterinary software uses a commercial source-available license with
 │    │                                                │
 │    └──► license.validate()                          │
 │           │                                         │
-│           └──► subprocess: pfv-license license.key  │
+│           └──► subprocess: scc-license license.key  │
 │                    │                                │
 │                    ▼                                │
 │           ┌────────────────────────┐                │
@@ -87,22 +87,22 @@ Pet-Friendly Veterinary software uses a commercial source-available license with
 
 ```
 rust/
-└── pfv-license/
+└── scc-license/
     ├── Cargo.toml
     ├── src/
-    │   ├── main.rs           # License validator (pfv-license)
+    │   ├── main.rs           # License validator (scc-license)
     │   └── bin/
-    │       └── generate.rs   # License generator (pfv-license-generate)
+    │       └── generate.rs   # License generator (scc-license-generate)
     └── target/
         └── release/
-            ├── pfv-license           # Validator binary
-            └── pfv-license-generate  # Generator binary
+            ├── scc-license           # Validator binary
+            └── scc-license-generate  # Generator binary
 ```
 
 ### Build
 
 ```bash
-cd rust/pfv-license
+cd rust/scc-license
 cargo build --release
 
 # Binaries in target/release/
@@ -112,13 +112,13 @@ cargo build --release
 
 **Validate a license:**
 ```bash
-./pfv-license license.key
-./pfv-license license.key petfriendlyvet.com  # With domain check
+./scc-license license.key
+./scc-license license.key petfriendlyvet.com  # With domain check
 ```
 
 **Generate a license:**
 ```bash
-./pfv-license-generate \
+./scc-license-generate \
   --licensee "Dr. Pablo" \
   --email "pablo@clinic.com" \
   --type single \
@@ -164,7 +164,7 @@ def validate_license(license_path: str = None, domain: str = None) -> LicenseInf
     Called during Django startup.
     """
     if license_path is None:
-        license_path = os.environ.get('PFV_LICENSE_FILE', 'license.key')
+        license_path = os.environ.get('SCC_LICENSE_FILE', 'license.key')
 
     # Find the Rust binary
     binary = _find_license_binary()
@@ -184,7 +184,7 @@ def validate_license(license_path: str = None, domain: str = None) -> LicenseInf
     except FileNotFoundError:
         raise LicenseError(
             "License validator binary not found. "
-            "Run: cd rust/pfv-license && cargo build --release"
+            "Run: cd rust/scc-license && cargo build --release"
         )
     except subprocess.TimeoutExpired:
         raise LicenseError("License validation timed out")
@@ -199,12 +199,12 @@ def validate_license(license_path: str = None, domain: str = None) -> LicenseInf
         raise LicenseError("Invalid license validator response")
 
 def _find_license_binary() -> str:
-    """Find the pfv-license binary."""
+    """Find the scc-license binary."""
     # Check common locations
     locations = [
-        Path(__file__).parent.parent / 'rust' / 'pfv-license' / 'target' / 'release' / 'pfv-license',
-        Path('/usr/local/bin/pfv-license'),
-        Path.home() / '.local' / 'bin' / 'pfv-license',
+        Path(__file__).parent.parent / 'rust' / 'scc-license' / 'target' / 'release' / 'scc-license',
+        Path('/usr/local/bin/scc-license'),
+        Path.home() / '.local' / 'bin' / 'scc-license',
     ]
 
     for loc in locations:
@@ -212,7 +212,7 @@ def _find_license_binary() -> str:
             return str(loc)
 
     # Try PATH
-    return 'pfv-license'
+    return 'scc-license'
 ```
 
 ### Settings Integration
@@ -292,13 +292,13 @@ The goal is **honest licensing**, not perfect DRM. We:
 ### Quick Generate
 
 ```bash
-cd rust/pfv-license
+cd rust/scc-license
 
 # Build if needed
 cargo build --release
 
 # Generate license
-./target/release/pfv-license-generate \
+./target/release/scc-license-generate \
   --licensee "Pet-Friendly Veterinaria" \
   --email "vetpetfriendly@gmail.com" \
   --type single \
@@ -311,7 +311,7 @@ cargo build --release
 
 1. Generate license key file
 2. Send to client via secure channel (email, portal)
-3. Client places `license.key` in project root (or sets `PFV_LICENSE_FILE` env var)
+3. Client places `license.key` in project root (or sets `SCC_LICENSE_FILE` env var)
 4. Django validates on startup
 
 ---
@@ -332,7 +332,7 @@ cargo build --release
 |------|---------|
 | `LICENSE` | Public license text in repo root |
 | `license.key` | Client's license file (gitignored) |
-| `rust/pfv-license/` | Rust license validator source |
+| `rust/scc-license/` | Rust license validator source |
 | `core/license.py` | Django integration (to be created in Epoch 1) |
 
 ---

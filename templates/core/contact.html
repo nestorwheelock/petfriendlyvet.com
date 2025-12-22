@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Contacto" %}{% endblock %}
+
+{% block meta_description %}{% trans "Contacta a Pet-Friendly Vet en Puerto Morelos. WhatsApp, teléfono, ubicación y horarios. Agenda tu cita hoy." %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-primary-500 to-primary-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl lg:text-5xl font-bold mb-4">{% trans "Contacto" %}</h1>
+        <p class="text-xl text-primary-100">{% trans "Estamos aquí para ayudarte" %}</p>
+    </div>
+</section>
+
+<!-- Contact Content -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Contact Info -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Información de contacto" %}</h2>
+
+                <div class="space-y-6">
+                    <!-- Phone/WhatsApp -->
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">WhatsApp</h3>
+                            <a href="https://wa.me/529983162438" target="_blank" class="text-green-600 hover:text-green-700 font-medium">
+                                +52 998 316 2438
+                            </a>
+                            <p class="text-gray-600 text-sm mt-1">{% trans "La forma más rápida de contactarnos" %}</p>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">{% trans "Teléfono" %}</h3>
+                            <a href="tel:+529983162438" class="text-primary-600 hover:text-primary-700 font-medium">
+                                +52 998 316 2438
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">{% trans "Ubicación" %}</h3>
+                            <p class="text-gray-600">Puerto Morelos, Quintana Roo, Mexico</p>
+                        </div>
+                    </div>
+
+                    <!-- Hours -->
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">{% trans "Horario" %}</h3>
+                            <div class="text-gray-600">
+                                <p>{% trans "Martes - Domingo" %}: 9:00am - 8:00pm</p>
+                                <p class="text-red-600 font-medium">{% trans "Lunes" %}: {% trans "Cerrado" %}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Media -->
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">{% trans "Redes Sociales" %}</h3>
+                            <a href="https://instagram.com/vet.petfriendly" target="_blank" class="text-purple-600 hover:text-purple-700 font-medium">
+                                @vet.petfriendly
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                    <a href="https://wa.me/529983162438" target="_blank" class="btn-primary bg-green-500 hover:bg-green-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        {% trans "WhatsApp" %}
+                    </a>
+                    <a href="tel:+529983162438" class="btn-secondary flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        {% trans "Llamar" %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div>
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Envíanos un mensaje" %}</h2>
+
+                    <form method="post" action="{% url 'core:contact' %}" class="space-y-6">
+                        {% csrf_token %}
+
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                                {% trans "Nombre" %} *
+                            </label>
+                            <input type="text" name="name" id="name" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                   placeholder="{% trans 'Tu nombre' %}">
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                                {% trans "Correo electrónico" %} *
+                            </label>
+                            <input type="email" name="email" id="email" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                   placeholder="tu@email.com">
+                        </div>
+
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+                                {% trans "Teléfono" %}
+                            </label>
+                            <input type="tel" name="phone" id="phone"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                   placeholder="+52 998 123 4567">
+                        </div>
+
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">
+                                {% trans "Asunto" %} *
+                            </label>
+                            <select name="subject" id="subject" required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">{% trans "Selecciona un asunto" %}</option>
+                                <option value="appointment">{% trans "Agendar cita" %}</option>
+                                <option value="question">{% trans "Pregunta general" %}</option>
+                                <option value="emergency">{% trans "Emergencia" %}</option>
+                                <option value="products">{% trans "Productos/Tienda" %}</option>
+                                <option value="other">{% trans "Otro" %}</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+                                {% trans "Mensaje" %} *
+                            </label>
+                            <textarea name="message" id="message" rows="4" required
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                      placeholder="{% trans '¿En qué podemos ayudarte?' %}"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full btn-primary">
+                            {% trans "Enviar mensaje" %}
+                        </button>
+                    </form>
+
+                    <p class="text-sm text-gray-500 mt-4">
+                        {% trans "Para respuesta más rápida, contáctanos por WhatsApp." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">{% trans "Cómo llegar" %}</h2>
+        <div class="bg-gray-300 rounded-xl h-96 flex items-center justify-center">
+            <span class="text-gray-500">{% trans "Mapa interactivo próximamente" %}</span>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">{% trans "Preguntas Frecuentes" %}</h2>
+
+        <div class="space-y-4" x-data="{ open: null }">
+            <!-- FAQ 1 -->
+            <div class="bg-white rounded-lg shadow">
+                <button @click="open = open === 1 ? null : 1"
+                        class="w-full px-6 py-4 text-left flex justify-between items-center">
+                    <span class="font-medium text-gray-900">{% trans "¿Necesito cita previa?" %}</span>
+                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 1 }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open === 1" x-collapse class="px-6 pb-4">
+                    <p class="text-gray-600">{% trans "Recomendamos agendar cita para asegurar disponibilidad, pero también atendemos sin cita en orden de llegada." %}</p>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="bg-white rounded-lg shadow">
+                <button @click="open = open === 2 ? null : 2"
+                        class="w-full px-6 py-4 text-left flex justify-between items-center">
+                    <span class="font-medium text-gray-900">{% trans "¿Atienden emergencias?" %}</span>
+                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 2 }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open === 2" x-collapse class="px-6 pb-4">
+                    <p class="text-gray-600">{% trans "Sí, atendemos emergencias durante nuestro horario de operación (Mar-Dom, 9am-8pm). Para emergencias, llámanos inmediatamente." %}</p>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="bg-white rounded-lg shadow">
+                <button @click="open = open === 3 ? null : 3"
+                        class="w-full px-6 py-4 text-left flex justify-between items-center">
+                    <span class="font-medium text-gray-900">{% trans "¿Qué formas de pago aceptan?" %}</span>
+                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 3 }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open === 3" x-collapse class="px-6 pb-4">
+                    <p class="text-gray-600">{% trans "Aceptamos efectivo, tarjetas de crédito/débito y transferencias bancarias." %}</p>
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="bg-white rounded-lg shadow">
+                <button @click="open = open === 4 ? null : 4"
+                        class="w-full px-6 py-4 text-left flex justify-between items-center">
+                    <span class="font-medium text-gray-900">{% trans "¿Qué animales atienden?" %}</span>
+                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 4 }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open === 4" x-collapse class="px-6 pb-4">
+                    <p class="text-gray-600">{% trans "Atendemos principalmente perros y gatos, pero también podemos ayudar con otras mascotas pequeñas. Contáctanos para consultar." %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+# Django
+Django>=5.0,<6.0
+psycopg[binary]>=3.1
+
+# Django extensions
+django-htmx>=1.17
+django-widget-tweaks>=1.5
+python-dotenv>=1.0
+whitenoise>=6.6
+
+# REST API
+djangorestframework>=3.14
+django-cors-headers>=4.3
+
+# Celery
+celery>=5.3
+django-celery-beat>=2.5
+django-celery-results>=2.5
+redis>=5.0
+
+# AI/ML
+httpx>=0.25
+openai>=1.6
+
+# Payments
+stripe>=7.0
+
+# Communications
+django-ses>=3.5
+twilio>=8.10
+
+# CFDI (Mexican invoicing)
+# facturama>=0.0.6  # Add when needed
+
+# Security
+python-dotenv>=1.0
+
+# Utilities
+Pillow>=10.1
+python-dateutil>=2.8
+
+# Production server
+gunicorn>=21.2

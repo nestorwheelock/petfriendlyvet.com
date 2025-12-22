@@ -1,0 +1,516 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PANEL DE PERFIL DE MASCOTA - VISTA ESCRITORIO              ║
+║                           (Vista Propietario/Cliente)                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Esta página muestra al dueño de la mascota el perfil completo y el historial médico.
+Acceso vía: /my-pets/[pet-id]/ o a través del chat IA "Muéstrame el perfil de Luna"
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO                                                                    │
+│ [Logo] Pet-Friendly    Inicio | Servicios | Tienda | Mis Mascotas   [ES|EN]  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MIGAS DE PAN                                                                  │
+│ Inicio > Mis Mascotas > Luna                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TARJETA DE ENCABEZADO DE MASCOTA                                              │
+│ ┌─────────────────────────────────────────────────────────────────────────┐  │
+│ │                                                                         │  │
+│ │  ┌──────────────┐  LUNA                                    [Editar]     │  │
+│ │  │              │  Chihuahua · Hembra · 4 años                          │  │
+│ │  │   [Foto]     │  ───────────────────────────────────                  │  │
+│ │  │              │  Peso: 2.8 kg                                         │  │
+│ │  │              │  Color: Café con blanco                               │  │
+│ │  │              │  Microchip: 985112000123456 ✓                         │  │
+│ │  │              │  Esterilizada: Sí                                     │  │
+│ │  └──────────────┘                                                       │  │
+│ │                                                                         │  │
+│ │  [📅 Agendar Cita]  [📄 Descargar Historial]  [📤 Compartir con Vet]    │  │
+│ │                                                                         │  │
+│ └─────────────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ NAVEGACIÓN POR PESTAÑAS                                                       │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐   │
+│ │  Resumen   │ │ Vacunas    │ │  Visitas   │ │  Peso      │ │ Documentos │   │
+│ │  (Activo)  │ │            │ │            │ │            │ │            │   │
+│ └────────────┘ └────────────┘ └────────────┘ └────────────┘ └────────────┘   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ RESUMEN (Pestaña Resumen - Vista Predeterminada)                              │
+│                                                                               │
+│  ┌──────────────────────────────────┐  ┌──────────────────────────────────┐  │
+│  │ PRÓXIMAS CITAS                   │  │ VACUNAS AL DÍA                   │  │
+│  │ ─────────────────────────────────│  │ ─────────────────────────────────│  │
+│  │                                  │  │                                  │  │
+│  │  📅 23 Dic 2025 - 10:00 AM       │  │  ✅ Rabia - Vence: Mar 2026      │  │
+│  │     Consulta general             │  │  ✅ Polivalente - Vence: Oct 2026│  │
+│  │     Dr. Pablo                    │  │  ⚠️ Bordetella - Vencida         │  │
+│  │     [Modificar] [Cancelar]       │  │                                  │  │
+│  │                                  │  │  [Ver calendario de vacunas]     │  │
+│  │  No hay más citas programadas    │  │                                  │  │
+│  │                                  │  │                                  │  │
+│  │  [+ Agendar Nueva Cita]          │  │                                  │  │
+│  │                                  │  │                                  │  │
+│  └──────────────────────────────────┘  └──────────────────────────────────┘  │
+│                                                                               │
+│  ┌──────────────────────────────────┐  ┌──────────────────────────────────┐  │
+│  │ CONDICIONES                      │  │ ALERGIAS                         │  │
+│  │ ─────────────────────────────────│  │ ─────────────────────────────────│  │
+│  │                                  │  │                                  │  │
+│  │  • Luxación patelar (grado 1)    │  │  ⚠️ Pollo                         │  │
+│  │    Diagnosticado: Ene 2024       │  │     Causa: Picazón en piel       │  │
+│  │                                  │  │                                  │  │
+│  │  No hay otras condiciones        │  │  No hay otras alergias           │  │
+│  │  registradas                     │  │  registradas                     │  │
+│  │                                  │  │                                  │  │
+│  └──────────────────────────────────┘  └──────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ HISTORIAL RECIENTE                                                     │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  ┌──────────┬──────────────────────────────────────────────────────┐  │  │
+│  │  │ 15 Nov   │ Consulta general                                     │  │  │
+│  │  │ 2025     │ Motivo: Tos leve                                     │  │  │
+│  │  │          │ Diagnóstico: Traqueobronquitis leve                  │  │  │
+│  │  │          │ Tratamiento: Doxiciclina 25mg x 7 días               │  │  │
+│  │  │          │ Dr. Pablo                                 [Ver más]  │  │  │
+│  │  ├──────────┼──────────────────────────────────────────────────────┤  │  │
+│  │  │ 10 Oct   │ Vacunación                                           │  │  │
+│  │  │ 2025     │ Aplicada: Vacuna polivalente (DHPPL)                 │  │  │
+│  │  │          │ Lote: ABC123456                                      │  │  │
+│  │  │          │ Próxima: Oct 2026                         [Ver más]  │  │  │
+│  │  ├──────────┼──────────────────────────────────────────────────────┤  │  │
+│  │  │ 15 Ago   │ Desparasitación                                      │  │  │
+│  │  │ 2025     │ Producto: Nexgard Spectra                            │  │  │
+│  │  │          │ Peso registrado: 2.7 kg                              │  │  │
+│  │  │          │                                            [Ver más]  │  │  │
+│  │  └──────────┴──────────────────────────────────────────────────────┘  │  │
+│  │                                                                        │  │
+│  │  [Ver historial completo →]                                            │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PERFIL DE MASCOTA - PESTAÑA VACUNAS                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ VACUNAS (Pestaña de Vacunaciones)                                             │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ CALENDARIO DE VACUNACIÓN                                               │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  VACUNA          │ ÚLTIMA APLICACIÓN │ PRÓXIMA DOSIS  │ ESTADO        │  │
+│  │  ─────────────────────────────────────────────────────────────────────│  │
+│  │  Rabia           │ 15 Mar 2025       │ 15 Mar 2026    │ ✅ Al día     │  │
+│  │  Polivalente     │ 10 Oct 2025       │ 10 Oct 2026    │ ✅ Al día     │  │
+│  │  Bordetella      │ 05 Jun 2024       │ 05 Jun 2025    │ ⚠️ Vencida    │  │
+│  │  Leptospirosis   │ 10 Oct 2025       │ 10 Oct 2026    │ ✅ Al día     │  │
+│  │                                                                        │  │
+│  │  ⚠️ 1 vacuna vencida - Se recomienda actualizar                        │  │
+│  │  [Agendar cita de vacunación]                                          │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ HISTORIAL DE VACUNAS                                                   │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  10 Oct 2025 │ Polivalente (DHPPL)                                     │  │
+│  │              │ Lote: ABC123456 · Fabricante: Zoetis                    │  │
+│  │              │ Aplicó: Dr. Pablo                         [Ver cert.]   │  │
+│  │  ───────────────────────────────────────────────────────────────────  │  │
+│  │  15 Mar 2025 │ Rabia                                                   │  │
+│  │              │ Lote: RAB789012 · Fabricante: MSD                       │  │
+│  │              │ Aplicó: Dr. Pablo                         [Ver cert.]   │  │
+│  │  ───────────────────────────────────────────────────────────────────  │  │
+│  │  05 Jun 2024 │ Bordetella                                              │  │
+│  │              │ Lote: BOR456789 · Fabricante: Zoetis                    │  │
+│  │              │ Aplicó: Dr. Pablo                         [Ver cert.]   │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PERFIL DE MASCOTA - PESTAÑA PESO                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PESO (Pestaña de Historial de Peso)                                           │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ GRÁFICA DE PESO                                                        │  │
+│  │                                                                        │  │
+│  │  3.2 kg │                                                              │  │
+│  │         │                                                              │  │
+│  │  3.0 kg │              ·                                               │  │
+│  │         │             / \                                              │  │
+│  │  2.8 kg │    ·───────·   \                                             │  │
+│  │         │   /             ·───────·  ← Peso actual: 2.8 kg             │  │
+│  │  2.6 kg │  ·                                                           │  │
+│  │         │                                                              │  │
+│  │  2.4 kg │                                                              │  │
+│  │         └──────────────────────────────────────────────────────────    │  │
+│  │           Ene   Mar   May   Jul   Sep   Nov   2025                     │  │
+│  │                                                                        │  │
+│  │  Peso ideal para su raza/tamaño: 2.5 - 3.0 kg ✅                       │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ REGISTROS DE PESO                                                      │  │
+│  │                                                                        │  │
+│  │  15 Nov 2025 │ 2.8 kg │ Consulta general                              │  │
+│  │  15 Ago 2025 │ 2.7 kg │ Desparasitación                               │  │
+│  │  10 May 2025 │ 3.0 kg │ Consulta (sobrepeso leve)                     │  │
+│  │  15 Mar 2025 │ 2.9 kg │ Vacunación                                    │  │
+│  │  10 Ene 2025 │ 2.6 kg │ Consulta general                              │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PERFIL DE MASCOTA - PESTAÑA DOCUMENTOS                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DOCUMENTOS (Pestaña de Documentos)                                            │
+│                                                                               │
+│  [📤 Subir Documento]                                                         │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ CERTIFICADOS                                                           │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  📄 Certificado de vacunación 2025          15 Mar 2025   [Descargar]  │  │
+│  │  📄 Certificado de salud para viaje         20 Nov 2024   [Descargar]  │  │
+│  │  📄 Certificado de esterilización           10 Jun 2023   [Descargar]  │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ RADIOGRAFÍAS E IMÁGENES                                                │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  🖼️ Radiografía de rodilla                  12 Ene 2024   [Ver]        │  │
+│  │  🖼️ Foto de lesión en piel                  05 Mar 2024   [Ver]        │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ RESULTADOS DE LABORATORIO                                              │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  📊 Química sanguínea                       15 Nov 2025   [Descargar]  │  │
+│  │  📊 Hemograma completo                      15 Nov 2025   [Descargar]  │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ DOCUMENTOS SUBIDOS POR TI                                              │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  📎 Receta de otro veterinario              01 Oct 2025   [Ver] [🗑️]   │  │
+│  │  📎 Historial de criador                    15 Mar 2021   [Ver] [🗑️]   │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PERFIL DE MASCOTA - VISTA MÓVIL                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────┐
+│ [←] Luna                │
+├─────────────────────────┤
+│                         │
+│    ┌──────────────┐     │
+│    │              │     │
+│    │   [Foto]     │     │
+│    │              │     │
+│    └──────────────┘     │
+│                         │
+│    LUNA                 │
+│    Chihuahua · 4 años   │
+│    Peso: 2.8 kg         │
+│    Chip: ✓              │
+│                         │
+│ ┌─────────────────────┐ │
+│ │ [📅 Agendar Cita]   │ │
+│ └─────────────────────┘ │
+│                         │
+├─────────────────────────┤
+│ [Resumen] [Vacunas]     │
+│ [Visitas] [Peso] [Docs] │
+├─────────────────────────┤
+│                         │
+│ PRÓXIMA CITA            │
+│ ┌─────────────────────┐ │
+│ │ 23 Dic · 10:00 AM   │ │
+│ │ Consulta general    │ │
+│ │ [Modificar][Cancelar││ │
+│ └─────────────────────┘ │
+│                         │
+│ VACUNAS                 │
+│ ✅ Rabia - Mar 2026     │
+│ ✅ Polivalente - Oct 26 │
+│ ⚠️ Bordetella - Vencida │
+│                         │
+│ [Ver todo →]            │
+│                         │
+│ HISTORIAL RECIENTE      │
+│ ┌─────────────────────┐ │
+│ │ 15 Nov - Consulta   │ │
+│ │ Tos leve            │ │
+│ │ [Ver más]           │ │
+│ └─────────────────────┘ │
+│ ┌─────────────────────┐ │
+│ │ 10 Oct - Vacuna     │ │
+│ │ Polivalente         │ │
+│ │ [Ver más]           │ │
+│ └─────────────────────┘ │
+│                         │
+│ [Ver historial →]       │
+│                         │
+└─────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PÁGINA LISTA DE MIS MASCOTAS - ESCRITORIO                  ║
+║                           (Vista de Múltiples Mascotas)                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MIS MASCOTAS / My Pets                                      [+ Agregar Mascota]│
+│                                                                               │
+│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐ │
+│  │                      │  │                      │  │                      │ │
+│  │    ┌──────────┐      │  │    ┌──────────┐      │  │    ┌──────────┐      │ │
+│  │    │  [Foto]  │      │  │    │  [Foto]  │      │  │    │  [Foto]  │      │ │
+│  │    │   Luna   │      │  │    │   Max    │      │  │    │   Michi  │      │ │
+│  │    └──────────┘      │  │    └──────────┘      │  │    └──────────┘      │ │
+│  │                      │  │                      │  │                      │ │
+│  │    LUNA              │  │    MAX               │  │    MICHI             │ │
+│  │    Chihuahua         │  │    Labrador          │  │    Gato Persa        │ │
+│  │    4 años            │  │    3 años            │  │    2 años            │ │
+│  │                      │  │                      │  │                      │ │
+│  │    ⚠️ 1 vacuna       │  │    ✅ Vacunas al día │  │    📅 Cita mañana    │ │
+│  │       vencida        │  │                      │  │                      │ │
+│  │                      │  │                      │  │                      │ │
+│  │    [Ver Perfil]      │  │    [Ver Perfil]      │  │    [Ver Perfil]      │ │
+│  │                      │  │                      │  │                      │ │
+│  └──────────────────────┘  └──────────────────────┘  └──────────────────────┘ │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PERFIL DE MASCOTA - VISTA ADMIN/VET                        ║
+║                        (Características Adicionales del Personal)             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+La vista admin incluye todo lo de la vista del cliente MÁS:
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO ADMIN                                                              │
+│ [Logo] Admin Pet-Friendly   Pacientes | Citas | Inventario | Facturación     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PERFIL DE MASCOTA - VISTA ADMIN                                               │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ LUNA - Chihuahua                                                        │ │
+│  │ ─────────────────────────────────────────────────────────────────────── │ │
+│  │ Dueño: Juan Pérez · Tel: 998 123 4567 · Email: juan@email.com           │ │
+│  │ [Llamar] [WhatsApp] [Email] [Ver perfil del dueño]                      │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  PESTAÑAS: [Resumen] [Vacunas] [Visitas] [Peso] [Documentos] [NOTAS INTERNAS]│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PESTAÑA NOTAS INTERNAS (Solo Personal - No Visible para Propietario)          │
+│                                                                               │
+│  [+ Agregar Nota]                                                             │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │ NOTAS DEL EQUIPO                                                       │  │
+│  │ ─────────────────────────────────────────────────────────────────────  │  │
+│  │                                                                        │  │
+│  │  🔒 15 Nov 2025 - Dr. Pablo                                            │  │
+│  │  "Dueño menciona que Luna a veces cojea de la pata trasera izquierda. │  │
+│  │   Monitorear en próximas visitas. Posible empeoramiento de luxación    │  │
+│  │   patelar."                                                            │  │
+│  │                                                                        │  │
+│  │  🔒 10 Oct 2025 - Dr. Pablo                                            │  │
+│  │  "Propietario muy consciente del cuidado de su mascota. Siempre       │  │
+│  │   puntual a las citas."                                                │  │
+│  │                                                                        │  │
+│  │  🔒 05 Jun 2024 - Asistente María                                      │  │
+│  │  "Cliente prefiere que le llamen por WhatsApp, no por teléfono."       │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ACCIONES RÁPIDAS ADMIN                                                        │
+│                                                                               │
+│  [📝 Agregar Registro]  [💉 Registrar Vacuna]  [⚖️ Registrar Peso]           │
+│  [📎 Subir Documento]   [💊 Recetar]           [💰 Crear Factura]             │
+│  [📅 Agendar Cita]      [📤 Enviar Recordatorio]                              │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    FORMULARIO AGREGAR/EDITAR MASCOTA                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AGREGAR MASCOTA / Add Pet                                                     │
+│                                                                               │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐│
+│  │ INFORMACIÓN BÁSICA                │  │ FOTO                              ││
+│  │                                   │  │                                   ││
+│  │ Nombre *                          │  │    ┌──────────────────────┐       ││
+│  │ ┌───────────────────────────────┐ │  │    │                      │       ││
+│  │ │                               │ │  │    │   [Arrastrar y Soltar│       ││
+│  │ └───────────────────────────────┘ │  │    │   o click para       │       ││
+│  │                                   │  │    │   seleccionar]       │       ││
+│  │ Especie *                         │  │    │                      │       ││
+│  │ ┌───────────────────────────────┐ │  │    └──────────────────────┘       ││
+│  │ │ ▼ Seleccionar                 │ │  │                                   ││
+│  │ └───────────────────────────────┘ │  │    [📷 Usar cámara]               ││
+│  │   ○ Perro  ○ Gato  ○ Otro         │  │                                   ││
+│  │                                   │  └───────────────────────────────────┘│
+│  │ Raza                              │                                       │
+│  │ ┌───────────────────────────────┐ │                                       │
+│  │ │ ▼ Seleccionar o escribir      │ │                                       │
+│  │ └───────────────────────────────┘ │                                       │
+│  │                                   │                                       │
+│  │ Sexo *                            │                                       │
+│  │ ○ Macho  ○ Hembra                 │                                       │
+│  │                                   │                                       │
+│  │ Fecha de nacimiento               │                                       │
+│  │ ┌───────────────────────────────┐ │                                       │
+│  │ │ 📅 DD/MM/AAAA                 │ │                                       │
+│  │ └───────────────────────────────┘ │                                       │
+│  │ (o edad aproximada: _____ años)   │                                       │
+│  │                                   │                                       │
+│  │ Color                             │                                       │
+│  │ ┌───────────────────────────────┐ │                                       │
+│  │ │                               │ │                                       │
+│  │ └───────────────────────────────┘ │                                       │
+│  │                                   │                                       │
+│  │ Peso actual (kg)                  │                                       │
+│  │ ┌───────────────────────────────┐ │                                       │
+│  │ │                               │ │                                       │
+│  │ └───────────────────────────────┘ │                                       │
+│  │                                   │                                       │
+│  └───────────────────────────────────┘                                       │
+│                                                                               │
+│  ┌───────────────────────────────────────────────────────────────────────┐   │
+│  │ INFORMACIÓN MÉDICA                                                     │   │
+│  │                                                                        │   │
+│  │ Número de microchip                                                    │   │
+│  │ ┌────────────────────────────────────────────────────────────────────┐│   │
+│  │ │                                                                    ││   │
+│  │ └────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                        │   │
+│  │ ☐ Esterilizado/Castrado    Fecha: ___________                         │   │
+│  │                                                                        │   │
+│  │ Alergias conocidas                                                     │   │
+│  │ ┌────────────────────────────────────────────────────────────────────┐│   │
+│  │ │ (Separar con comas)                                                ││   │
+│  │ └────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                        │   │
+│  │ Condiciones/Enfermedades                                               │   │
+│  │ ┌────────────────────────────────────────────────────────────────────┐│   │
+│  │ │ (Separar con comas)                                                ││   │
+│  │ └────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                        │   │
+│  │ Notas adicionales                                                      │   │
+│  │ ┌────────────────────────────────────────────────────────────────────┐│   │
+│  │ │                                                                    ││   │
+│  │ │                                                                    ││   │
+│  │ └────────────────────────────────────────────────────────────────────┘│   │
+│  │                                                                        │   │
+│  └───────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│                                        [Cancelar]  [Guardar Mascota]          │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              NOTAS TÉCNICAS                                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+ESTRUCTURA DE DATOS:
+- Mascota pertenece a Propietario (Usuario)
+- Propietario puede tener múltiples mascotas
+- Mascota tiene:
+  - Info básica (nombre, especie, raza, sexo, fecha nacimiento, color)
+  - Info médica (historial peso, alergias, condiciones, microchip)
+  - Registros médicos (visitas, diagnósticos, tratamientos)
+  - Vacunaciones (con seguimiento de vencimiento)
+  - Documentos (certificados, resultados de lab, imágenes)
+  - Notas internas (solo personal, no visible para propietario)
+
+PERMISOS:
+- Propietario: Ver propias mascotas, reservar citas, subir documentos
+- Personal: Todos los permisos del propietario + agregar registros médicos, notas internas
+- Veterinario: Todos los permisos del personal + diagnosticar, recetar, aprobar registros
+
+ACTUALIZACIONES EN TIEMPO REAL:
+- Usar HTMX para cambio de pestañas (sin recarga completa de página)
+- Alertas de vacunación se actualizan automáticamente
+- Gráfica de peso usa librería de gráficos ligera (Chart.js o similar)
+
+MANEJO DE DOCUMENTOS:
+- Procesamiento OCR/Visión para documentos subidos (extraer texto de imágenes)
+- Generación de PDF para certificados
+- Almacenamiento seguro de archivos con URLs firmadas
+
+ACCESIBILIDAD:
+- Navegación por teclado para todos los elementos interactivos
+- Etiquetas ARIA para indicadores de estado
+- Colores amigables para daltonismo (usar iconos también)
+
+OPTIMIZACIONES MÓVILES:
+- Desplazamiento horizontal para pestañas en pantallas pequeñas
+- Secciones colapsables para contenido largo
+- Objetivos táctiles amigables (mínimo 44px)
+- Gestos de deslizamiento para navegación de pestañas
+
+INTEGRACIONES:
+- Exportación de calendario (iCal/Google Calendar para citas)
+- Exportación PDF del historial médico
+- Compartir con veterinario externo (generación de enlace seguro)
+
+---
+
+Versión: 1.0
+Creado: 21 de diciembre de 2025
+Historia: S-003 (Perfiles de Mascotas + Registros Médicos)

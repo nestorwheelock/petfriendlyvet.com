@@ -1,0 +1,575 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    08 - WIREFRAME PANEL DE PROPIETARIO                        ║
+║                    Clínica Veterinaria Pet-Friendly                           ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  Historias Relacionadas: S-003 (Perfiles de Mascotas), S-004 (Citas),        ║
+║  S-005 (Tienda)                                                               ║
+║  Época: 2 (Citas + Mascotas)                                                  ║
+║  Módulo: django-vet-clinic, django-appointments                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PANEL DE PROPIETARIO - VISTA ESCRITORIO                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO (Estado Conectado)                                                 │
+│ ┌─────────────────┐  ┌──────────────────────────────┐  ┌──────────────────┐  │
+│ │  [LOGO]         │  │  Inicio | Servicios | Tienda │  │  ES|EN  [🛒 2]   │  │
+│ │  Pet-Friendly   │  │  Farmacia | Nosotros | Contacto│ │  [👤 María ▼]   │  │
+│ └─────────────────┘  └──────────────────────────────┘  └──────────────────┘  │
+│                                                                               │
+│                                         Menú desplegable usuario (al clic):  │
+│                                         ┌─────────────────────┐              │
+│                                         │ 📊 Mi Panel         │              │
+│                                         │ 🐾 Mis Mascotas     │              │
+│                                         │ 📅 Mis Citas        │              │
+│                                         │ 🛒 Mis Pedidos      │              │
+│                                         │ ⚙️  Configuración    │              │
+│                                         │ ─────────────────── │              │
+│                                         │ 🚪 Cerrar Sesión    │              │
+│                                         └─────────────────────┘              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO DEL PANEL                                                          │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                        │  │
+│  │  ¡Hola, María! 👋                                                      │  │
+│  │  Hello, María!                                                         │  │
+│  │                                                                        │  │
+│  │  Bienvenida a tu portal de mascotas                                    │  │
+│  │  Welcome to your pet portal                                            │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECCIÓN DE ALERTAS / NOTIFICACIONES (Condicional - se muestra si hay alertas)│
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────────┐│
+│  │ ⚠️  RECORDATORIOS IMPORTANTES / Important Reminders                       ││
+│  │                                                                          ││
+│  │  ┌────────────────────────────────────────────────────────────────────┐  ││
+│  │  │ 💉 Luna necesita su vacuna de Rabia - vence en 5 días             │  ││
+│  │  │    Luna needs her Rabies vaccine - due in 5 days                   │  ││
+│  │  │    [AGENDAR VACUNA]                                                │  ││
+│  │  └────────────────────────────────────────────────────────────────────┘  ││
+│  │                                                                          ││
+│  │  ┌────────────────────────────────────────────────────────────────────┐  ││
+│  │  │ 💊 Recordatorio: medicamento de Max termina en 3 días             │  ││
+│  │  │    Reminder: Max's medication ends in 3 days                       │  ││
+│  │  │    [VER MEDICAMENTO] [REORDENAR]                                   │  ││
+│  │  └────────────────────────────────────────────────────────────────────┘  ││
+│  │                                                                          ││
+│  └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ACCIONES RÁPIDAS                                                              │
+│                                                                               │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌────────────┐  │
+│  │     📅         │  │     🛒         │  │     💬         │  │     📄     │  │
+│  │                │  │                │  │                │  │            │  │
+│  │ Agendar Cita   │  │ Visitar Tienda │  │ Chat con IA    │  │ Documentos │  │
+│  │ Book Appt      │  │ Visit Store    │  │ AI Chat        │  │ Documents  │  │
+│  │                │  │                │  │                │  │            │  │
+│  └────────────────┘  └────────────────┘  └────────────────┘  └────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CONTENIDO PRINCIPAL - DOS COLUMNAS                                            │
+│                                                                               │
+│  ┌───────────────────────────────────────┐  ┌────────────────────────────────┐│
+│  │                                       │  │                                ││
+│  │  🐾 MIS MASCOTAS / My Pets            │  │  📅 PRÓXIMAS CITAS             ││
+│  │  ─────────────────────                │  │     Upcoming Appointments      ││
+│  │                                       │  │  ──────────────────────        ││
+│  │                                       │  │                                ││
+│  │  ┌─────────────────────────────────┐  │  │  ┌────────────────────────┐   ││
+│  │  │                                 │  │  │  │ 📅 Dic 28, 2025        │   ││
+│  │  │  ┌─────────┐  LUNA              │  │  │  │    10:00 AM            │   ││
+│  │  │  │         │  Perro - Labrador  │  │  │  │                        │   ││
+│  │  │  │ [Foto]  │  5 años            │  │  │  │ 🐕 Luna                │   ││
+│  │  │  │         │  28.5 kg           │  │  │  │ Consulta de rutina     │   ││
+│  │  │  └─────────┘                    │  │  │  │                        │   ││
+│  │  │                                 │  │  │  │ [Reagendar][Cancelar]  │   ││
+│  │  │  💉 Vacunas al día              │  │  │  └────────────────────────┘   ││
+│  │  │  ⚠️  Rabia vence 26 Dic         │  │  │                                ││
+│  │  │                                 │  │  │  ┌────────────────────────┐   ││
+│  │  │  [VER PERFIL →]                 │  │  │  │ 📅 Ene 15, 2026        │   ││
+│  │  │                                 │  │  │  │    3:30 PM             │   ││
+│  │  └─────────────────────────────────┘  │  │  │                        │   ││
+│  │                                       │  │  │ 🐱 Max                 │   ││
+│  │  ┌─────────────────────────────────┐  │  │  │ Vacunación anual       │   ││
+│  │  │                                 │  │  │  │                        │   ││
+│  │  │  ┌─────────┐  MAX               │  │  │  │ [Reagendar][Cancelar]  │   ││
+│  │  │  │         │  Gato - Siamés     │  │  │  └────────────────────────┘   ││
+│  │  │  │ [Foto]  │  3 años            │  │  │                                ││
+│  │  │  │         │  4.2 kg            │  │  │  Sin más citas programadas    ││
+│  │  │  └─────────┘                    │  │  │  No more appointments          ││
+│  │  │                                 │  │  │                                ││
+│  │  │  ✅ Todo al día                 │  │  │  [  + AGENDAR NUEVA CITA  ]   ││
+│  │  │  💊 Medicamento activo          │  │  │                                ││
+│  │  │                                 │  │  └────────────────────────────────┘│
+│  │  │  [VER PERFIL →]                 │  │                                ││
+│  │  │                                 │  │                                ││
+│  │  └─────────────────────────────────┘  │                                ││
+│  │                                       │                                ││
+│  │  [  + AGREGAR MASCOTA  ]              │                                ││
+│  │                                       │                                ││
+│  └───────────────────────────────────────┘                                ││
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ACTIVIDAD RECIENTE / PEDIDOS                                                  │
+│                                                                               │
+│  ┌───────────────────────────────────────┐  ┌────────────────────────────────┐│
+│  │                                       │  │                                ││
+│  │  🕐 ACTIVIDAD RECIENTE                │  │  🛒 PEDIDOS RECIENTES          ││
+│  │     Recent Activity                   │  │     Recent Orders              ││
+│  │  ─────────────────────                │  │  ──────────────────            ││
+│  │                                       │  │                                ││
+│  │  ┌─────────────────────────────────┐  │  │  ┌────────────────────────┐   ││
+│  │  │ 📅 Dic 15, 2025                 │  │  │  │ Pedido #1234          │   ││
+│  │  │ Consulta - Luna                 │  │  │  │ Dic 10, 2025          │   ││
+│  │  │ Dr. Pablo                       │  │  │  │                        │   ││
+│  │  │                                 │  │  │  │ Royal Canin x2        │   ││
+│  │  │ Motivo: Chequeo anual           │  │  │  │ Antiparasitario       │   ││
+│  │  │ Peso: 28.5 kg                   │  │  │  │                        │   ││
+│  │  │ Próxima: Vacuna 26 Dic          │  │  │  │ Total: $1,850.00 MXN  │   ││
+│  │  │                                 │  │  │  │                        │   ││
+│  │  │ [Ver Detalles →]                │  │  │  │ ✅ Entregado          │   ││
+│  │  └─────────────────────────────────┘  │  │  │                        │   ││
+│  │                                       │  │  │ [Ver Detalle][Reordenar]│   ││
+│  │  ┌─────────────────────────────────┐  │  │  └────────────────────────┘   ││
+│  │  │ 📅 Nov 28, 2025                 │  │  │                                ││
+│  │  │ Vacunación - Max                │  │  │  ┌────────────────────────┐   ││
+│  │  │ Dr. Pablo                       │  │  │  │ Pedido #1198          │   ││
+│  │  │                                 │  │  │  │ Nov 22, 2025          │   ││
+│  │  │ Triple Felina aplicada          │  │  │  │                        │   ││
+│  │  │                                 │  │  │  │ Medicamento recetado   │   ││
+│  │  │ [Ver Detalles →]                │  │  │  │                        │   ││
+│  │  └─────────────────────────────────┘  │  │  │ Total: $450.00 MXN    │   ││
+│  │                                       │  │  │                        │   ││
+│  │  [Ver todo el historial →]            │  │  │ ✅ Entregado          │   ││
+│  │                                       │  │  └────────────────────────┘   ││
+│  └───────────────────────────────────────┘  │                                ││
+│                                             │  [Ver todos los pedidos →]     ││
+│                                             │                                ││
+│                                             └────────────────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ESTADO DE LEALTAD (si está inscrito)                                          │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                          ││
+│  │  🏆 TU NIVEL DE LEALTAD / Your Loyalty Status                            ││
+│  │                                                                          ││
+│  │  ┌────────────────────────────────────────────────────────────────────┐  ││
+│  │  │                                                                    │  ││
+│  │  │  [🥈]  NIVEL PLATA / Silver Level                                  │  ││
+│  │  │                                                                    │  ││
+│  │  │  ⭐ 2,450 puntos / points                                          │  ││
+│  │  │                                                                    │  ││
+│  │  │  ████████████████░░░░░░░░  2,450 / 5,000 para Oro                  │  ││
+│  │  │                                                                    │  ││
+│  │  │  Beneficios activos:                                               │  ││
+│  │  │  • 5% descuento en compras                                         │  ││
+│  │  │  • Puntos x1.5 en servicios                                        │  ││
+│  │  │                                                                    │  ││
+│  │  │  [Ver Recompensas Disponibles →]                                   │  ││
+│  │  │                                                                    │  ││
+│  │  └────────────────────────────────────────────────────────────────────┘  ││
+│  │                                                                          ││
+│  └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PIE DE PÁGINA (Igual que página de inicio)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PANEL DE PROPIETARIO - VISTA MÓVIL                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────┐
+│ ☰  Pet-Friendly  🛒 2  │
+├─────────────────────────┤
+│                         │
+│ ¡Hola, María! 👋        │
+│                         │
+├─────────────────────────┤
+│ ALERTAS                 │
+│                         │
+│ ┌───────────────────┐   │
+│ │ 💉 Luna - Rabia   │   │
+│ │    vence en 5 días│   │
+│ │    [AGENDAR]      │   │
+│ └───────────────────┘   │
+│                         │
+│ ┌───────────────────┐   │
+│ │ 💊 Max - medicam. │   │
+│ │    termina 3 días │   │
+│ │    [REORDENAR]    │   │
+│ └───────────────────┘   │
+│                         │
+├─────────────────────────┤
+│ ACCIONES RÁPIDAS        │
+│                         │
+│ ┌─────────┐┌─────────┐  │
+│ │ 📅      ││ 🛒      │  │
+│ │ Cita    ││ Tienda  │  │
+│ └─────────┘└─────────┘  │
+│ ┌─────────┐┌─────────┐  │
+│ │ 💬      ││ 📄      │  │
+│ │ Chat IA ││ Docs    │  │
+│ └─────────┘└─────────┘  │
+│                         │
+├─────────────────────────┤
+│ 🐾 MIS MASCOTAS         │
+│                         │
+│ ┌───────────────────┐   │
+│ │ ┌─────┐ LUNA      │   │
+│ │ │     │ Perro     │   │
+│ │ │[Foto]│ 5 años   │   │
+│ │ └─────┘           │   │
+│ │ ⚠️ Vacuna vence   │   │
+│ │ [Ver Perfil →]    │   │
+│ └───────────────────┘   │
+│                         │
+│ ┌───────────────────┐   │
+│ │ ┌─────┐ MAX       │   │
+│ │ │     │ Gato      │   │
+│ │ │[Foto]│ 3 años   │   │
+│ │ └─────┘           │   │
+│ │ ✅ Al día         │   │
+│ │ [Ver Perfil →]    │   │
+│ └───────────────────┘   │
+│                         │
+│ [+ Agregar Mascota]     │
+│                         │
+├─────────────────────────┤
+│ 📅 PRÓXIMAS CITAS       │
+│                         │
+│ ┌───────────────────┐   │
+│ │ Dic 28, 10:00 AM  │   │
+│ │ 🐕 Luna           │   │
+│ │ Consulta rutina   │   │
+│ │                   │   │
+│ │ [Reagendar]       │   │
+│ └───────────────────┘   │
+│                         │
+│ ┌───────────────────┐   │
+│ │ Ene 15, 3:30 PM   │   │
+│ │ 🐱 Max            │   │
+│ │ Vacunación        │   │
+│ │                   │   │
+│ │ [Reagendar]       │   │
+│ └───────────────────┘   │
+│                         │
+│ [+ Nueva Cita]          │
+│                         │
+├─────────────────────────┤
+│ 🛒 PEDIDOS RECIENTES    │
+│                         │
+│ ┌───────────────────┐   │
+│ │ #1234 - Dic 10    │   │
+│ │ $1,850.00 MXN     │   │
+│ │ ✅ Entregado      │   │
+│ │ [Ver] [Reordenar] │   │
+│ └───────────────────┘   │
+│                         │
+│ [Ver todos →]           │
+│                         │
+├─────────────────────────┤
+│ 🏆 LEALTAD: PLATA       │
+│                         │
+│ ⭐ 2,450 puntos         │
+│ ████████████░░░░░░░     │
+│ 2,550 más para Oro      │
+│                         │
+│ [Ver Recompensas →]     │
+│                         │
+├─────────────────────────┤
+│ PIE DE PÁGINA           │
+└─────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MODAL AGREGAR MASCOTA                                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                        [X]   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  🐾 AGREGAR NUEVA MASCOTA                                                     │
+│     Add New Pet                                                               │
+│  ───────────────────────                                                      │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                                                                         │ │
+│  │  ┌──────────────────┐                                                   │ │
+│  │  │                  │  [  SUBIR FOTO  ]                                 │ │
+│  │  │    [Cámara]      │                                                   │ │
+│  │  │                  │  Opcional, pero ayuda a identificar               │ │
+│  │  └──────────────────┘                                                   │ │
+│  │                                                                         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐  │
+│  │ Nombre / Name *                │  │ Especie / Species *                │  │
+│  │ ___________________________    │  │ [▼ Seleccionar...              ]   │  │
+│  └────────────────────────────────┘  │   • Perro / Dog                    │  │
+│                                      │   • Gato / Cat                     │  │
+│                                      │   • Ave / Bird                     │  │
+│                                      │   • Reptil / Reptile               │  │
+│                                      │   • Otro / Other                   │  │
+│                                      └────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐  │
+│  │ Raza / Breed                   │  │ Género / Gender *                  │  │
+│  │ ___________________________    │  │ ○ Macho / Male                     │  │
+│  └────────────────────────────────┘  │ ○ Hembra / Female                  │  │
+│                                      └────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐  │
+│  │ Fecha de Nacimiento            │  │ Peso (kg)                          │  │
+│  │ Birthdate                      │  │ Weight                             │  │
+│  │ [📅 DD/MM/AAAA            ]    │  │ [_____] kg                         │  │
+│  └────────────────────────────────┘  └────────────────────────────────────┘  │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ □ Esterilizado/a / Neutered/Spayed                                      │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ Número de Microchip (si tiene)                                          │ │
+│  │ Microchip Number (if any)                                               │ │
+│  │ ______________________________________                                   │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ Notas adicionales / Additional notes                                    │ │
+│  │                                                                         │ │
+│  │ (Alergias, condiciones médicas, comportamiento especial...)             │ │
+│  │                                                                         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                                                                         │ │
+│  │  [    CANCELAR    ]              [    GUARDAR MASCOTA    ]              │ │
+│  │      (Secundario)                      (Azul Principal)                 │ │
+│  │                                                                         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MODAL DETALLES DE CITA                                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                        [X]   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  📅 DETALLES DE CITA                                                          │
+│     Appointment Details                                                       │
+│  ────────────────────────                                                     │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                                                                         │ │
+│  │  ┌─────────┐  LUNA                                                      │ │
+│  │  │         │  Perro - Labrador                                          │ │
+│  │  │ [Foto]  │                                                            │ │
+│  │  └─────────┘                                                            │ │
+│  │                                                                         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                        │  │
+│  │  FECHA Y HORA                          TIPO DE CITA                    │  │
+│  │  📅 Sábado, 28 de Diciembre 2025       Consulta de rutina              │  │
+│  │  🕐 10:00 AM                           Routine Checkup                 │  │
+│  │                                                                        │  │
+│  │  VETERINARIO                           DURACIÓN ESTIMADA               │  │
+│  │  👨‍⚕️ Dr. Pablo                          30 minutos                      │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  📍 UBICACIÓN                                                          │  │
+│  │                                                                        │  │
+│  │  Veterinaria Pet-Friendly                                              │  │
+│  │  [Dirección completa]                                                  │  │
+│  │  Puerto Morelos, Q. Roo                                                │  │
+│  │                                                                        │  │
+│  │  [Ver en Mapa →]                                                       │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌────────────────────────────────────────────────────────────────────────┐  │
+│  │  📝 INSTRUCCIONES                                                      │  │
+│  │                                                                        │  │
+│  │  • Traer cartilla de vacunación                                        │  │
+│  │  • Ayuno de 8 horas si requiere análisis de sangre                     │  │
+│  │  • Llegar 10 minutos antes                                             │  │
+│  │                                                                        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                                                                         │ │
+│  │  [  REAGENDAR CITA  ]    [  CANCELAR CITA  ]    [  AÑADIR A CALENDARIO ]│ │
+│  │      (Principal)           (Rojo Peligro)          (Secundario)         │ │
+│  │                                                                         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    ESTADOS VACÍOS                                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+ESTADO SIN MASCOTAS:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  🐾 MIS MASCOTAS / My Pets                                                    │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                          ││
+│  │                        🐕 🐱                                              ││
+│  │                                                                          ││
+│  │     Aún no has agregado mascotas                                         ││
+│  │     You haven't added any pets yet                                       ││
+│  │                                                                          ││
+│  │     Agrega tu primera mascota para empezar                               ││
+│  │     a gestionar su salud y bienestar.                                    ││
+│  │                                                                          ││
+│  │     [  + AGREGAR MI PRIMERA MASCOTA  ]                                   ││
+│  │                                                                          ││
+│  └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ESTADO SIN CITAS:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  📅 PRÓXIMAS CITAS / Upcoming Appointments                                    │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                          ││
+│  │                          📅                                               ││
+│  │                                                                          ││
+│  │     No tienes citas programadas                                          ││
+│  │     You have no scheduled appointments                                   ││
+│  │                                                                          ││
+│  │     [  AGENDAR PRIMERA CITA  ]                                           ││
+│  │                                                                          ││
+│  └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    NOTAS DE IMPLEMENTACIÓN TÉCNICA                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+1. AUTENTICACIÓN REQUERIDA:
+   - El panel requiere usuario conectado
+   - Redirigir a login si no está autenticado
+   - Usar decorador @login_required o LoginRequiredMixin
+
+2. CARGA DE DATOS:
+   ```python
+   def get_dashboard_context(user):
+       return {
+           'pets': user.pets.prefetch_related('vaccinations', 'conditions', 'medications'),
+           'upcoming_appointments': Appointment.objects.filter(
+               pet__owner=user,
+               date__gte=timezone.now(),
+               status='confirmed'
+           ).order_by('date')[:5],
+           'recent_visits': Visit.objects.filter(
+               pet__owner=user
+           ).order_by('-date')[:5],
+           'recent_orders': Order.objects.filter(
+               user=user
+           ).order_by('-created_at')[:5],
+           'alerts': get_user_alerts(user),
+           'loyalty': LoyaltyMember.objects.get_or_none(user=user),
+       }
+   ```
+
+3. LÓGICA DE ALERTAS:
+   - Vacuna vence en 14 días
+   - Medicamento termina en 7 días
+   - Cita próxima en 48 horas
+   - Mensajes no leídos de clínica
+   - Cambios en estado de pedido
+
+4. INTERACCIONES HTMX:
+   - Tarjetas de mascota cargan detalles en línea (hx-get="/pets/{id}/quick-view")
+   - Reagendar cita abre modal (hx-get="/appointments/{id}/reschedule")
+   - Formulario agregar mascota envía vía HTMX (hx-post="/pets/add/")
+   - Descarte de alertas en tiempo real (hx-delete="/alerts/{id}/dismiss")
+
+5. COMPONENTES ALPINE.JS:
+   - Toggle menú desplegable usuario
+   - Expandir/colapsar tarjeta de mascota
+   - Descartar notificación de alerta
+   - Modal detalles de cita
+
+6. CONSIDERACIONES MÓVILES:
+   - Secciones colapsables
+   - Acciones de deslizamiento en tarjetas de mascota (editar, eliminar)
+   - Opción de barra de navegación inferior
+   - Deslizar para actualizar
+
+7. PERMISOS:
+   - Usuario solo puede ver sus propias mascotas
+   - Usuario solo puede ver sus propias citas
+   - Usuario solo puede ver sus propios pedidos
+   - Mascotas vinculadas vía FK owner
+
+8. SEO/PRIVACIDAD:
+   - Páginas del panel deben ser noindex
+   - Sin datos sensibles en URLs
+   - Autenticación basada en sesión
+
+9. CACHÉ:
+   - Cachear lista de mascotas por usuario (invalidar al cambiar)
+   - Cachear estado de lealtad (5 min TTL)
+   - Alertas en tiempo real (sin caché)
+
+10. ACCESIBILIDAD:
+    - Jerarquía de encabezados apropiada (h1 para saludo, h2 para secciones)
+    - Etiquetas ARIA para botones de acción
+    - Gestión de foco para modales
+    - Anuncios de lector de pantalla para alertas
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              HISTORIAL DE VERSIONES                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+v1.0 - 2025-12-21 - Creación inicial
+- Panel de propietario con mascotas, citas, pedidos
+- Sistema de alertas/notificaciones
+- Sección de acciones rápidas
+- Visualización de estado de lealtad
+- Modal agregar mascota
+- Modal detalles de cita
+- Estados vacíos para nuevos usuarios
+- Diseño optimizado para móviles

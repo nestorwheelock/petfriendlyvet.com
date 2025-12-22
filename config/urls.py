@@ -1,0 +1,38 @@
+"""URL configuration for Pet-Friendly Vet project."""
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls.i18n import i18n_patterns
+
+from apps.core.views import health_check
+
+# Non-i18n URLs
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('health/', health_check, name='health_check'),
+    path('i18n/', include('django.conf.urls.i18n')),
+]
+
+# i18n URLs (language prefix)
+urlpatterns += i18n_patterns(
+    path('', include('apps.core.urls')),
+    path('accounts/', include('apps.accounts.urls')),
+    path('pets/', include('apps.pets.urls')),
+    path('appointments/', include('apps.appointments.urls')),
+    path('store/', include('apps.store.urls')),
+    path('pharmacy/', include('apps.pharmacy.urls')),
+    path('chat/', include('apps.ai_assistant.urls')),
+    path('crm/', include('apps.crm.urls')),
+    path('practice/', include('apps.practice.urls')),
+    prefix_default_language=False,
+)
+
+# Debug toolbar (development only)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    try:
+        import debug_toolbar
+        urlpatterns = [path('__debug__/', include(debug_toolbar.urls))] + urlpatterns
+    except ImportError:
+        pass

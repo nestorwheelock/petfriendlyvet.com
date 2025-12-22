@@ -1,0 +1,130 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        PÁGINA NOSOTROS - VISTA ESCRITORIO                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO (Igual que página de inicio)                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO DE PÁGINA                                                         │
+│                                                                               │
+│  NOSOTROS / About Us                                                          │
+│  ───────────────────                                                          │
+│                                                                               │
+│  Conoce a nuestro equipo y nuestra historia                                   │
+│  Meet our team and learn our story                                            │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECCIÓN DR. PABLO                                                             │
+│                                                                               │
+│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐  │
+│  │                                │  │                                    │  │
+│  │                                │  │  DR. PABLO [APELLIDO]              │  │
+│  │    [Foto grande de Dr. Pablo]  │  │  Médico Veterinario Zootecnista    │  │
+│  │                                │  │  Doctor of Veterinary Medicine     │  │
+│  │                                │  │                                    │  │
+│  │                                │  │  ─────────────────────────────     │  │
+│  │                                │  │                                    │  │
+│  │                                │  │  [Biografía detallada - 3-4        │  │
+│  │                                │  │   párrafos cubriendo educación,    │  │
+│  │                                │  │   experiencia, especializaciones   │  │
+│  │                                │  │   y filosofía sobre el cuidado     │  │
+│  │                                │  │   de mascotas]                     │  │
+│  │                                │  │                                    │  │
+│  │                                │  │  ESPECIALIDADES / Specialties:     │  │
+│  │                                │  │  • Animales pequeños (perros,      │  │
+│  │                                │  │    gatos)                          │  │
+│  │                                │  │  • Mascotas exóticas (aves,        │  │
+│  │                                │  │    reptiles)                       │  │
+│  │                                │  │  • Cirugía                         │  │
+│  │                                │  │  • Medicina preventiva             │  │
+│  │                                │  │                                    │  │
+│  └────────────────────────────────┘  └────────────────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ NUESTRA MISIÓN                                                                │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  NUESTRA MISIÓN / Our Mission                                        │    │
+│  │  ────────────────────────────                                        │    │
+│  │                                                                      │    │
+│  │  [Declaración de misión - 2-3 oraciones sobre el compromiso con la  │    │
+│  │   salud de las mascotas, cuidado familiar, y servicio a la          │    │
+│  │   comunidad de Puerto Morelos]                                       │    │
+│  │                                                                      │    │
+│  └──────────────────────────────────────────────────────────────────────┘    │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ POR QUÉ ELEGIRNOS - 4 CARACTERÍSTICAS                                        │
+│                                                                               │
+│  ¿POR QUÉ ELEGIRNOS? / Why Choose Us?                                        │
+│                                                                               │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  │
+│  │    [Ícono]    │  │    [Ícono]    │  │    [Ícono]    │  │    [Ícono]    │  │
+│  │               │  │               │  │               │  │               │  │
+│  │  EXPERIENCIA  │  │  TODO EN UNO  │  │   BILINGÜE    │  │   UBICACIÓN   │  │
+│  │               │  │               │  │               │  │               │  │
+│  │  X años de    │  │  Clínica,     │  │  Atención en  │  │  En el        │  │
+│  │  experiencia  │  │  farmacia y   │  │  español e    │  │  corazón de   │  │
+│  │  veterinaria  │  │  tienda       │  │  inglés       │  │  Puerto       │  │
+│  │               │  │               │  │               │  │  Morelos      │  │
+│  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ FOTOS DE LA CLÍNICA (Galería)                                                │
+│                                                                               │
+│  NUESTRAS INSTALACIONES / Our Facility                                        │
+│                                                                               │
+│  ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐      │
+│  │                    │  │                    │  │                    │      │
+│  │  [Exterior clínica]│  │  [Sala consulta]   │  │  [Área tienda]     │      │
+│  │                    │  │                    │  │                    │      │
+│  │                    │  │                    │  │                    │      │
+│  └────────────────────┘  └────────────────────┘  └────────────────────┘      │
+│                                                                               │
+│  ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐      │
+│  │                    │  │                    │  │                    │      │
+│  │  [Área farmacia]   │  │  [Sala cirugía]    │  │  [Sala espera]     │      │
+│  │                    │  │                    │  │                    │      │
+│  │                    │  │                    │  │                    │      │
+│  └────────────────────┘  └────────────────────┘  └────────────────────┘      │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECCIÓN LLAMADO A LA ACCIÓN                                                   │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  ¿LISTO PARA CONOCERNOS? / Ready to meet us?                        │    │
+│  │                                                                      │    │
+│  │  Agenda una cita o visítanos hoy                                    │    │
+│  │  Schedule an appointment or visit us today                           │    │
+│  │                                                                      │    │
+│  │  [  AGENDAR CITA  ]         [  CONTACTAR  ]                         │    │
+│  │                                                                      │    │
+│  └──────────────────────────────────────────────────────────────────────┘    │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PIE DE PÁGINA (Igual que página de inicio)                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+NOTAS:
+- La foto de Dr. Pablo debe ser profesional pero cercana
+- La declaración de misión debe enfatizar "pet-friendly" y cuidado familiar
+- Las fotos de la galería pueden hacer clic para abrir lightbox
+- Esta página genera confianza - importante para nuevos clientes
+- Incluir credenciales/certificaciones si están disponibles

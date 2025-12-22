@@ -1,0 +1,235 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        CARRITO DE COMPRAS - VISTA ESCRITORIO                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO                                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ENCABEZADO DE PÁGINA                                                          │
+│                                                                               │
+│  CARRITO DE COMPRAS / Shopping Cart                                           │
+│  ────────────────────────────────────                                         │
+│                                                                               │
+│  3 productos en tu carrito / 3 items in your cart                             │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CONTENIDO DEL CARRITO                                                         │
+│                                                                               │
+│  ┌────────────────────────────────────────────────┐  ┌──────────────────────┐│
+│  │ PRODUCTOS / Products                            │  │ RESUMEN / Summary   ││
+│  │                                                │  │                      ││
+│  │ ┌────────────────────────────────────────────┐ │  │ Subtotal:            ││
+│  │ │ ┌────┐                                     │ │  │ $X,XXX.XX MXN        ││
+│  │ │ │Img │ Nombre del Producto                 │ │  │                      ││
+│  │ │ │    │ Product Name                        │ │  │ IVA (16%):           ││
+│  │ │ │    │                                     │ │  │ $XXX.XX MXN          ││
+│  │ │ └────┘ $XXX.XX MXN                         │ │  │                      ││
+│  │ │                                            │ │  │ ─────────────────    ││
+│  │ │        [ - ]  2  [ + ]           [🗑️]     │ │  │                      ││
+│  │ │                                            │ │  │ TOTAL:               ││
+│  │ │        Subtotal: $XXX.XX MXN               │ │  │ $X,XXX.XX MXN        ││
+│  │ └────────────────────────────────────────────┘ │  │                      ││
+│  │                                                │  │ ────────────────────  ││
+│  │ ┌────────────────────────────────────────────┐ │  │                      ││
+│  │ │ ┌────┐                                     │ │  │ Entrega / Delivery:  ││
+│  │ │ │Img │ Nombre del Producto                 │ │  │ ○ Recoger en tienda  ││
+│  │ │ │    │ Product Name                        │ │  │   (Gratis / Free)    ││
+│  │ │ │    │                                     │ │  │ ○ Envío a domicilio  ││
+│  │ │ └────┘ $XXX.XX MXN                         │ │  │   (+$XX MXN)         ││
+│  │ │                                            │ │  │                      ││
+│  │ │        [ - ]  1  [ + ]           [🗑️]     │ │  │                      ││
+│  │ │                                            │ │  │ ┌──────────────────┐ ││
+│  │ │        Subtotal: $XXX.XX MXN               │ │  │ │  PROCEDER AL     │ ││
+│  │ └────────────────────────────────────────────┘ │  │ │  PAGO            │ ││
+│  │                                                │  │ │  Proceed to      │ ││
+│  │ ┌────────────────────────────────────────────┐ │  │ │  Checkout        │ ││
+│  │ │ ┌────┐                                     │ │  │ └──────────────────┘ ││
+│  │ │ │Img │ Nombre del Producto                 │ │  │                      ││
+│  │ │ │    │ Product Name                        │ │  │ [ Seguir comprando ] ││
+│  │ │ └────┘ $XXX.XX MXN  x1 = $XXX.XX          │ │  │ [ Continue shopping ]││
+│  │ │                     [🗑️]                   │ │  │                      ││
+│  │ └────────────────────────────────────────────┘ │  │ ─────────────────    ││
+│  │                                                │  │                      ││
+│  │ [ Vaciar carrito / Empty cart ]                │  │ ¿Preguntas?          ││
+│  │                                                │  │ [ WhatsApp 📱 ]      ││
+│  └────────────────────────────────────────────────┘  └──────────────────────┘│
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        CHECKOUT - VISTA ESCRITORIO                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PROGRESO DEL CHECKOUT                                                         │
+│                                                                               │
+│  [1. Carrito ✓] ─── [2. Datos ●] ─── [3. Pago ○] ─── [4. Confirmación ○]     │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ FORMULARIO DE CHECKOUT                                                        │
+│                                                                               │
+│  ┌──────────────────────────────────────────┐  ┌──────────────────────────┐  │
+│  │ INFORMACIÓN DE CONTACTO / Contact Info   │  │ TU PEDIDO / Your Order  │  │
+│  │                                          │  │                          │  │
+│  │ Correo electrónico *                     │  │ ┌──────────────────────┐ │  │
+│  │ ┌──────────────────────────────────┐     │  │ │ Producto 1   $XXX   │ │  │
+│  │ │                                  │     │  │ │ Producto 2   $XXX   │ │  │
+│  │ └──────────────────────────────────┘     │  │ │ Producto 3   $XXX   │ │  │
+│  │                                          │  │ └──────────────────────┘ │  │
+│  │ Teléfono / Phone *                       │  │                          │  │
+│  │ ┌──────────────────────────────────┐     │  │ Subtotal: $X,XXX.XX     │  │
+│  │ │                                  │     │  │ IVA (16%): $XXX.XX      │  │
+│  │ └──────────────────────────────────┘     │  │ Envío: Gratis           │  │
+│  │                                          │  │ ─────────────────────    │  │
+│  │                                          │  │ TOTAL: $X,XXX.XX MXN    │  │
+│  │ MÉTODO DE ENTREGA / Delivery Method      │  │                          │  │
+│  │ ─────────────────────────────────        │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ● Recoger en tienda / Store pickup       │  │                          │  │
+│  │   Pet-Friendly                           │  │                          │  │
+│  │   [Dirección], Puerto Morelos            │  │                          │  │
+│  │   Listo en 24 horas                      │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ○ Envío a domicilio / Home delivery      │  │                          │  │
+│  │   +$XX MXN (Solo área Puerto Morelos)    │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ┌──────────────────────────────────┐     │  │                          │  │
+│  │ │ [Los campos de dirección de      │     │  │                          │  │
+│  │ │  entrega aparecen solo si se     │     │  │                          │  │
+│  │ │  selecciona envío a domicilio]   │     │  │                          │  │
+│  │ └──────────────────────────────────┘     │  │                          │  │
+│  │                                          │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ MÉTODO DE PAGO / Payment Method          │  │                          │  │
+│  │ ─────────────────────────────────        │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ● Tarjeta de crédito/débito              │  │                          │  │
+│  │   [Formulario de pago Stripe]            │  │                          │  │
+│  │   ┌──────────────────────────────────┐   │  │                          │  │
+│  │   │ Número de tarjeta                │   │  │                          │  │
+│  │   │ ____  ____  ____  ____           │   │  │                          │  │
+│  │   │                                  │   │  │                          │  │
+│  │   │ MM/AA     CVV                    │   │  │                          │  │
+│  │   └──────────────────────────────────┘   │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ○ PayPal                                 │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ○ Pago en tienda / Pay at store          │  │                          │  │
+│  │   (Solo para recoger en tienda)          │  │                          │  │
+│  │                                          │  │                          │  │
+│  │ ┌──────────────────────────────────┐     │  │                          │  │
+│  │ │       COMPLETAR PEDIDO           │     │  │                          │  │
+│  │ │       Complete Order             │     │  │                          │  │
+│  │ └──────────────────────────────────┘     │  │                          │  │
+│  │                                          │  │                          │  │
+│  └──────────────────────────────────────────┘  └──────────────────────────┘  │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CONFIRMACIÓN DE PEDIDO - VISTA ESCRITORIO                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│                                ✓                                              │
+│                                                                               │
+│            ¡PEDIDO CONFIRMADO! / Order Confirmed!                             │
+│                                                                               │
+│            Orden #PF-2025-XXXXX                                               │
+│                                                                               │
+│   ───────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│   Gracias por tu compra. Te hemos enviado un correo de confirmación.         │
+│   Thank you for your purchase. We've sent you a confirmation email.          │
+│                                                                               │
+│   ┌──────────────────────────────────────────────────────────────────────┐   │
+│   │ RESUMEN DEL PEDIDO / Order Summary                                   │   │
+│   │                                                                      │   │
+│   │ Productos:                                                           │   │
+│   │ • Producto 1 (x2) ................... $XXX.XX                        │   │
+│   │ • Producto 2 (x1) ................... $XXX.XX                        │   │
+│   │                                                                      │   │
+│   │ Subtotal: $X,XXX.XX                                                 │   │
+│   │ IVA (16%): $XXX.XX                                                  │   │
+│   │ Envío: Gratis                                                       │   │
+│   │ ─────────────────────────────                                       │   │
+│   │ TOTAL PAGADO: $X,XXX.XX MXN                                         │   │
+│   └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│   ┌──────────────────────────────────────────────────────────────────────┐   │
+│   │ RECOGER EN / Pickup at:                                              │   │
+│   │                                                                      │   │
+│   │ Pet-Friendly                                                         │   │
+│   │ [Dirección completa]                                                 │   │
+│   │ Puerto Morelos, Quintana Roo                                         │   │
+│   │                                                                      │   │
+│   │ Tu pedido estará listo en 24 horas.                                 │   │
+│   │ Your order will be ready in 24 hours.                                │   │
+│   │                                                                      │   │
+│   │ Te notificaremos cuando esté listo.                                 │   │
+│   │ We'll notify you when it's ready.                                   │   │
+│   └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│   [ WhatsApp - ¿Preguntas? ]     [ Seguir Comprando / Continue Shopping ]    │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        CARRITO - VISTA MÓVIL                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────┐
+│ ENCABEZADO              │
+└─────────────────────────┘
+
+┌─────────────────────────┐
+│ CARRITO (3)             │
+│                         │
+│ ┌─────────────────────┐ │
+│ │[Img] Nombre Producto│ │
+│ │      $XXX.XX        │ │
+│ │      [-] 2 [+] [🗑️]│ │
+│ └─────────────────────┘ │
+│                         │
+│ ┌─────────────────────┐ │
+│ │[Img] Nombre Producto│ │
+│ │      $XXX.XX        │ │
+│ │      [-] 1 [+] [🗑️]│ │
+│ └─────────────────────┘ │
+│                         │
+│ ─────────────────────── │
+│                         │
+│ Subtotal: $X,XXX.XX     │
+│ IVA: $XXX.XX            │
+│ TOTAL: $X,XXX.XX MXN    │
+│                         │
+│ Entrega:                │
+│ ○ Recoger (Gratis)      │
+│ ○ Envío (+$XX)          │
+│                         │
+│ [   PROCEDER AL PAGO   ]│
+│                         │
+│ [ Seguir comprando ]    │
+│                         │
+└─────────────────────────┘
+
+
+NOTAS:
+- El carrito usa HTMX para actualizar cantidades (sin recargar página)
+- Alpine.js para el estado del carrito del lado del cliente
+- Stripe Elements para el formulario de pago seguro
+- La confirmación de pedido envía email automáticamente
+- Integración de WhatsApp para preguntas sobre pedidos
+- Considerar seguimiento de pedidos en versión futura
+- Cálculo de IVA: subtotal * 0.16
+- Recoger en tienda es gratis, el envío tiene cargo
