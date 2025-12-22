@@ -1,15 +1,21 @@
 # TDD STOP GATE (MANDATORY)
 
+## THE 26-STEP DEVELOPMENT CYCLE
+
+This project follows a **26-step iterative development cycle**. The TDD Stop Gate ensures steps 7-10 (Test-Driven Development) are never skipped.
+
+---
+
 ## BEFORE WRITING ANY CODE, YOU MUST:
 
 ### Step 1: Output This Confirmation
 ```
 === TDD STOP GATE ===
 Task: [task ID and name]
-[ ] I have read CODING_STANDARDS.md
-[ ] I have read the task's Test Cases section
-[ ] I am about to write TESTS FIRST (not implementation)
-=== PROCEEDING WITH TESTS ===
+[x] I have read the task's required reading docs
+[x] I have read the task's Test Cases section
+[x] I am writing TESTS FIRST (not implementation)
+=== PROCEEDING WITH FAILING TESTS ===
 ```
 
 ### Step 2: Write Failing Tests
@@ -25,11 +31,33 @@ Task: [task ID and name]
 ### Step 4: Output Completion Confirmation
 ```
 === TDD CYCLE COMPLETE ===
+Task: [task ID and name]
 Tests written BEFORE implementation: YES
 All tests passing: YES
 Coverage: [X]%
-=== READY FOR GIT COMMIT ===
+=== READY FOR STEPS 24-26 ===
 ```
+
+### Step 5: Ship & Deploy (Steps 24-26)
+
+**Step 24: Git Commit & Push**
+```bash
+git add -A
+git commit -m "feat(scope): description"
+git push
+```
+
+**Step 25: Deploy to Test Server**
+```bash
+docker-compose build
+docker-compose up -d
+docker-compose logs  # verify no errors
+```
+
+**Step 26: Deploy to Production (MANUAL ONLY)**
+- ⚠️ NEVER automatic
+- Requires explicit user request
+- Must pass all tests on test server first
 
 ---
 
@@ -54,6 +82,21 @@ Then the work is INVALID and must be redone.
 
 ---
 
+## THE FULL 26-STEP CYCLE
+
+| Phase | Steps | Description |
+|-------|-------|-------------|
+| 2.1 Planning | 1-6 | Validate docs, review code, ask questions |
+| 2.2 TDD | 7-10 | Write failing tests, make pass |
+| 2.3 Quality | 11-14 | Refactor, error handling, documentation |
+| 2.4 Git | 15-18 | Add, commit, push, update board |
+| 2.5 Review | 19-23 | Code review, testing review, fix issues |
+| 2.6 Ship | 24 | Final commit & push to repository |
+| 2.7 Test Deploy | 25 | Docker build, deploy to staging |
+| 2.8 Production | 26 | Deploy to production (MANUAL ONLY) |
+
+---
+
 ## CHECKLIST FOR TASK FILES
 
 Add this to the TOP of every task file:
@@ -64,4 +107,24 @@ Add this to the TOP of every task file:
 >
 > You must output the confirmation block and write failing tests
 > BEFORE any implementation code.
+```
+
+---
+
+## QUICK REFERENCE
+
+```
+┌─────────────────────────────────────────────────────┐
+│  TDD STOP GATE CHECKLIST                            │
+├─────────────────────────────────────────────────────┤
+│  □ Output TDD STOP GATE confirmation                │
+│  □ Write failing tests from Test Cases section      │
+│  □ Run pytest - show failures                       │
+│  □ Write minimal code to pass                       │
+│  □ Run pytest - show passes                         │
+│  □ Output TDD CYCLE COMPLETE confirmation           │
+│  □ Git commit + push (Step 24)                      │
+│  □ Deploy to test server (Step 25)                  │
+│  □ Production deploy (Step 26) - ONLY IF REQUESTED  │
+└─────────────────────────────────────────────────────┘
 ```
