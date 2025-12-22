@@ -128,6 +128,20 @@ Please review these planning documents before approving:
 - **[Cart & Checkout](planning/wireframes/07-cart-checkout.txt)** - Shopping flow
 - **[Competitive Intelligence](planning/wireframes/10-competitive-intelligence.txt)** - Competitor map, pricing, visitor tracking
 
+### Technical Documentation
+- **[Task Index](planning/TASK_INDEX.md)** - Master reference of all 65 tasks with dependencies
+- **[Dependencies](planning/DEPENDENCIES.md)** - Build order and execution phases
+- **[Database Schema](planning/DATABASE_SCHEMA.md)** - Complete schema with ~75 tables
+- **[AI Tool Schemas](planning/AI_TOOL_SCHEMAS.md)** - 113 AI tools across all modules
+- **[Module Interfaces](planning/MODULE_INTERFACES.md)** - API contracts between 9 packages
+
+### Spanish Documentation (Documentos en Español)
+- **[README (Español)](planning-es/README.md)** - Resumen del proyecto
+- **[PROJECT CHARTER (Español)](planning-es/PROJECT_CHARTER.md)** - Carta del proyecto
+- **[SPEC SUMMARY (Español)](planning-es/SPEC_SUMMARY.md)** - Resumen de especificaciones
+- **[Client Content Requirements](planning-es/REQUISITOS_CONTENIDO_CLIENTE.md)** - Lista de contenido para Dr. Pablo
+- **[User Stories (Español)](planning-es/stories/)** - Historias de usuario S-001 a S-006
+
 ---
 
 ## Scope Summary
@@ -222,6 +236,6 @@ Once approved:
 ---
 
 **Prepared by**: Nestor Wheelock - South City Computer
-**Date**: December 21, 2025
+**Date**: December 22, 2025
 **Status**: AWAITING CLIENT APPROVAL
-**Version**: 2.2.0 (Complete SPEC - 26 User Stories, 9 Modules)
+**Version**: 2.3.0 (Complete SPEC - 26 User Stories, 65 Tasks, 9 Modules)
