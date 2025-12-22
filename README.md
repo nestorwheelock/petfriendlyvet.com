@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Rectangular.png" alt="Pet-Friendly Veterinary Clinic" width="400">
+</p>
+
 # Pet-Friendly Veterinary Clinic (SPEC Phase - Awaiting Approval)
 
 **STATUS**: This project is in SPEC phase. No code has been written yet.
