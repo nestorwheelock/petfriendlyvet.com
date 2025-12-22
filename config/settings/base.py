@@ -48,6 +48,7 @@ LOCAL_APPS = [
     'apps.accounts',
     'apps.multilingual',
     'apps.ai_assistant',
+    'apps.knowledge',
     'apps.appointments',
     'apps.pets',
     'apps.store',
