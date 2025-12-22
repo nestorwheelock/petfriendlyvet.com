@@ -1,0 +1,377 @@
+{% load i18n %}
+
+<!-- Chat Widget Container -->
+<div id="chat-widget"
+     x-data="chatWidget()"
+     class="fixed bottom-4 right-4 z-50"
+     role="complementary"
+     aria-label="{% trans 'AI Chat Assistant' %}">
+
+    <!-- Floating Chat Button (Collapsed State) -->
+    <button x-show="!isOpen"
+            @click="openChat()"
+            id="chat-toggle"
+            class="chat-button w-14 h-14 bg-primary-500 hover:bg-primary-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2"
+            aria-label="{% trans 'Open chat' %}"
+            aria-expanded="false">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <!-- Notification Badge -->
+        <span x-show="unreadCount > 0"
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+              x-text="unreadCount"></span>
+    </button>
+
+    <!-- Chat Window (Expanded State) -->
+    <div x-show="isOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+         x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+         class="chatWidget bg-white rounded-xl shadow-2xl w-full sm:w-96 h-[500px] sm:h-[600px] flex flex-col overflow-hidden"
+         :class="{ 'fixed inset-0 sm:static sm:inset-auto': isMobile }"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="chat-header-title">
+
+        <!-- Chat Header -->
+        <div class="chat-header bg-primary-500 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-primary-400 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="chat-header-title" class="font-semibold">Pet-Friendly AI</h3>
+                    <p class="text-xs text-primary-200">
+                        <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>
+                        {% trans "Online" %}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button @click="minimizeChat()"
+                        class="p-1 hover:bg-primary-400 rounded transition-colors hidden sm:block"
+                        aria-label="{% trans 'Minimize' %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                </button>
+                <button @click="closeChat()"
+                        class="p-1 hover:bg-primary-400 rounded transition-colors"
+                        aria-label="{% trans 'Close chat' %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat-messages"
+             class="chat-messages flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+             x-ref="messagesContainer"
+             role="log"
+             aria-live="polite"
+             aria-label="{% trans 'Chat messages' %}">
+
+            <!-- Welcome Message -->
+            <template x-if="messages.length === 0">
+                <div class="text-center">
+                    <div class="ai-msg bg-white rounded-lg p-4 shadow-sm mb-4">
+                        <p class="text-gray-700">
+                            {% trans "Hello! I'm Pet-Friendly's virtual assistant. How can I help you today?" %}
+                        </p>
+                        <p class="text-gray-600 mt-2">
+                            {% trans "¡Hola! Soy el asistente virtual de Pet-Friendly. ¿En qué puedo ayudarte?" %}
+                        </p>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <button @click="sendQuickAction('{% trans "What are your hours?" %}')"
+                                class="quick-action bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-colors">
+                            <svg class="w-5 h-5 mx-auto mb-1 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {% trans "Hours" %}
+                        </button>
+                        <button @click="sendQuickAction('{% trans "I want to book an appointment" %}')"
+                                class="quick-action bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-colors">
+                            <svg class="w-5 h-5 mx-auto mb-1 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {% trans "Appointment" %}
+                        </button>
+                        <button @click="sendQuickAction('{% trans "What services do you offer?" %}')"
+                                class="quick-action bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-colors">
+                            <svg class="w-5 h-5 mx-auto mb-1 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                            {% trans "Services" %}
+                        </button>
+                        <button @click="sendQuickAction('{% trans "Contact information" %}')"
+                                class="quick-action bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-colors">
+                            <svg class="w-5 h-5 mx-auto mb-1 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            {% trans "Contact" %}
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Message List -->
+            <template x-for="(msg, index) in messages" :key="index">
+                <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                    <div :class="msg.role === 'user'
+                                 ? 'user-msg bg-primary-500 text-white rounded-lg rounded-br-none p-3 max-w-[80%]'
+                                 : 'ai-msg bg-white rounded-lg rounded-bl-none p-3 max-w-[80%] shadow-sm'">
+                        <p x-text="msg.content" class="text-sm whitespace-pre-wrap"></p>
+                        <span class="text-xs opacity-60 mt-1 block" x-text="formatTime(msg.timestamp)"></span>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Typing Indicator -->
+            <div x-show="isTyping" class="flex justify-start">
+                <div class="bg-white rounded-lg p-3 shadow-sm">
+                    <div class="typing-indicator flex space-x-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div x-show="error" class="text-center">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-red-600 text-sm" x-text="error"></p>
+                    <button @click="retryLastMessage()" class="mt-2 text-sm text-red-700 underline hover:no-underline">
+                        {% trans "Try again" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input border-t border-gray-200 p-4 bg-white">
+            <form @submit.prevent="sendMessage()" class="flex items-center space-x-2">
+                <input type="text"
+                       x-model="input"
+                       :disabled="isTyping"
+                       placeholder="{% trans 'Type your message...' %}"
+                       class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-gray-100"
+                       aria-label="{% trans 'Message input' %}"
+                       autocomplete="off">
+                <button type="submit"
+                        :disabled="!input.trim() || isTyping"
+                        class="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        aria-label="{% trans 'Send message' %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Language Selector -->
+            <div class="flex items-center justify-center mt-2 space-x-1 text-xs">
+                <button @click="setLanguage('es')"
+                        :class="language === 'es' ? 'text-primary-600 font-medium' : 'text-gray-500 hover:text-gray-700'"
+                        class="px-2 py-1">ES</button>
+                <span class="text-gray-300">|</span>
+                <button @click="setLanguage('en')"
+                        :class="language === 'en' ? 'text-primary-600 font-medium' : 'text-gray-500 hover:text-gray-700'"
+                        class="px-2 py-1">EN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Widget JavaScript -->
+<script>
+function chatWidget() {
+    return {
+        isOpen: false,
+        isTyping: false,
+        isMobile: window.innerWidth < 640,
+        messages: [],
+        input: '',
+        error: null,
+        unreadCount: 0,
+        language: document.documentElement.lang || 'es',
+        sessionId: null,
+        lastMessageContent: null,
+
+        init() {
+            // Load session from localStorage
+            this.sessionId = localStorage.getItem('chat_session_id') || this.generateSessionId();
+            localStorage.setItem('chat_session_id', this.sessionId);
+
+            // Load message history
+            const savedMessages = localStorage.getItem('chat_messages_' + this.sessionId);
+            if (savedMessages) {
+                try {
+                    this.messages = JSON.parse(savedMessages);
+                } catch (e) {
+                    this.messages = [];
+                }
+            }
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                this.isMobile = window.innerWidth < 640;
+            });
+
+            // Connect teaser button
+            const teaserBtn = document.getElementById('chat-teaser-btn');
+            if (teaserBtn) {
+                teaserBtn.addEventListener('click', () => this.openChat());
+            }
+        },
+
+        generateSessionId() {
+            return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        },
+
+        openChat() {
+            this.isOpen = true;
+            this.unreadCount = 0;
+            this.$nextTick(() => this.scrollToBottom());
+        },
+
+        closeChat() {
+            this.isOpen = false;
+        },
+
+        minimizeChat() {
+            this.isOpen = false;
+        },
+
+        scrollToBottom() {
+            const container = this.$refs.messagesContainer;
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        },
+
+        formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString(this.language, { hour: '2-digit', minute: '2-digit' });
+        },
+
+        saveMessages() {
+            localStorage.setItem('chat_messages_' + this.sessionId, JSON.stringify(this.messages));
+        },
+
+        async sendMessage() {
+            if (!this.input.trim() || this.isTyping) return;
+
+            const userMessage = this.input.trim();
+            this.lastMessageContent = userMessage;
+            this.input = '';
+            this.error = null;
+
+            // Add user message
+            this.messages.push({
+                role: 'user',
+                content: userMessage,
+                timestamp: new Date().toISOString()
+            });
+            this.saveMessages();
+            this.$nextTick(() => this.scrollToBottom());
+
+            // Show typing indicator
+            this.isTyping = true;
+
+            try {
+                const response = await fetch('{% url "ai_assistant:chat" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                       document.querySelector('meta[name=csrf-token]')?.content ||
+                                       this.getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        session_id: this.sessionId,
+                        language: this.language
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                // Add AI response
+                this.messages.push({
+                    role: 'assistant',
+                    content: data.response || data.message,
+                    timestamp: new Date().toISOString()
+                });
+                this.saveMessages();
+
+            } catch (err) {
+                console.error('Chat error:', err);
+                this.error = this.language === 'es'
+                    ? 'Error al enviar mensaje. Por favor intenta de nuevo.'
+                    : 'Error sending message. Please try again.';
+            } finally {
+                this.isTyping = false;
+                this.$nextTick(() => this.scrollToBottom());
+            }
+        },
+
+        sendQuickAction(action) {
+            this.input = action;
+            this.sendMessage();
+        },
+
+        retryLastMessage() {
+            if (this.lastMessageContent) {
+                this.input = this.lastMessageContent;
+                this.error = null;
+                this.sendMessage();
+            }
+        },
+
+        setLanguage(lang) {
+            this.language = lang;
+        },
+
+        getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    }
+}
+</script>
+
+<style>
+@keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+}
+.typing-indicator span {
+    animation: bounce 1.4s infinite;
+}
+</style>
