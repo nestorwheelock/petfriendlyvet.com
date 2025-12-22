@@ -269,7 +269,7 @@ This Project Charter requires client approval before proceeding to BUILD phase.
 
 ---
 
-**Prepared by:** Development Team
+**Prepared by:** Nestor Wheelock - South City Computer
 **Date:** December 21, 2025
 **Status:** AWAITING CLIENT APPROVAL
 **Previous Version:** v2.1.0 (AI-First + Billing/Marketing)
