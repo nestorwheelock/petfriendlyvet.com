@@ -1,0 +1,752 @@
+# Wireframe: Referral Network & Visiting Specialists
+# Story: S-025 Referral Network & Visiting Specialists
+# Epoch: 4 (Communications Hub)
+# Module: django-vet-clinic + django-crm-lite
+
+================================================================
+                    REFERRAL DASHBOARD - DESKTOP
+================================================================
+
+URL: /admin/referrals/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS | Directory | Outbound | Inbound | Visiting    |
++------------------------------------------------------------------+
+|                                                                    |
+|  REFERRAL OVERVIEW                                  Dec 21, 2025   |
+|  ================================================================  |
+|                                                                    |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|  | ACTIVE      | | AWAITING    | | VISITING    | | THIS MONTH  |   |
+|  |    12       | |     5       | | Dec 28      | |    34       |   |
+|  | referrals   | | reports     | | oncologist  | | total refs  |   |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | QUICK ACTIONS                                                |  |
+|  | [+ New Referral] [Find Specialist] [Schedule Visiting Spec]  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  UPCOMING VISITING SPECIALISTS                                     |
+|  +--------------------------------------------------------------+  |
+|  | DATE     | SPECIALIST           | SPECIALTY  | SLOTS  |APPTS |  |
+|  |----------|----------------------|------------|--------|------|  |
+|  | Dec 28   | Dr. Roberto Sanchez  | Oncology   | 4/6    |[Book]|  |
+|  | Jan 5    | Dr. Maria Lopez      | Cardiology | 5/8    |[Book]|  |
+|  | Jan 12   | Dr. Luis Hernandez   | Ultrasound | 2/10   |[Book]|  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ACTIVE REFERRALS (Outbound)                        [View All]     |
+|  +--------------------------------------------------------------+  |
+|  | REF #       | PET      | SPECIALIST        | STATUS          |  |
+|  |-------------|----------|-------------------|-----------------|  |
+|  | REF-2025-234| Max      | Dr. Martinez-Onco | Awaiting Report |  |
+|  | REF-2025-230| Luna     | Dr. Lopez-Cardio  | Seen Dec 20     |  |
+|  | REF-2025-228| Bella    | Emergency Hospital| In Treatment    |  |
+|  | REF-2025-225| Rocky    | Dr. Vega-Ortho    | Scheduled Jan 3 |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECENT INBOUND REFERRALS                           [View All]     |
+|  +--------------------------------------------------------------+  |
+|  | FROM               | PET    | SERVICE     | STATUS           |  |
+|  |--------------------|--------|-------------|------------------|  |
+|  | Dr. Garcia (B2B)   | Toby   | Cytology    | Results Sent     |  |
+|  | Clinica Norte      | Milo   | Lab Work    | Processing       |  |
+|  | Dr. Ramirez        | Coco   | X-Ray       | Completed        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    SPECIALIST DIRECTORY
+================================================================
+
+URL: /admin/referrals/directory/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > Specialist Directory        [+ Add Specialist]|
++------------------------------------------------------------------+
+|                                                                    |
+|  FILTER BY:                                                        |
+|  +--------------------------------------------------------------+  |
+|  | Specialty: [All        v] | Location: [All     v] | [Search] |  |
+|  | [x] Active  [ ] Visiting  [ ] 24-Hour                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ONCOLOGY                                                          |
+|  +--------------------------------------------------------------+  |
+|  | [Photo] Dr. Ana Martinez                          [View]      |  |
+|  |         DACVIM (Oncology)                                     |  |
+|  |         Hospital Veterinario Cancun | 25 km                   |  |
+|  |         998-884-5678 | dra.martinez@hosp.mx                   |  |
+|  |         Rating: **** (4.8) | Referrals: 23                    |  |
+|  |--------------------------------------------------------------|  |
+|  | [Photo] Dr. Carlos Vega                [Visiting] [View]      |  |
+|  |         DACVIM (Oncology)                                     |  |
+|  |         Playa del Carmen | Also visits Pet-Friendly           |  |
+|  |         984-873-2345                                          |  |
+|  |         Next Visit: Dec 28 | Rating: **** (4.9)               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CARDIOLOGY                                                        |
+|  +--------------------------------------------------------------+  |
+|  | [Photo] Dr. Maria Lopez                [Visiting] [View]      |  |
+|  |         Veterinary Cardiologist                               |  |
+|  |         Visits Pet-Friendly monthly                           |  |
+|  |         998-555-1234                                          |  |
+|  |         Next Visit: Jan 5 | Rating: ***** (5.0)               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  EMERGENCY (24-Hour)                                               |
+|  +--------------------------------------------------------------+  |
+|  | [Logo] Hospital Veterinario Cancun       [24HR] [View]        |  |
+|  |        Av. Tulum 123, Cancun | 25 km                          |  |
+|  |        998-884-5678                                           |  |
+|  |        Services: Surgery, ICU, Imaging, Lab                   |  |
+|  |--------------------------------------------------------------|  |
+|  | [Logo] Urgencias Vet Playa del Carmen    [24HR] [View]        |  |
+|  |        Av. 30, Playa del Carmen | 45 km                       |  |
+|  |        984-873-4567                                           |  |
+|  |        Services: Emergency, Surgery, Imaging                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [Show More Categories: Orthopedics, Ophthalmology, Dermatology...]|
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    SPECIALIST DETAIL
+================================================================
+
+URL: /admin/referrals/directory/dr-martinez/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > Dr. Ana Martinez                              |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [Photo]                                                       |  |
+|  |         DR. ANA MARTINEZ, DACVIM (ONCOLOGY)                   |  |
+|  |         Hospital Veterinario Cancun                           |  |
+|  |         Status: [ACTIVE]                                      |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CONTACT INFORMATION                                               |
+|  +--------------------------------------------------------------+  |
+|  | Phone:   998-884-5678                                         |  |
+|  | Email:   dra.martinez@hospitalvet.mx                          |  |
+|  | Fax:     998-884-5679                                         |  |
+|  | Website: www.hospitalvetcancun.mx                             |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  LOCATION                                                          |
+|  +--------------------------------------------------------------+  |
+|  | Av. Tulum 123, SM 10, Cancun, Q.R. 77500                      |  |
+|  | Distance from Pet-Friendly: 25 km (~30 min drive)             |  |
+|  | [View Map]                                                    |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SERVICES                                                          |
+|  +--------------------------------------------------------------+  |
+|  | - Oncology Consultation                                       |  |
+|  | - Chemotherapy                                                 |  |
+|  | - Surgical Oncology                                           |  |
+|  | - Palliative Care                                             |  |
+|  |                                                               |  |
+|  | Species: Dogs, Cats                                           |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REFERRAL STATISTICS                                               |
+|  +--------------------------------------------------------------+  |
+|  | Total Referrals Sent: 23                                      |  |
+|  | Average Wait Time: 5 days                                     |  |
+|  | Report Turnaround: 3 days                                     |  |
+|  | Quality Rating: **** (4.8 / 5.0)                              |  |
+|  | Client Satisfaction: 92%                                      |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REFERRAL INSTRUCTIONS                                             |
+|  +--------------------------------------------------------------+  |
+|  | - Email referral to referrals@hospitalvet.mx                  |  |
+|  | - Include: Patient history, lab results, imaging              |  |
+|  | - Fax accepted for urgent cases                               |  |
+|  | - Appointments scheduled within 5 business days               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECENT REFERRALS                                                  |
+|  +--------------------------------------------------------------+  |
+|  | REF-2025-234 | Max (Garcia)    | Awaiting Report  | Dec 15   |  |
+|  | REF-2025-198 | Bella (Smith)   | Completed        | Nov 28   |  |
+|  | REF-2025-165 | Rocky (Lopez)   | Completed        | Nov 10   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [Edit Specialist] [Create Referral] [View All Referrals]          |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    CREATE OUTBOUND REFERRAL
+================================================================
+
+URL: /admin/referrals/new/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > New Referral                                  |
++------------------------------------------------------------------+
+|                                                                    |
+|  PATIENT INFORMATION                                               |
+|  +--------------------------------------------------------------+  |
+|  | Patient: [Search pet...________________________]              |  |
+|  |          Selected: Max (Golden Retriever, 8 yrs)              |  |
+|  | Owner:   Roberto Garcia | 998-123-4567                        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SPECIALIST                                                        |
+|  +--------------------------------------------------------------+  |
+|  | Specialty: [Oncology                     v]                   |  |
+|  | Specialist: [Dr. Ana Martinez - Cancun   v]                   |  |
+|  |                                                               |  |
+|  | Or: [Find Specialist] [Book Visiting Specialist]              |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REFERRAL DETAILS                                                  |
+|  +--------------------------------------------------------------+  |
+|  | Urgency:                                                      |  |
+|  | ( ) Routine (2-3 weeks)                                       |  |
+|  | (*) Urgent (within 1 week)                                    |  |
+|  | ( ) Emergency (same day)                                      |  |
+|  |                                                               |  |
+|  | Reason for Referral:                                          |  |
+|  | [Suspicious mass on left flank, possible mast cell______     |  |
+|  | _tumor recurrence. Previous MCT removed 2 years ago._____]   |  |
+|  |                                                               |  |
+|  | Services Requested:                                           |  |
+|  | [x] Consultation                                              |  |
+|  | [x] Staging/Diagnostics                                       |  |
+|  | [ ] Surgery                                                   |  |
+|  | [ ] Chemotherapy                                              |  |
+|  | [ ] Other: [_________________]                                |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CLINICAL SUMMARY (will be sent with referral)                     |
+|  +--------------------------------------------------------------+  |
+|  | [AI will auto-generate from pet's records. Edit as needed.]   |  |
+|  |                                                               |  |
+|  | 8-year-old MN Golden Retriever presenting with firm           |  |
+|  | subcutaneous mass on left flank, first noticed 2 weeks        |  |
+|  | ago by owner. Mass approximately 3cm diameter, mobile.        |  |
+|  | FNA performed Dec 18 - results pending.                       |  |
+|  |                                                               |  |
+|  | History: Previous mast cell tumor (Grade I) removed from      |  |
+|  | right hindlimb in December 2023. Wide excision with           |  |
+|  | clean margins. No recurrence at that site.                    |  |
+|  |                                                               |  |
+|  | Current medications: None                                     |  |
+|  | Allergies: None known                                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  DOCUMENTS TO INCLUDE                                              |
+|  +--------------------------------------------------------------+  |
+|  | From Max's Records:                                           |  |
+|  | [x] Recent exam findings (Dec 15, 2025)                       |  |
+|  | [x] Lab results - CBC, Chemistry (Dec 15, 2025)               |  |
+|  | [x] X-ray images (Dec 18, 2025)                               |  |
+|  | [x] FNA cytology (Dec 18, 2025 - pending)                     |  |
+|  | [x] Previous MCT surgery report (Dec 2023)                    |  |
+|  | [ ] Vaccination records                                       |  |
+|  |                                                               |  |
+|  | Additional uploads:                                           |  |
+|  | [+ Upload File]                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancel ]   [ Save as Draft ]   [ Send Referral ]                |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    REFERRAL DETAIL / TRACKING
+================================================================
+
+URL: /admin/referrals/REF-2025-0234/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > REF-2025-0234                                 |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | REFERRAL #REF-2025-0234                Status: [AWAITING RPT] |  |
+|  |--------------------------------------------------------------|  |
+|  | Patient: Max (Golden Retriever, 8 yrs)                        |  |
+|  | Owner: Roberto Garcia                                         |  |
+|  | Specialist: Dr. Ana Martinez (Oncology)                       |  |
+|  | Urgency: Urgent                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  TIMELINE                                                          |
+|  +--------------------------------------------------------------+  |
+|  | [*] Created     | Dec 15, 2025 10:30 AM | Dr. Pablo          |  |
+|  |     |                                                         |  |
+|  | [*] Sent        | Dec 15, 2025 10:35 AM | Email + Docs       |  |
+|  |     |                                                         |  |
+|  | [*] Received    | Dec 15, 2025 11:00 AM | Confirmed by spec  |  |
+|  |     |                                                         |  |
+|  | [*] Scheduled   | Dec 15, 2025 2:00 PM  | Appt: Dec 20 9AM   |  |
+|  |     |                                                         |  |
+|  | [*] Seen        | Dec 20, 2025 9:30 AM  | Exam completed     |  |
+|  |     |                                                         |  |
+|  | [~] Awaiting    | Report expected by Dec 23                   |  |
+|  |     Report                                                    |  |
+|  | [ ] Completed                                                 |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REFERRAL REASON                                                   |
+|  +--------------------------------------------------------------+  |
+|  | Suspicious mass on left flank, possible mast cell tumor       |  |
+|  | recurrence. Previous MCT removed 2 years ago.                 |  |
+|  |                                                               |  |
+|  | Services requested: Consultation, Staging/Diagnostics         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  DOCUMENTS                                                         |
+|  +--------------------------------------------------------------+  |
+|  | SENT WITH REFERRAL:                                           |  |
+|  | [PDF] Referral Letter                              [View]     |  |
+|  | [PDF] Lab Results - CBC, Chemistry                 [View]     |  |
+|  | [IMG] X-ray Images (3)                             [View]     |  |
+|  | [PDF] Previous MCT Surgery Report                  [View]     |  |
+|  |--------------------------------------------------------------|  |
+|  | RECEIVED FROM SPECIALIST:                                     |  |
+|  | (none yet - awaiting report)                                  |  |
+|  | [+ Upload Received Document]                                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SPECIALIST FINDINGS                                               |
+|  +--------------------------------------------------------------+  |
+|  | (Report not yet received)                                     |  |
+|  |                                                               |  |
+|  | [Enter Findings Manually]                                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  NOTES                                                             |  |
+|  +--------------------------------------------------------------+  |
+|  | [+ Add Note]                                                  |  |
+|  |--------------------------------------------------------------|  |
+|  | Dec 20, 10:00 AM - Dr. Pablo                                  |  |
+|  | Called specialist office, Max was seen this morning.          |  |
+|  | Report expected by Dec 23.                                    |  |
+|  |--------------------------------------------------------------|  |
+|  | Dec 15, 2:30 PM - System                                      |  |
+|  | Appointment scheduled: Dec 20, 2025 9:00 AM                   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [Update Status] [Add Document] [Contact Specialist] [View Pet]    |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    RECEIVE SPECIALIST REPORT
+================================================================
+
++------------------------------------------------------------------+
+|                    RECORD SPECIALIST REPORT             [X Close] |
++------------------------------------------------------------------+
+|                                                                    |
+|  Referral: REF-2025-0234 (Max - Garcia)                           |
+|  Specialist: Dr. Ana Martinez (Oncology)                          |
+|  ----------------------------------------------------------------  |
+|                                                                    |
+|  FINDINGS                                                          |
+|  +--------------------------------------------------------------+  |
+|  | [FNA confirms mast cell tumor, Grade II. Tumor appears______  |  |
+|  | _localized with no evidence of metastasis on staging._______ |  |
+|  | _Recommend wide surgical excision._________________________] |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  DIAGNOSIS                                                         |
+|  +--------------------------------------------------------------+  |
+|  | [Mast Cell Tumor Grade II (subcutaneous)___________________] |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECOMMENDATIONS                                                   |
+|  +--------------------------------------------------------------+  |
+|  | [1. Wide surgical excision with 2-3cm margins_______________ |  |
+|  | _2. Consider adjuvant chemotherapy post-surgery_____________ |  |
+|  | _3. Staging bloodwork and chest X-rays before surgery______] |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  FOLLOW-UP NEEDED?                                                 |
+|  +--------------------------------------------------------------+  |
+|  | [x] Yes - Follow-up required                                  |  |
+|  | Instructions: [Recheck in 2 weeks post-surgery for______     |  |
+|  | _suture removal and healing assessment__________________]    |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ATTACH REPORT                                                     |
+|  +--------------------------------------------------------------+  |
+|  | [Upload Report PDF]  specialist_report_max_dec23.pdf          |  |
+|  | [Upload Images]                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  OUTCOME                                                           |
+|  +--------------------------------------------------------------+  |
+|  | ( ) Successful treatment                                      |  |
+|  | (*) Ongoing treatment                                         |  |
+|  | ( ) Referred to another specialist                            |  |
+|  | ( ) Client declined treatment                                 |  |
+|  | ( ) No treatment possible                                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  QUALITY RATING (Internal)                                         |
+|  +--------------------------------------------------------------+  |
+|  | Specialist Quality: [*****] 5 / 5                             |  |
+|  | Client Satisfaction: [****_] 4 / 5                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ ] Integrate findings into pet's medical record                 |
+|  [ ] Notify owner of results                                      |
+|  [ ] Schedule follow-up appointment                               |
+|                                                                    |
+|             [ Cancel ]                    [ Save Report ]          |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    VISITING SPECIALISTS SCHEDULE
+================================================================
+
+URL: /admin/referrals/visiting/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > Visiting Specialists          [+ Add Schedule] |
++------------------------------------------------------------------+
+|                                                                    |
+|  DECEMBER 2025                               [< Prev] [Next >]     |
+|  +--------------------------------------------------------------+  |
+|  |     Mon   Tue   Wed   Thu   Fri   Sat   Sun                   |  |
+|  |--------------------------------------------------------------|  |
+|  |                                    20    21    22             |  |
+|  |                                                               |  |
+|  |     23    24    25    26    27    28    29                    |  |
+|  |                                   [Onco]                      |  |
+|  |                                   Dr.Rob                      |  |
+|  |--------------------------------------------------------------|  |
+|  |     30    31                                                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  UPCOMING VISITS                                                   |
+|  +--------------------------------------------------------------+  |
+|  | DECEMBER 28, 2025 (Saturday)                                  |  |
+|  | +----------------------------------------------------------+  |  |
+|  | | Dr. Roberto Sanchez - ONCOLOGY                           |  |  |
+|  | | Time: 9:00 AM - 3:00 PM                                  |  |  |
+|  | | Equipment: Portable ultrasound, Chemo supplies           |  |  |
+|  | | Services: Consultation, Staging, Chemo planning          |  |  |
+|  | |                                                          |  |  |
+|  | | Appointments: 4 / 6 booked                               |  |  |
+|  | | Revenue share: 70% specialist / 30% Pet-Friendly         |  |  |
+|  | |                                                          |  |  |
+|  | | [View Appointments] [Edit Schedule] [Cancel Visit]       |  |  |
+|  | +----------------------------------------------------------+  |  |
+|  |--------------------------------------------------------------|  |
+|  | JANUARY 5, 2026 (Sunday)                                      |  |
+|  | +----------------------------------------------------------+  |  |
+|  | | Dr. Maria Lopez - CARDIOLOGY                             |  |  |
+|  | | Time: 9:00 AM - 3:00 PM                                  |  |  |
+|  | | Equipment: Portable echocardiogram, ECG, BP monitor      |  |  |
+|  | | Services: Cardiac consultation, Echo, ECG                |  |  |
+|  | |                                                          |  |  |
+|  | | Appointments: 5 / 8 booked                               |  |  |
+|  | | Revenue share: 65% specialist / 35% Pet-Friendly         |  |  |
+|  | |                                                          |  |  |
+|  | | [View Appointments] [Edit Schedule] [Cancel Visit]       |  |  |
+|  | +----------------------------------------------------------+  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    BOOK VISITING SPECIALIST APPOINTMENT
+================================================================
+
+URL: /admin/referrals/visiting/dec-28-oncology/book/
+
++------------------------------------------------------------------+
+|  [Logo]  VISITING > Dec 28 Oncology > Book Appointment             |
++------------------------------------------------------------------+
+|                                                                    |
+|  VISITING SPECIALIST                                               |
+|  +--------------------------------------------------------------+  |
+|  | Dr. Roberto Sanchez - Oncology                                |  |
+|  | Date: Saturday, December 28, 2025                             |  |
+|  | Time: 9:00 AM - 3:00 PM                                       |  |
+|  | Location: Pet-Friendly clinic                                 |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  PATIENT                                                           |
+|  +--------------------------------------------------------------+  |
+|  | Pet: [Search pet...________________________]                  |  |
+|  |      Selected: Luna (Golden Retriever, 5 yrs)                 |  |
+|  | Owner: Maria Garcia | 998-123-4567                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SERVICE                                                           |
+|  +--------------------------------------------------------------+  |
+|  | Service: [Oncology Consultation          v]                   |  |
+|  |                                                               |  |
+|  | Available services:                                           |  |
+|  | - Oncology Consultation ($2,000 / 45 min)                     |  |
+|  | - Mass Evaluation ($2,500 / 60 min)                           |  |
+|  | - Staging Workup ($3,500 / 90 min)                            |  |
+|  | - Chemo Planning ($2,000 / 45 min)                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  AVAILABLE TIMES                                                   |
+|  +--------------------------------------------------------------+  |
+|  | [x] 9:00 AM - 9:45 AM    | [ ] 11:30 AM - 12:15 PM           |  |
+|  | [ ] 9:45 AM - 10:30 AM   | [ ] 1:00 PM - 1:45 PM   (Lunch)   |  |
+|  | [ ] 10:30 AM - 11:15 AM  | [ ] 1:45 PM - 2:30 PM             |  |
+|  |                           | [x] 2:30 PM - 3:15 PM  (Booked)   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REASON FOR VISIT                                                  |
+|  +--------------------------------------------------------------+  |
+|  | [Evaluation of newly discovered mass on abdomen. Owner______  |  |
+|  | _noticed during grooming. No previous history of tumors.__]  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RELATED REFERRAL (Optional)                                       |
+|  +--------------------------------------------------------------+  |
+|  | [ ] Link to existing referral: [Select...             v]      |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  FEE                                                               |
+|  +--------------------------------------------------------------+  |
+|  | Service: Oncology Consultation              $2,000.00         |  |
+|  | Pet-Friendly share (30%):                     $600.00         |  |
+|  | Specialist share (70%):                     $1,400.00         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancel ]   [ Book Appointment ]                                 |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    INBOUND REFERRALS
+================================================================
+
+URL: /admin/referrals/inbound/
+
++------------------------------------------------------------------+
+|  [Logo]  REFERRALS > Inbound Referrals              [+ New Inbound] |
++------------------------------------------------------------------+
+|                                                                    |
+|  INBOUND OVERVIEW                                                  |
+|  +-------------+ +-------------+ +-------------+                   |
+|  | THIS MONTH  | | PROCESSING  | | B2B REVENUE |                   |
+|  |    18       | |     3       | | $12,450     |                   |
+|  | referrals   | | pending     | | from refs   |                   |
+|  +-------------+ +-------------+ +-------------+                   |
+|                                                                    |
+|  PENDING PROCESSING                                                |
+|  +--------------------------------------------------------------+  |
+|  | RECEIVED  | FROM            | PET    | SERVICE    | ACTION    |  |
+|  |-----------|-----------------|--------|------------|-----------|  |
+|  | Dec 21    | Dr. Garcia (B2B)| Toby   | Cytology   | [Process] |  |
+|  | Dec 20    | Clinica Norte   | Milo   | Lab Work   | [Process] |  |
+|  | Dec 20    | Dr. Ramirez     | Coco   | X-Ray      | [Process] |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  COMPLETED THIS MONTH                                              |
+|  +--------------------------------------------------------------+  |
+|  | DATE    | FROM            | PET    | SERVICE   | INVOICE     |  |
+|  |---------|-----------------|--------|-----------|-------------|  |
+|  | Dec 18  | Dr. Garcia (B2B)| Bella  | Cytology  | $672 (B2B)  |  |
+|  | Dec 17  | Pet Hospital    | Rocky  | Lab Work  | $1,200      |  |
+|  | Dec 15  | Clinica Norte   | Luna   | X-Ray     | $450        |  |
+|  | Dec 14  | Dr. Martinez    | Max    | Ultrasound| $800        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  TOP REFERRING VETS/CLINICS                                        |
+|  +--------------------------------------------------------------+  |
+|  | REFERRER          | REFS (YTD) | REVENUE   | ACCOUNT TYPE    |  |
+|  |-------------------|------------|-----------|-----------------|  |
+|  | Dr. Garcia        |     45     | $28,400   | B2B (Net-30)    |  |
+|  | Clinica Norte     |     28     | $18,200   | B2B (Net-15)    |  |
+|  | Pet Hospital      |     22     | $15,600   | Standard        |  |
+|  | Dr. Martinez      |     18     | $12,400   | Standard        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - REFERRAL LIST
+================================================================
+
++--------------------------------+
+|  [=] Pet-Friendly     [Search] |
++--------------------------------+
+|  REFERRALS                     |
+|                                |
+|  VISITING: Dec 28 - Oncology   |
+|  4/6 slots booked [Book]       |
+|                                |
+|  ACTIVE                        |
+|  +----------------------------+|
+|  | REF-2025-0234              ||
+|  | Max (Garcia)               ||
+|  | Dr. Martinez - Oncology    ||
+|  | [Awaiting Report]          ||
+|  +----------------------------+|
+|  | REF-2025-0230              ||
+|  | Luna (Smith)               ||
+|  | Dr. Lopez - Cardiology     ||
+|  | [Seen Dec 20]              ||
+|  +----------------------------+|
+|  | REF-2025-0228              ||
+|  | Bella (Jones)              ||
+|  | Emergency Hospital         ||
+|  | [In Treatment]             ||
+|  +----------------------------+|
+|                                |
+|  AWAITING REPORTS: 5           |
+|  [View All]                    |
+|                                |
++--------------------------------+
+| [Home] [Refs] [Inbox] [+]      |
++--------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - REFERRAL DETAIL
+================================================================
+
++--------------------------------+
+|  [<] REF-2025-0234     [Call]  |
++--------------------------------+
+|                                |
+|  [AWAITING REPORT]             |
+|                                |
+|  PATIENT                       |
+|  Max (Golden Retriever, 8 yrs) |
+|  Owner: Roberto Garcia         |
+|                                |
+|  SPECIALIST                    |
+|  Dr. Ana Martinez              |
+|  Oncology - Cancun             |
+|  998-884-5678                  |
+|                                |
+|  REASON                        |
+|  Suspicious mass, possible     |
+|  mast cell tumor recurrence    |
+|                                |
+|  TIMELINE                      |
+|  +----------------------------+|
+|  | [*] Created    Dec 15      ||
+|  | [*] Sent       Dec 15      ||
+|  | [*] Scheduled  Dec 20 9AM  ||
+|  | [*] Seen       Dec 20      ||
+|  | [~] Report     Expected    ||
+|  +----------------------------+|
+|                                |
+|  DOCUMENTS                     |
+|  +----------------------------+|
+|  | [PDF] Referral Letter      ||
+|  | [PDF] Lab Results          ||
+|  | [IMG] X-rays (3)           ||
+|  +----------------------------+|
+|                                |
+|  [Add Note] [Upload Report]    |
+|                                |
++--------------------------------+
+
+
+================================================================
+                    TECHNICAL IMPLEMENTATION NOTES
+================================================================
+
+1. HTMX INTERACTIONS:
+   - Directory search: hx-get="/referrals/directory/search/"
+     hx-trigger="keyup changed delay:300ms"
+   - Referral status updates: hx-post="/referrals/{id}/status/"
+   - Document uploads: hx-post="/referrals/{id}/documents/"
+     with file upload
+   - Appointment booking: hx-post="/referrals/visiting/book/"
+
+2. DOCUMENT HANDLING:
+   - PDF generation for referral letters
+   - Image viewing for X-rays, ultrasounds
+   - Secure file storage
+   - Document sharing with specialists
+
+3. EMAIL INTEGRATION:
+   - Auto-send referral to specialist
+   - Email templates for referral letters
+   - Notification when report received
+   - Follow-up reminders
+
+4. CALENDAR INTEGRATION:
+   - Visiting specialist calendar
+   - Appointment slot management
+   - Recurring schedule support
+   - Calendar export (iCal)
+
+5. B2B INTEGRATION:
+   - Link to professional accounts (S-020)
+   - Auto-billing for inbound referrals
+   - Statement generation
+   - Revenue tracking
+
+6. MAPS INTEGRATION:
+   - Google Maps for specialist locations
+   - Distance calculation
+   - Directions generation
+
+7. MOBILE OPTIMIZATION:
+   - Touch-friendly status updates
+   - Swipe to view documents
+   - One-tap calling
+   - Camera for document capture
+
+8. REPORTING:
+   - Referral volume by specialty
+   - Outcome tracking
+   - Revenue by specialist
+   - Turnaround times
+
+9. NOTIFICATIONS:
+   - New referral received (to specialist)
+   - Report received (to vet)
+   - Appointment reminders
+   - Follow-up due
+
+10. PERMISSIONS:
+    - Create referrals: vets only
+    - View referrals: all staff
+    - Manage directory: owner/manager
+    - Visiting schedule: owner only
+
+================================================================
+                    VERSION HISTORY
+================================================================
+
+v1.0.0 - December 21, 2025
+- Initial wireframe creation
+- Specialist directory with search
+- Outbound referral workflow
+- Referral tracking and status
+- Specialist report recording
+- Visiting specialist scheduling
+- Visiting appointment booking
+- Inbound referral management
+- Mobile-optimized views
+
+================================================================

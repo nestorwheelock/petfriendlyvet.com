@@ -1,0 +1,712 @@
+# Wireframe: Communications Inbox (Unified Messaging)
+# Story: S-006 Omnichannel Communications
+# Epoch: 4 (Communications Hub)
+# Module: django-omnichannel
+
+================================================================
+                    UNIFIED INBOX - DESKTOP
+================================================================
+
+URL: /admin/communications/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS | Inbox | Templates | Settings           |
++------------------------------------------------------------------+
+|                                                                    |
+|  +----------------+  +------------------------------------------+  |
+|  | CHANNELS       |  | INBOX                         [Compose]  |  |
+|  |----------------|  |------------------------------------------|  |
+|  | All (47)       |  | Filter: [All v] [Unread v] [Search...]   |  |
+|  | Unread (12)    |  |------------------------------------------|  |
+|  |----------------|  |                                          |  |
+|  | [email] (15)   |  | [*] Maria Garcia              2 min ago  |  |
+|  | [sms] (18)     |  |     [whatsapp] Re: Luna's appointment    |  |
+|  | [whatsapp](14) |  |     "Si, confirmo para manana a las..."  |  |
+|  |----------------|  |------------------------------------------|  |
+|  | STATUS         |  | [ ] John Smith                15 min ago |  |
+|  |----------------|  |     [sms] Incoming                       |  |
+|  | Needs Reply(5) |  |     "What time can I pick up the med..." |  |
+|  | Awaiting (8)   |  |------------------------------------------|  |
+|  | Resolved (24)  |  | [ ] Pet Rescue Org            45 min ago |  |
+|  |----------------|  |     [email] Order confirmation           |  |
+|  | FLAGGED        |  |     "Thank you for your order #2025..."  |  |
+|  |----------------|  |------------------------------------------|  |
+|  | Urgent (2)     |  | [*] Ana Lopez                  1 hr ago  |  |
+|  | Follow-up (3)  |  |     [whatsapp] Vaccination reminder      |  |
+|  |                |  |     "Hola! Le recordamos que Milo..."    |  |
+|  |                |  |------------------------------------------|  |
+|  |                |  | [ ] Dr. Martinez (B2B)         2 hr ago  |  |
+|  |                |  |     [email] Lab results ready            |  |
+|  |                |  |     "Cytology results for samples..."    |  |
+|  |                |  |------------------------------------------|  |
+|  |                |  | [*] Carlos Ruiz                3 hr ago  |  |
+|  |                |  |     [sms] Appointment change             |  |
+|  |                |  |     "Puedo cambiar mi cita de..."        |  |
+|  |                |  |------------------------------------------|  |
+|  |                |  |                                          |  |
+|  |                |  | [<< Prev]  Page 1 of 8  [Next >>]        |  |
+|  +----------------+  +------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+Legend:
+  [*] = Unread message
+  [email] = Email icon
+  [sms] = SMS/Text icon
+  [whatsapp] = WhatsApp icon
+
+
+================================================================
+                    CONVERSATION THREAD VIEW
+================================================================
+
+URL: /admin/communications/thread/maria-garcia/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Maria Garcia                   [<< Back] |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | MARIA GARCIA                                                  |  |
+|  |--------------------------------------------------------------|  |
+|  | Phone: +52 998 123 4567  | Email: maria@email.com            |  |
+|  | Pets: Luna (Golden Retriever), Milo (Cat)                    |  |
+|  | Preferences: WhatsApp (primary), Email                        |  |
+|  | [View Profile] [View Pets] [View Appointments]                |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CONVERSATION                            Channel: [All v]          |
+|  +--------------------------------------------------------------+  |
+|  |                                                               |  |
+|  |  Dec 21, 2025                                                 |  |
+|  |  ---------------------------------------------------------    |  |
+|  |                                                               |  |
+|  |  [whatsapp] OUTBOUND                           10:00 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Hola Maria! Le recordamos que Luna tiene cita         |    |  |
+|  |  | manana 22 de diciembre a las 10:00 AM para su         |    |  |
+|  |  | revision general.                                      |    |  |
+|  |  |                                                        |    |  |
+|  |  | Responda SI para confirmar o llame para cambiar.      |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [checkmarks] Delivered, Read 10:15 AM                        |  |
+|  |                                                               |  |
+|  |  [whatsapp] INBOUND                            10:18 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Si, confirmo para manana a las 10. Gracias!            |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |                                                               |  |
+|  |  [whatsapp] OUTBOUND (Auto)                    10:18 AM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Perfecto! Cita confirmada para Luna el 22 de          |    |  |
+|  |  | diciembre a las 10:00 AM.                              |    |  |
+|  |  |                                                        |    |  |
+|  |  | Dr. Pablo los espera!                                  |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [checkmarks] Delivered, Read 10:20 AM                        |  |
+|  |                                                               |  |
+|  |  Dec 19, 2025                                                 |  |
+|  |  ---------------------------------------------------------    |  |
+|  |                                                               |  |
+|  |  [email] OUTBOUND                               3:45 PM       |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  | Subject: Vacunacion pendiente - Luna                   |    |  |
+|  |  |                                                        |    |  |
+|  |  | Estimada Maria, le recordamos que Luna tiene          |    |  |
+|  |  | pendiente su vacuna de refuerzo...                    |    |  |
+|  |  +-------------------------------------------------------+    |  |
+|  |  [checkmark] Delivered                                        |  |
+|  |                                                               |  |
+|  |  [Load older messages...]                                     |  |
+|  |                                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  COMPOSE REPLY                                                     |
+|  +--------------------------------------------------------------+  |
+|  | Channel: [whatsapp v]  Template: [None - Free text v]        |  |
+|  |--------------------------------------------------------------|  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  |--------------------------------------------------------------|  |
+|  | [ ] AI Assist    [Attach] [Quick Replies v]     [Send]       |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    COMPOSE NEW MESSAGE
+================================================================
+
+URL: /admin/communications/compose/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Compose Message                          |
++------------------------------------------------------------------+
+|                                                                    |
+|  TO                                                                |
+|  +--------------------------------------------------------------+  |
+|  | [Search client...___________________________]                 |  |
+|  | Or select: [Recent v] [With appointments v] [All clients v]   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Selected: Maria Garcia (maria@email.com, +52 998 123 4567)       |
+|                                                                    |
+|  CHANNEL                                                           |
+|  +--------------------------------------------------------------+  |
+|  | (*) WhatsApp  [Preferred]                                     |  |
+|  | ( ) SMS                                                       |  |
+|  | ( ) Email                                                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  MESSAGE                                                           |
+|  +--------------------------------------------------------------+  |
+|  | Use Template: [None - Free text            v]                 |  |
+|  |              [Appointment Reminder         ]                  |  |
+|  |              [Vaccination Due              ]                  |  |
+|  |              [Order Ready for Pickup       ]                  |  |
+|  |              [Prescription Refill          ]                  |  |
+|  |              [Payment Reminder             ]                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Subject (Email only):                                         |  |
+|  | [________________________________________________]            |  |
+|  |                                                               |  |
+|  | Message:                                                      |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  | [                                                           ] |  |
+|  |                                                               |  |
+|  | Variables: {owner_name} {pet_name} {appointment_date}         |  |
+|  |            {appointment_time} {service_name} {clinic_phone}   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  OPTIONS                                                           |
+|  +--------------------------------------------------------------+  |
+|  | [ ] Schedule for later: [Date/Time picker    ]                |  |
+|  | [ ] Request confirmation                                      |  |
+|  | [ ] Enable escalation (send via other channels if no reply)   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancel ]   [ Preview ]   [ Send Now ]                           |  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    MESSAGE TEMPLATES
+================================================================
+
+URL: /admin/communications/templates/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Templates                [+ New Template] |
++------------------------------------------------------------------+
+|                                                                    |
+|  TEMPLATE CATEGORIES                                               |
+|  +--------------------------------------------------------------+  |
+|  | Appointments (5) | Orders (3) | Reminders (4) | General (2)   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  APPOINTMENT TEMPLATES                                             |
+|  +--------------------------------------------------------------+  |
+|  | NAME                    | CHANNELS         | STATUS  | ACTIONS |
+|  |-------------------------|------------------|---------|---------|
+|  | Appointment Reminder    | [w] [s] [e]      | Active  | [Edit]  |
+|  | Appointment Confirmed   | [w] [s] [e]      | Active  | [Edit]  |
+|  | Appointment Cancelled   | [w] [e]          | Active  | [Edit]  |
+|  | Appointment Rescheduled | [w] [s] [e]      | Active  | [Edit]  |
+|  | No-Show Follow-up       | [e]              | Active  | [Edit]  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Legend: [w]=WhatsApp [s]=SMS [e]=Email                            |
+|                                                                    |
+|  REMINDER TEMPLATES                                                |
+|  +--------------------------------------------------------------+  |
+|  | NAME                    | CHANNELS         | STATUS  | ACTIONS |
+|  |-------------------------|------------------|---------|---------|
+|  | Vaccination Due         | [w] [s] [e]      | Active  | [Edit]  |
+|  | Prescription Refill     | [w] [s]          | Active  | [Edit]  |
+|  | Follow-up Visit         | [w] [e]          | Active  | [Edit]  |
+|  | Annual Checkup Due      | [e]              | Active  | [Edit]  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    TEMPLATE EDITOR
+================================================================
+
+URL: /admin/communications/templates/appointment-reminder/edit/
+
++------------------------------------------------------------------+
+|  [Logo]  TEMPLATES > Edit: Appointment Reminder                    |
++------------------------------------------------------------------+
+|                                                                    |
+|  TEMPLATE INFO                                                     |
+|  +--------------------------------------------------------------+  |
+|  | Name: [Appointment Reminder___________________________]       |  |
+|  | Type: [Appointments v]                                        |  |
+|  | Status: [x] Active                                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CHANNELS                                                          |
+|  +--------------------------------------------------------------+  |
+|  | [x] WhatsApp  [x] SMS  [x] Email                              |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  EMAIL VERSION                                                     |
+|  +--------------------------------------------------------------+  |
+|  | Subject (ES): [Recordatorio: Cita para {pet_name}___]         |  |
+|  | Subject (EN): [Reminder: Appointment for {pet_name}__]        |  |
+|  |--------------------------------------------------------------|  |
+|  | Body (ES):                                                    |  |
+|  | Hola {owner_name},                                            |  |
+|  |                                                               |  |
+|  | Le recordamos que {pet_name} tiene cita el                    |  |
+|  | {appointment_date} a las {appointment_time} para              |  |
+|  | {service_name}.                                               |  |
+|  |                                                               |  |
+|  | Ubicacion: {clinic_address}                                   |  |
+|  | Telefono: {clinic_phone}                                      |  |
+|  |                                                               |  |
+|  | Dr. Pablo los espera!                                         |  |
+|  |                                                               |  |
+|  | [Preview ES] [Preview EN]                                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SMS VERSION (160 char limit)                                      |
+|  +--------------------------------------------------------------+  |
+|  | (ES): Pet-Friendly: Cita para {pet_name} manana               |  |
+|  |       {appointment_time}. Responda SI para confirmar.         |  |
+|  |       Tel: {clinic_phone}                                     |  |
+|  |       [145/160 chars]                                         |  |
+|  |--------------------------------------------------------------|  |
+|  | (EN): Pet-Friendly: Appointment for {pet_name} tomorrow       |  |
+|  |       at {appointment_time}. Reply YES to confirm.            |  |
+|  |       Tel: {clinic_phone}                                     |  |
+|  |       [138/160 chars]                                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  WHATSAPP VERSION (Template must be approved by Meta)              |
+|  +--------------------------------------------------------------+  |
+|  | Template Name: appointment_reminder_v1                        |  |
+|  | Status: [Approved] Approved Dec 1, 2025                       |  |
+|  |--------------------------------------------------------------|  |
+|  | Header: [None v]                                              |  |
+|  | Body:                                                         |  |
+|  | Hola {{1}}! Le recordamos que {{2}} tiene cita el {{3}}      |  |
+|  | a las {{4}} para {{5}}.                                       |  |
+|  |                                                               |  |
+|  | Responda SI para confirmar o NO para cancelar.                |  |
+|  |                                                               |  |
+|  | Variables: 1=owner_name, 2=pet_name, 3=date, 4=time, 5=svc   |  |
+|  | Footer: [Pet-Friendly Veterinaria v]                          |  |
+|  | Buttons: [Quick Reply: SI] [Quick Reply: NO]                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  AVAILABLE VARIABLES                                               |
+|  +--------------------------------------------------------------+  |
+|  | {owner_name}      | {pet_name}       | {pet_species}          |  |
+|  | {appointment_date}| {appointment_time}| {service_name}        |  |
+|  | {clinic_name}     | {clinic_phone}   | {clinic_address}       |  |
+|  | {invoice_total}   | {order_number}   | {confirmation_link}    |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancel ]   [ Save Draft ]   [ Save & Activate ]                 |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ESCALATION RULES
+================================================================
+
+URL: /admin/communications/escalation/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Escalation Rules                         |
++------------------------------------------------------------------+
+|                                                                    |
+|  APPOINTMENT REMINDERS                                             |
+|  +--------------------------------------------------------------+  |
+|  | When confirmation is required, escalate as follows:           |  |
+|  |                                                               |  |
+|  | Step 1: 24 hours before                                       |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Channel: [Email           v]                          |     |  |
+|  | | Wait:    [2   ] hours before escalating               |     |  |
+|  | | [x] Enabled                                           |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (if no confirmation)                           |  |
+|  |                                                               |  |
+|  | Step 2: 22 hours before                                       |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Channel: [SMS             v]                          |     |  |
+|  | | Wait:    [2   ] hours before escalating               |     |  |
+|  | | [x] Enabled                                           |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (if no confirmation)                           |  |
+|  |                                                               |  |
+|  | Step 3: 20 hours before                                       |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Channel: [WhatsApp        v]                          |     |  |
+|  | | Wait:    [18  ] hours (until 2h before)               |     |  |
+|  | | [x] Enabled                                           |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |              |                                                |  |
+|  |              v (if no confirmation)                           |  |
+|  |                                                               |  |
+|  | Step 4: 2 hours before (Final)                                |  |
+|  | +-------------------------------------------------------+     |  |
+|  | | Channel: [WhatsApp        v]                          |     |  |
+|  | | Action:  [x] Flag for staff attention                 |     |  |
+|  | | [x] Enabled                                           |     |  |
+|  | +-------------------------------------------------------+     |  |
+|  |                                                               |  |
+|  | [+ Add Step]                                                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  VACCINATION REMINDERS                                             |
+|  +--------------------------------------------------------------+  |
+|  | [Similar escalation configuration...]                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Save All Rules ]                                                |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    SCHEDULED MESSAGES
+================================================================
+
+URL: /admin/communications/scheduled/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Scheduled Messages      [+ Schedule New] |
++------------------------------------------------------------------+
+|                                                                    |
+|  UPCOMING (Next 24 Hours)                                          |
+|  +--------------------------------------------------------------+  |
+|  | TIME       | RECIPIENT    | TYPE              | CHANNEL | ACT |
+|  |------------|--------------|-------------------|---------|-----|
+|  | Today 2PM  | Maria Garcia | Apt Reminder      | [w]     | [X] |
+|  | Today 4PM  | John Smith   | Vacc Due          | [e]     | [X] |
+|  | Today 6PM  | Ana Lopez    | Rx Refill         | [s]     | [X] |
+|  | Tomorrow 8A| Carlos Ruiz  | Apt Reminder      | [w]     | [X] |
+|  | Tomorrow 9A| Lisa Chen    | Order Ready       | [w]     | [X] |
+|  | Tomorrow 10| Pet Rescue   | Apt Reminder      | [e]     | [X] |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  PENDING ESCALATIONS                                               |
+|  +--------------------------------------------------------------+  |
+|  | ORIGINAL   | RECIPIENT    | STATUS            | NEXT STEP     |
+|  |------------|--------------|-------------------|---------------|
+|  | Dec 21 10A | Roberto Diaz | Email sent, no    | SMS in 1hr    |
+|  |            |              | confirmation      |               |
+|  | Dec 21 9A  | Emma Wilson  | Email+SMS sent,   | WhatsApp now  |
+|  |            |              | no confirmation   | [Send Now]    |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  AWAITING CONFIRMATION (Sent, no response)                         |
+|  +--------------------------------------------------------------+  |
+|  | SENT       | RECIPIENT    | CHANNEL | FOR             | FLAG  |
+|  |------------|--------------|---------|-----------------|-------|
+|  | 2 hrs ago  | Roberto Diaz | [e]     | Apt Dec 22 10A  | [!]   |
+|  | 3 hrs ago  | Emma Wilson  | [s]     | Apt Dec 22 2P   | [!]   |
+|  | 5 hrs ago  | Mike Brown   | [w]     | Apt Dec 22 4P   | [!!]  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    DELIVERY STATUS DASHBOARD
+================================================================
+
+URL: /admin/communications/status/
+
++------------------------------------------------------------------+
+|  [Logo]  COMMUNICATIONS > Delivery Status                          |
++------------------------------------------------------------------+
+|                                                                    |
+|  DELIVERY METRICS (Last 7 Days)                                    |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|  | SENT        | | DELIVERED   | | READ        | | FAILED      |   |
+|  |    347      | |    342      | |    298      | |     5       |   |
+|  |   Total     | |   98.6%     | |   85.8%     | |   1.4%      |   |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|                                                                    |
+|  BY CHANNEL                                                        |
+|  +--------------------------------------------------------------+  |
+|  | CHANNEL   | SENT | DELIVERED | READ   | FAILED | RATE       |  |
+|  |-----------|------|-----------|--------|--------|------------|  |
+|  | WhatsApp  | 145  |    145    |  140   |   0    | 100% / 97% |  |
+|  | SMS       | 112  |    110    |   95   |   2    | 98% / 85%  |  |
+|  | Email     |  90  |     87    |   63   |   3    | 97% / 70%  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  FAILED MESSAGES                                [Retry All]        |
+|  +--------------------------------------------------------------+  |
+|  | DATE    | RECIPIENT    | CHANNEL | ERROR            | ACTION |  |
+|  |---------|--------------|---------|------------------|--------|  |
+|  | Dec 21  | bad@email.co | [e]     | Invalid address  | [Del]  |  |
+|  | Dec 20  | +52999000000 | [s]     | Number not valid | [Edit] |  |
+|  | Dec 20  | +52998111222 | [s]     | Carrier rejected | [Retry]|  |
+|  | Dec 19  | old@test.com | [e]     | Mailbox full     | [Retry]|  |
+|  | Dec 19  | +52998333444 | [w]     | Not on WhatsApp  | [SMS]  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CONFIRMATION STATS                                                |
+|  +--------------------------------------------------------------+  |
+|  | Appointment reminders sent: 89                                |  |
+|  | Confirmed:                  76 (85%)                          |  |
+|  | No response:                10 (11%)                          |  |
+|  | Cancelled:                   3 (3%)                           |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - INBOX
+================================================================
+
++--------------------------------+
+|  [=] Pet-Friendly     [Search] |
++--------------------------------+
+|  INBOX                [Compose]|
+|                                |
+|  FILTER: [All v] [Unread v]    |
+|                                |
+|  +----------------------------+|
+|  | [*] Maria Garcia    2m    ||
+|  | [whatsapp]                 ||
+|  | Si, confirmo para mana... ||
+|  +----------------------------+|
+|  | [ ] John Smith      15m   ||
+|  | [sms]                      ||
+|  | What time can I pick u... ||
+|  +----------------------------+|
+|  | [ ] Pet Rescue      45m   ||
+|  | [email]                    ||
+|  | Thank you for your or... ||
+|  +----------------------------+|
+|  | [*] Ana Lopez       1h    ||
+|  | [whatsapp]                 ||
+|  | Hola! Le recordamos qu... ||
+|  +----------------------------+|
+|  | [ ] Dr. Martinez    2h    ||
+|  | [email]                    ||
+|  | Cytology results for... ||
+|  +----------------------------+|
+|  | [*] Carlos Ruiz     3h    ||
+|  | [sms]                      ||
+|  | Puedo cambiar mi cita...  ||
+|  +----------------------------+|
+|                                |
+|  [Load More]                   |
+|                                |
++--------------------------------+
+| [Home] [Inbox] [Appts] [+]     |
++--------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - CONVERSATION
+================================================================
+
++--------------------------------+
+|  [<] Maria Garcia     [Call]   |
++--------------------------------+
+|                                |
+|  Dec 21, 2025                  |
+|  ─────────────────────         |
+|                                |
+|  [whatsapp] 10:00 AM           |
+|  +----------------------------+|
+|  | Hola Maria! Le recorda-   ||
+|  | mos que Luna tiene cita   ||
+|  | manana 22 de diciembre... ||
+|  +----------------------------+|
+|  [checkmarks] Read 10:15       |
+|                                |
+|                     10:18 AM   |
+|  +----------------------------+|
+|  | Si, confirmo para manana  ||
+|  | a las 10. Gracias!        ||
+|  +----------------------------+|
+|                                |
+|  [whatsapp] 10:18 AM           |
+|  +----------------------------+|
+|  | Perfecto! Cita confirmada ||
+|  | para Luna el 22 de dic... ||
+|  +----------------------------+|
+|  [checkmarks] Read 10:20       |
+|                                |
+|  [Load older...]               |
+|                                |
++--------------------------------+
+| Channel: [whatsapp v]          |
+| +----------------------------+ |
+| | Type message...            | |
+| +----------------------------+ |
+| [Attach]   [Templates] [Send]  |
++--------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - QUICK COMPOSE
+================================================================
+
++--------------------------------+
+|  [<] NEW MESSAGE               |
++--------------------------------+
+|                                |
+|  TO:                           |
+|  [Search client...           ] |
+|                                |
+|  Selected: Maria Garcia        |
+|  +52 998 123 4567              |
+|                                |
+|  CHANNEL:                      |
+|  +----------------------------+|
+|  | (*) WhatsApp [Preferred]   ||
+|  | ( ) SMS                    ||
+|  | ( ) Email                  ||
+|  +----------------------------+|
+|                                |
+|  TEMPLATE:                     |
+|  [Appointment Reminder     v ] |
+|                                |
+|  MESSAGE:                      |
+|  +----------------------------+|
+|  | Hola Maria! Le recordamos ||
+|  | que Luna tiene cita el    ||
+|  | 23 de diciembre a las     ||
+|  | 10:00 AM para revision.   ||
+|  |                           ||
+|  | Responda SI para confirmar||
+|  +----------------------------+|
+|                                |
+|  [ ] Request confirmation      |
+|  [ ] Enable escalation         |
+|                                |
+|  [ Cancel ]     [ Send Now ]   |
+|                                |
++--------------------------------+
+
+
+================================================================
+                    QUICK REPLIES PANEL
+================================================================
+
+Quick replies appear when composing:
+
++--------------------------------------------------------------+
+| QUICK REPLIES                                          [Edit] |
+|--------------------------------------------------------------|
+| [Confirmo la cita]                                            |
+| [Si, gracias]                                                 |
+| [Necesito cambiar la cita]                                    |
+| [Llego en 10 minutos]                                         |
+| [Puede pasar a recoger su pedido]                             |
+| [Los resultados estan listos]                                 |
+| [Por favor llame a la clinica]                                |
++--------------------------------------------------------------+
+
+
+================================================================
+                    TECHNICAL IMPLEMENTATION NOTES
+================================================================
+
+1. HTMX INTERACTIONS:
+   - Inbox list: hx-get="/communications/inbox/"
+     hx-trigger="load, every 30s" for real-time updates
+   - Thread view: hx-get="/communications/thread/{id}/"
+     with infinite scroll for history
+   - Send message: hx-post="/communications/send/"
+     hx-target="#message-sent-feedback"
+   - Search: hx-get="/communications/search/"
+     hx-trigger="keyup changed delay:300ms"
+
+2. WEBSOCKETS:
+   - Real-time incoming message notifications
+   - Delivery status updates
+   - Typing indicators (WhatsApp)
+   - Connection status indicator
+
+3. TWILIO INTEGRATION:
+   - SMS sending via REST API
+   - Webhook for delivery receipts
+   - Webhook for incoming SMS
+   - Number formatting (E.164)
+
+4. WHATSAPP BUSINESS API:
+   - Template messages (pre-approved)
+   - Session messages (24-hour window)
+   - Webhook for incoming messages
+   - Webhook for delivery/read receipts
+   - Media support (images, documents)
+
+5. EMAIL INTEGRATION:
+   - Django email backend
+   - HTML email templates
+   - Open/click tracking (optional)
+   - Bounce handling
+
+6. ESCALATION ENGINE:
+   - Celery tasks for scheduled sends
+   - Celery beat for escalation checks
+   - State machine for escalation flow
+   - Confirmation tracking
+
+7. MOBILE OPTIMIZATION:
+   - Touch-friendly message bubbles
+   - Swipe actions (mark read, reply)
+   - Pull-to-refresh inbox
+   - Keyboard auto-focus on compose
+
+8. AI INTEGRATION:
+   - AI can read incoming messages
+   - AI can compose and send replies
+   - AI can check confirmation status
+   - Suggested replies based on context
+
+9. PERMISSIONS:
+   - View inbox: all staff
+   - Send messages: all staff
+   - Edit templates: manager + owner
+   - Configure escalation: owner only
+   - Access WhatsApp API: system only
+
+10. AUDIT TRAIL:
+    - All messages logged
+    - Delivery status tracked
+    - Staff actions recorded
+    - API calls logged
+
+================================================================
+                    VERSION HISTORY
+================================================================
+
+v1.0.0 - December 21, 2025
+- Initial wireframe creation
+- Unified inbox with channel filtering
+- Conversation thread view
+- Message composition with templates
+- Template editor (Email, SMS, WhatsApp)
+- Escalation rules configuration
+- Scheduled messages view
+- Delivery status dashboard
+- Mobile-optimized views
+- Quick replies panel
+
+================================================================

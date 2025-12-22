@@ -1,0 +1,778 @@
+# Wireframe: Emergency Triage & Services
+# Story: S-015 Emergency Services
+# Epoch: 4 (Communications Hub)
+# Module: django-omnichannel + django-appointments
+
+================================================================
+                    EMERGENCY BUTTON - CUSTOMER VIEW
+================================================================
+
+Prominent emergency access on all pages (bottom-right, always visible):
+
++------------------------------------------------------------------+
+|                                                                    |
+|                                                                    |
+|                                                                    |
+|                                                         +-------+  |
+|                                              [Chat AI]  | [!]   |  |
+|                                                         | EMERG |  |
+|                                                         +-------+  |
++------------------------------------------------------------------+
+
+When clicked/tapped:
+
++------------------------------------------------------------------+
+|                 EMERGENCY?                              [X Close] |
++------------------------------------------------------------------+
+|                                                                    |
+|  If your pet is having a medical emergency, we're here to help.   |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [PHONE ICON]                                                  |  |
+|  | CALL NOW                                                      |  |
+|  | +52 998 316 2438                                              |  |
+|  | (24/7 Emergency Line)                                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [WHATSAPP ICON]                                               |  |
+|  | WHATSAPP EMERGENCY                                            |  |
+|  | Quick triage via chat                                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [AI ICON]                                                     |  |
+|  | AI TRIAGE NOW                                                 |  |
+|  | Get immediate guidance                                        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Hours: Clinic open Tue-Sun 9am-8pm                               |
+|  After hours: Emergency line answered 24/7                        |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    AI TRIAGE FLOW - CUSTOMER VIEW
+================================================================
+
+URL: /emergency/ or Chat Widget
+
+Step 1: Initial Assessment
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY TRIAGE                                          |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  |                                                               |  |
+|  |  AI: I understand you may have an emergency. I'll help       |  |
+|  |      assess the situation quickly.                            |  |
+|  |                                                               |  |
+|  |      What is happening with your pet?                        |  |
+|  |                                                               |  |
+|  |      Type your concern or select from common emergencies:    |  |
+|  |                                                               |  |
+|  |      [Trouble Breathing]  [Not Responding]  [Bleeding]       |  |
+|  |      [Ate Something Bad]  [Hit by Car]      [Seizure]        |  |
+|  |      [Can't Walk]         [Vomiting/Diarr]  [Other...]       |  |
+|  |                                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [Type what's happening...                                   ] |  |
+|  +--------------------------------------------------------------+  |
+|  [Send]                                                            |
+|                                                                    |
++------------------------------------------------------------------+
+
+Step 2: Triage Questions
+
++------------------------------------------------------------------+
+|  EMERGENCY TRIAGE                                   Severity: ???  |
++------------------------------------------------------------------+
+|                                                                    |
+|  AI: I need a few quick answers to assess the severity:           |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Q1: What type of pet?                                         |  |
+|  |     [Dog]  [Cat]  [Bird]  [Rabbit]  [Other: ______]          |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Q2: How old is your pet?                                      |  |
+|  |     [Puppy/Kitten]  [Adult]  [Senior]  [Unknown]             |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Q3: [Specific to symptom - e.g., for breathing:]              |  |
+|  |     Is your pet breathing at all?                             |  |
+|  |     [Yes, but labored]  [Very shallow]  [Not breathing]       |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Q4: Is your pet conscious/alert?                              |  |
+|  |     [Yes, alert]  [Drowsy/weak]  [Unconscious]               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Q5: What color are the gums?                                  |  |
+|  |     [Pink (normal)]  [Pale/White]  [Blue/Purple]  [Can't see]|  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [Submit Assessment]                                               |
+|                                                                    |
++------------------------------------------------------------------+
+
+Step 3A: CRITICAL Result
+
++------------------------------------------------------------------+
+|  EMERGENCY TRIAGE                            Severity: [CRITICAL]  |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [RED ALERT ICON]                                              |  |
+|  |                                                               |  |
+|  | THIS IS A CRITICAL EMERGENCY                                  |  |
+|  |                                                               |  |
+|  | Your pet needs immediate veterinary care.                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [PHONE RINGING ICON]                                          |  |
+|  |                                                               |  |
+|  | DR. PABLO IS BEING NOTIFIED NOW                               |  |
+|  |                                                               |  |
+|  | Expect a callback within 2 minutes.                           |  |
+|  |                                                               |  |
+|  | Your callback number: +52 998 XXX XXXX                        |  |
+|  | [Change Number]                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  WHILE YOU WAIT - FIRST AID:                                      |
+|  +--------------------------------------------------------------+  |
+|  | For "Trouble Breathing":                                      |  |
+|  |                                                               |  |
+|  | 1. Keep your pet calm and still                               |  |
+|  | 2. Clear any visible obstructions from mouth/nose             |  |
+|  | 3. Extend neck gently to open airway                          |  |
+|  | 4. Keep pet lying on side                                     |  |
+|  | 5. Cover with blanket to keep warm                            |  |
+|  |                                                               |  |
+|  | DO NOT:                                                       |  |
+|  | X Give food or water                                          |  |
+|  | X Put anything in mouth                                       |  |
+|  | X Leave pet unattended                                        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  IF NO CALLBACK IN 2 MINUTES:                                     |
+|  +--------------------------------------------------------------+  |
+|  | Call directly: +52 998 316 2438                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  NEAREST 24-HOUR HOSPITAL:                                        |
+|  +--------------------------------------------------------------+  |
+|  | Hospital Veterinario Cancun                                   |  |
+|  | Av. Tulum 123, Cancun, Q.R.                                   |  |
+|  | Phone: +52 998 884 5678                                       |  |
+|  | Distance: 35 km (40 min drive)                                |  |
+|  | [Get Directions]                                              |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+Step 3B: URGENT Result
+
++------------------------------------------------------------------+
+|  EMERGENCY TRIAGE                              Severity: [URGENT]  |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [ORANGE WARNING ICON]                                         |  |
+|  |                                                               |  |
+|  | URGENT - SAME DAY CARE NEEDED                                 |  |
+|  |                                                               |  |
+|  | Your pet should be seen today, but this is not               |  |
+|  | immediately life-threatening.                                 |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECOMMENDED ACTIONS:                                              |
+|  +--------------------------------------------------------------+  |
+|  | 1. Call the clinic: +52 998 316 2438                          |  |
+|  | 2. Or book emergency appointment:                             |  |
+|  |    [Book Emergency Slot - Next Available]                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  CLINIC STATUS:                                                    |
+|  +--------------------------------------------------------------+  |
+|  | Currently: OPEN (closes at 8 PM)                              |  |
+|  | Next available slot: 3:30 PM today                            |  |
+|  |                                                               |  |
+|  | Emergency fee may apply ($XXX additional)                     |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  WHILE WAITING - FIRST AID:                                       |
+|  +--------------------------------------------------------------+  |
+|  | For "Repeated Vomiting":                                      |  |
+|  |                                                               |  |
+|  | 1. Remove food for 2-4 hours                                  |  |
+|  | 2. Offer small sips of water only                             |  |
+|  | 3. Keep pet in quiet, comfortable area                        |  |
+|  | 4. Note what/when pet last ate                                |  |
+|  |                                                               |  |
+|  | GO TO EMERGENCY IMMEDIATELY IF:                               |  |
+|  | ! Blood in vomit                                              |  |
+|  | ! Pet becomes unresponsive                                    |  |
+|  | ! Abdomen becomes swollen/hard                                |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+Step 3C: CAN WAIT Result
+
++------------------------------------------------------------------+
+|  EMERGENCY TRIAGE                            Severity: [MODERATE]  |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [YELLOW INFO ICON]                                            |  |
+|  |                                                               |  |
+|  | MONITOR - SCHEDULE APPOINTMENT                                |  |
+|  |                                                               |  |
+|  | Based on your answers, this doesn't appear to be an          |  |
+|  | immediate emergency, but your pet should be seen soon.       |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECOMMENDED:                                                      |
+|  +--------------------------------------------------------------+  |
+|  | Schedule an appointment within 24-48 hours                    |  |
+|  | [Book Appointment]                                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  MONITOR AT HOME:                                                  |
+|  +--------------------------------------------------------------+  |
+|  | 1. Keep pet comfortable and quiet                             |  |
+|  | 2. Monitor eating/drinking/bathroom                           |  |
+|  | 3. Note any changes in symptoms                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ESCALATE TO EMERGENCY IF:                                        |  |
+|  +--------------------------------------------------------------+  |
+|  | ! Symptoms suddenly worsen                                    |  |
+|  | ! Pet stops eating/drinking                                   |  |
+|  | ! Pet becomes lethargic/unresponsive                          |  |
+|  | ! Blood appears in stool/vomit/urine                          |  |
+|  |                                                               |  |
+|  | If any of these occur: [Start Emergency Triage Again]         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: EMERGENCY DASHBOARD
+================================================================
+
+URL: /admin/emergency/
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY | Active | History | On-Call | First Aid       |
++------------------------------------------------------------------+
+|                                                                    |
+|  EMERGENCY OVERVIEW                                Dec 21, 2025    |
+|  ================================================================  |
+|                                                                    |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|  | ACTIVE      | | TODAY       | | THIS WEEK   | | AVG RESPONSE|   |
+|  |     2       | |     4       | |    12       | |   3.2 min   |   |
+|  | emergencies | | handled     | | total       | | to callback |   |
+|  +-------------+ +-------------+ +-------------+ +-------------+   |
+|                                                                    |
+|  ON-CALL NOW                                                       |
+|  +--------------------------------------------------------------+  |
+|  | Dr. Pablo Rojo                        Until: 8 PM today       |  |
+|  | Phone: +52 998 316 2438                                       |  |
+|  | Status: [Available]                                           |  |
+|  | Backup: Dr. García (+52 998 555 1234)                         |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ACTIVE EMERGENCIES                                     [Refresh]  |
+|  +--------------------------------------------------------------+  |
+|  | [!!] CRITICAL - 5 min ago                          [Handle]   |  |
+|  |     Owner: Maria Garcia | Pet: Luna (Dog)                     |  |
+|  |     Symptoms: Difficulty breathing, collapsed                 |  |
+|  |     Status: Callback initiated, waiting for answer            |  |
+|  |--------------------------------------------------------------|  |
+|  | [!] URGENT - 15 min ago                            [Handle]   |  |
+|  |     Owner: Unknown caller | Pet: Cat                          |  |
+|  |     Symptoms: Repeated vomiting with blood                    |  |
+|  |     Status: Triaging via WhatsApp                             |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  RECENT RESOLVED                                                   |
+|  +--------------------------------------------------------------+  |
+|  | TIME    | OWNER         | PET   | SEVERITY | OUTCOME         |  |
+|  |---------|---------------|-------|----------|-----------------|  |
+|  | 2:30 PM | John Smith    | Max   | Urgent   | Seen at clinic  |  |
+|  | 11:00 AM| Ana Lopez     | Milo  | Moderate | Scheduled appt  |  |
+|  | 9:15 AM | Pet Rescue    | Bella | Critical | Referred to ER  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: HANDLE EMERGENCY
+================================================================
+
+URL: /admin/emergency/123/handle/
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY > Handle #EM-2025-0123          [Call Owner]    |
++------------------------------------------------------------------+
+|                                                                    |
+|  +--------------------------------------------------------------+  |
+|  | [!!] CRITICAL EMERGENCY                      Active: 5 min   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  OWNER & PET                                                       |
+|  +--------------------------------------------------------------+  |
+|  | Owner: Maria Garcia                                           |  |
+|  | Phone: +52 998 123 4567                                       |  |
+|  | Email: maria@email.com                                        |  |
+|  |                                                               |  |
+|  | Pet: Luna                                                     |  |
+|  | Species: Dog | Breed: Golden Retriever | Age: 8 years        |  |
+|  | [View Full Pet Record]                                        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  REPORTED SYMPTOMS                                                 |
+|  +--------------------------------------------------------------+  |
+|  | "My dog is not breathing right and collapsed!"                |  |
+|  |                                                               |  |
+|  | Triage Responses:                                             |  |
+|  | - Breathing: Very shallow                                     |  |
+|  | - Consciousness: Barely conscious                             |  |
+|  | - Gum color: Pale/White                                       |  |
+|  | - Duration: Started 10 minutes ago                            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  AI ASSESSMENT                                                     |  |
+|  +--------------------------------------------------------------+  |
+|  | Severity: CRITICAL                                            |  |
+|  | Possible conditions:                                          |  |
+|  | - Cardiac event                                               |  |
+|  | - Respiratory distress                                        |  |
+|  | - Bloat (GDV) - especially if abdomen distended              |  |
+|  | - Toxin ingestion                                             |  |
+|  |                                                               |  |
+|  | Recommended: Immediate examination, stabilization             |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  COMMUNICATION LOG                                                 |
+|  +--------------------------------------------------------------+  |
+|  | 3:45 PM - Emergency initiated via chat                        |  |
+|  | 3:46 PM - Triage completed, severity: CRITICAL                |  |
+|  | 3:46 PM - Auto-callback initiated to +52 998 123 4567         |  |
+|  | 3:47 PM - Callback connecting...                              |  |
+|  | 3:48 PM - First aid instructions sent via WhatsApp            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  ACTIONS                                                           |
+|  +--------------------------------------------------------------+  |
+|  | [Call Owner Now]  [Send WhatsApp]  [View Location]            |  |
+|  |                                                               |  |
+|  | Resolution:                                                   |  |
+|  | ( ) Coming to clinic - ETA: [___] min                        |  |
+|  | ( ) Referred to emergency hospital                            |  |
+|  | ( ) Advice given, monitoring at home                          |  |
+|  | ( ) False alarm / Not an emergency                            |  |
+|  | ( ) Could not reach owner                                     |  |
+|  |                                                               |  |
+|  | Notes: [_____________________________________________]        |  |
+|  |                                                               |  |
+|  | [Resolve Emergency]  [Create Emergency Appointment]            |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: ON-CALL SCHEDULE
+================================================================
+
+URL: /admin/emergency/oncall/
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY > On-Call Schedule              [+ Add Shift]   |
++------------------------------------------------------------------+
+|                                                                    |
+|  DECEMBER 2025                              [< Prev] [Next >]      |
+|  +--------------------------------------------------------------+  |
+|  |     Mon   Tue   Wed   Thu   Fri   Sat   Sun                   |  |
+|  |--------------------------------------------------------------|  |
+|  |          17    18    19    20    21    22                     |  |
+|  |         [--]  [--]  [--]  [DP]  [DP]  [DP]                    |  |
+|  |                             Eve   All   All                   |  |
+|  |--------------------------------------------------------------|  |
+|  |     23    24    25    26    27    28    29                    |  |
+|  |    [GR]  [GR]  [DP]  [--]  [--]  [GR]  [GR]                   |  |
+|  |    All   Eve   All                Eve   All                   |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  Legend: [DP] = Dr. Pablo  [GR] = Dr. García  [--] = Clinic Open  |
+|  Eve = After 8 PM  All = Full day/night                           |
+|                                                                    |
+|  THIS WEEK DETAIL                                                  |
+|  +--------------------------------------------------------------+  |
+|  | DATE      | DAY TIME      | EVENING/NIGHT | BACKUP           |  |
+|  |-----------|---------------|---------------|------------------|  |
+|  | Dec 21    | Clinic Open   | Dr. Pablo     | Dr. García       |  |
+|  |           |               | 8 PM - 8 AM   | +52 998 555 1234 |  |
+|  |-----------|---------------|---------------|------------------|  |
+|  | Dec 22    | Dr. Pablo     | Dr. Pablo     | Dr. García       |  |
+|  |           | All day       | All night     |                  |  |
+|  |-----------|---------------|---------------|------------------|  |
+|  | Dec 23    | Dr. García    | Dr. García    | Dr. Pablo        |  |
+|  |           | All day       | Until 10 PM   |                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SWAP REQUESTS                                                     |
+|  +--------------------------------------------------------------+  |
+|  | Dr. García requests swap: Dec 28 -> Dec 29                    |  |
+|  | [Approve] [Decline]                                           |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: FIRST AID DATABASE
+================================================================
+
+URL: /admin/emergency/first-aid/
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY > First Aid Instructions       [+ Add Guide]    |
++------------------------------------------------------------------+
+|                                                                    |
+|  FIRST AID GUIDES BY CONDITION                                     |
+|  +--------------------------------------------------------------+  |
+|  | CONDITION          | SPECIES    | SEVERITY | LAST UPDATED    |  |
+|  |--------------------|------------|----------|-----------------|  |
+|  | Choking            | Dog, Cat   | Critical | Dec 15, 2025    |  |
+|  | Not Breathing      | Dog, Cat   | Critical | Dec 15, 2025    |  |
+|  | Severe Bleeding    | All        | Critical | Dec 10, 2025    |  |
+|  | Poisoning          | Dog, Cat   | Critical | Dec 10, 2025    |  |
+|  | Heatstroke         | Dog, Cat   | Critical | Dec 1, 2025     |  |
+|  | Seizures           | Dog, Cat   | Urgent   | Nov 28, 2025    |  |
+|  | Fracture/Limping   | All        | Urgent   | Nov 25, 2025    |  |
+|  | Eye Injury         | All        | Urgent   | Nov 20, 2025    |  |
+|  | Vomiting           | Dog, Cat   | Moderate | Nov 15, 2025    |  |
+|  | Diarrhea           | Dog, Cat   | Moderate | Nov 15, 2025    |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [Edit Guide] [Preview] [Delete]                                   |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: EDIT FIRST AID GUIDE
+================================================================
+
+URL: /admin/emergency/first-aid/choking/edit/
+
++------------------------------------------------------------------+
+|  [Logo]  FIRST AID > Edit: Choking                                 |
++------------------------------------------------------------------+
+|                                                                    |
+|  BASIC INFO                                                        |
+|  +--------------------------------------------------------------+  |
+|  | Title (EN): [Choking - First Aid________________________]    |  |
+|  | Title (ES): [Asfixia - Primeros Auxilios_________________]    |  |
+|  | Condition:  [choking___________________________________]     |  |
+|  | Species:    [x] Dog  [x] Cat  [ ] Bird  [ ] Rabbit           |  |
+|  | Severity:   [Critical v]                                      |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  DESCRIPTION                                                       |
+|  +--------------------------------------------------------------+  |
+|  | (EN): Signs include pawing at mouth, difficulty breathing,   |  |
+|  |       blue gums, distressed behavior...                      |  |
+|  |--------------------------------------------------------------|  |
+|  | (ES): Los signos incluyen manotazos en la boca, dificultad   |  |
+|  |       para respirar, encias azules...                        |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  STEPS                                                             |
+|  +--------------------------------------------------------------+  |
+|  | Step 1:                                                       |  |
+|  | (EN): Open mouth and look for visible object                  |  |
+|  | (ES): Abra la boca y busque objetos visibles                  |  |
+|  |--------------------------------------------------------------|  |
+|  | Step 2:                                                       |  |
+|  | (EN): If visible, try to remove with fingers (carefully)      |  |
+|  | (ES): Si es visible, intente remover con los dedos            |  |
+|  |--------------------------------------------------------------|  |
+|  | Step 3:                                                       |  |
+|  | (EN): If object not visible, perform Heimlich maneuver        |  |
+|  | (ES): Si no es visible, realice la maniobra de Heimlich       |  |
+|  |--------------------------------------------------------------|  |
+|  | [+ Add Step]                                                  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  WARNINGS (Things NOT to do)                                       |  |
+|  +--------------------------------------------------------------+  |
+|  | - Do not reach blindly into throat                            |  |
+|  | - Do not hit pet on back                                      |  |
+|  | - Do not give water                                           |  |
+|  | [+ Add Warning]                                               |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  MEDIA                                                             |
+|  +--------------------------------------------------------------+  |
+|  | Video URL: [https://youtube.com/...___________________]       |  |
+|  | Images: [Upload] dog_heimlich.jpg, cat_heimlich.jpg           |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  [ Cancel ]   [ Save Draft ]   [ Save & Publish ]                  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    ADMIN: EMERGENCY REFERRALS
+================================================================
+
+URL: /admin/emergency/referrals/
+
++------------------------------------------------------------------+
+|  [Logo]  EMERGENCY > Referral Hospitals            [+ Add Hospital] |
++------------------------------------------------------------------+
+|                                                                    |
+|  24-HOUR EMERGENCY HOSPITALS                                       |
+|  +--------------------------------------------------------------+  |
+|  | HOSPITAL                  | DISTANCE | PHONE      | STATUS   |  |
+|  |---------------------------|----------|------------|----------|  |
+|  | Hospital Vet. Cancun      | 35 km    | 998-884-56 | Verified |  |
+|  |   Av. Tulum 123, Cancun   |          |            | Dec 2025 |  |
+|  |---------------------------|----------|------------|----------|  |
+|  | Urgencias Vet. Playa      | 28 km    | 984-873-45 | Verified |  |
+|  |   Av. 30, Playa del Carmen|          |            | Nov 2025 |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
+|  SPECIALIST EMERGENCY (By Appointment)                             |
+|  +--------------------------------------------------------------+  |
+|  | SPECIALIST                | SPECIALTY| PHONE      | HOURS    |  |
+|  |---------------------------|----------|------------|----------|  |
+|  | Dr. Hernandez             | Cardio   | 998-555-12 | By appt  |  |
+|  | Dr. Lopez                 | Surgery  | 998-555-34 | On-call  |  |
+|  +--------------------------------------------------------------+  |
+|                                                                    |
++------------------------------------------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - EMERGENCY TRIAGE
+================================================================
+
++--------------------------------+
+|  [<] EMERGENCY TRIAGE          |
++--------------------------------+
+|                                |
+|  +----------------------------+|
+|  | What's happening with      ||
+|  | your pet?                  ||
+|  +----------------------------+|
+|                                |
+|  SELECT OR TYPE:               |
+|  +----------------------------+|
+|  | [Trouble Breathing]        ||
+|  +----------------------------+|
+|  | [Not Responding]           ||
+|  +----------------------------+|
+|  | [Bleeding]                 ||
+|  +----------------------------+|
+|  | [Ate Something Bad]        ||
+|  +----------------------------+|
+|  | [Hit by Car]               ||
+|  +----------------------------+|
+|  | [Seizure]                  ||
+|  +----------------------------+|
+|  | [Other...]                 ||
+|  +----------------------------+|
+|                                |
+|  [Type symptoms...           ] |
+|  [Send]                        |
+|                                |
++--------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - CRITICAL RESULT
+================================================================
+
++--------------------------------+
+|       CRITICAL EMERGENCY       |
++--------------------------------+
+|                                |
+|  +----------------------------+|
+|  |  [RED ALERT ICON]          ||
+|  |                            ||
+|  |  YOUR PET NEEDS            ||
+|  |  IMMEDIATE CARE            ||
+|  +----------------------------+|
+|                                |
+|  +----------------------------+|
+|  | [PHONE ICON]               ||
+|  | CALLING DR. PABLO...       ||
+|  |                            ||
+|  | Expect callback in 2 min   ||
+|  +----------------------------+|
+|                                |
+|  FIRST AID:                    |
+|  +----------------------------+|
+|  | 1. Keep pet calm           ||
+|  | 2. Clear airway            ||
+|  | 3. Keep lying on side      ||
+|  | 4. Cover with blanket      ||
+|  |                            ||
+|  | DO NOT:                    ||
+|  | X Give food/water          ||
+|  | X Leave unattended         ||
+|  +----------------------------+|
+|                                |
+|  IF NO CALLBACK IN 2 MIN:      |
+|  +----------------------------+|
+|  | [CALL +52 998 316 2438]    ||
+|  +----------------------------+|
+|                                |
+|  NEAREST 24-HR HOSPITAL:       |
+|  +----------------------------+|
+|  | Hospital Vet. Cancun       ||
+|  | 35 km / 40 min drive       ||
+|  | [Get Directions]           ||
+|  +----------------------------+|
+|                                |
++--------------------------------+
+
+
+================================================================
+                    MOBILE VIEW - ADMIN EMERGENCY
+================================================================
+
++--------------------------------+
+|  [=] EMERGENCIES        [Bell] |
++--------------------------------+
+|                                |
+|  ON-CALL: Dr. Pablo            |
+|  Until 8 PM | Status: [Active] |
+|                                |
+|  ACTIVE EMERGENCIES            |
+|  +----------------------------+|
+|  | [!!] CRITICAL    5 min    ||
+|  | Maria Garcia - Luna (Dog)  ||
+|  | Difficulty breathing       ||
+|  | [Handle]                   ||
+|  +----------------------------+|
+|  | [!] URGENT      15 min    ||
+|  | Unknown - Cat              ||
+|  | Vomiting with blood        ||
+|  | [Handle]                   ||
+|  +----------------------------+|
+|                                |
+|  TODAY                         |
+|  +----------------------------+|
+|  | 2:30 PM | John Smith       ||
+|  | Max - Urgent - Seen        ||
+|  +----------------------------+|
+|  | 11:00 AM | Ana Lopez       ||
+|  | Milo - Moderate - Appt     ||
+|  +----------------------------+|
+|                                |
++--------------------------------+
+| [Home] [Emerg] [Inbox] [+]     |
++--------------------------------+
+
+
+================================================================
+                    TECHNICAL IMPLEMENTATION NOTES
+================================================================
+
+1. EMERGENCY DETECTION:
+   - Keyword matching for emergency terms
+   - NLP sentiment analysis for urgency
+   - Species-specific symptom matching
+   - Multi-language support (ES/EN)
+
+2. TRIAGE ENGINE:
+   - Decision tree based on symptoms
+   - Weighted scoring for severity
+   - AI-assisted assessment
+   - Escalation rules
+
+3. CALLBACK SYSTEM:
+   - Twilio Voice API for callbacks
+   - Auto-retry logic (3 attempts)
+   - Voicemail detection
+   - Callback queue management
+
+4. FIRST AID CONTENT:
+   - Markdown formatted steps
+   - Multi-language (ES/EN)
+   - Image support
+   - Video embeds (YouTube)
+
+5. ON-CALL MANAGEMENT:
+   - Calendar-based scheduling
+   - Swap request workflow
+   - Automatic rotation (optional)
+   - Backup assignment
+
+6. NOTIFICATIONS:
+   - Push notifications to on-call
+   - SMS fallback
+   - Email alerts
+   - Sound alerts in admin
+
+7. LOCATION SERVICES:
+   - Google Maps integration
+   - Distance calculation
+   - Directions link generation
+   - Nearby hospital lookup
+
+8. LOGGING:
+   - All emergency contacts logged
+   - Response times tracked
+   - Outcome recording
+   - Audit trail
+
+9. MOBILE OPTIMIZATION:
+   - Large touch targets
+   - High contrast for urgent
+   - One-tap calling
+   - Offline first aid cache
+
+10. PERMISSIONS:
+    - View emergencies: all staff
+    - Handle emergencies: vets only
+    - Edit first aid: owner/manager
+    - On-call schedule: owner only
+
+================================================================
+                    VERSION HISTORY
+================================================================
+
+v1.0.0 - December 21, 2025
+- Initial wireframe creation
+- Emergency button and triage flow
+- Severity-based results (Critical/Urgent/Moderate)
+- First aid instructions display
+- Admin emergency dashboard
+- On-call schedule management
+- First aid database editor
+- Emergency referral directory
+- Mobile-optimized views
+
+================================================================
