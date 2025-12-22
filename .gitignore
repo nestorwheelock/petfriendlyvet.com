@@ -88,3 +88,18 @@ celerybeat.pid
 *.pem
 *.key
 secrets.json
+credentials.json
+*.sqlite3
+.env*
+
+# Google/Cloud credentials
+client_secret*.json
+service_account*.json
+
+# Stripe/Payment keys
+stripe_*.json
+
+# Backup files
+*.bak
+*.backup
+*.sql

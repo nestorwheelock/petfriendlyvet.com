@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../Rectangular.png" alt="Veterinaria Pet-Friendly" width="400">
+</p>
+
 # Veterinaria Pet-Friendly - Documentación de Planificación
 
 **Cliente:** Dr. Pablo Rojo Mendoza - Veterinaria Pet-Friendly, Puerto Morelos, México
@@ -150,6 +154,11 @@ El proyecto se construye como 9 paquetes instalables vía pip:
 9. **django-accounting** - Contabilidad de doble entrada
 
 ---
+
+## Documentación Técnica
+
+- **[Decisiones de Arquitectura](DECISIONES_ARQUITECTURA.md)** - ADR-001: Monorepo con paquetes extraíbles
+- **[Estándares de Código](ESTANDARES_CODIGO.md)** - Reglas TDD, importaciones, estilo de código (LECTURA OBLIGATORIA)
 
 ## Próximos Pasos
 

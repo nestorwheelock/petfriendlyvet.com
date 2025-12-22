@@ -1,5 +1,7 @@
 # S-006: Comunicaciones Omnicanal
 
+> **LECTURA OBLIGATORIA:** Antes de implementar, revise [ESTANDARES_CODIGO.md](../ESTANDARES_CODIGO.md) y [DECISIONES_ARQUITECTURA.md](../DECISIONES_ARQUITECTURA.md)
+
 **Tipo de Historia:** Historia de Usuario
 **Prioridad:** Alta
 **Estimación:** 5 días

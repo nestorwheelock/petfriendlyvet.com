@@ -1,5 +1,7 @@
 # S-002: Interfaz de Chat con IA
 
+> **LECTURA OBLIGATORIA:** Antes de implementar, revise [ESTANDARES_CODIGO.md](../ESTANDARES_CODIGO.md) y [DECISIONES_ARQUITECTURA.md](../DECISIONES_ARQUITECTURA.md)
+
 **Tipo de Historia:** Historia de Usuario
 **Prioridad:** Alta
 **Estimación:** 3 días
