@@ -134,6 +134,7 @@ Please review these planning documents before approving:
 - **[Database Schema](planning/DATABASE_SCHEMA.md)** - Complete schema with ~75 tables
 - **[AI Tool Schemas](planning/AI_TOOL_SCHEMAS.md)** - 113 AI tools across all modules
 - **[Module Interfaces](planning/MODULE_INTERFACES.md)** - API contracts between 9 packages
+- **[Prepoch Documentation](planning/PREPOCH.md)** - Pre-Epoch 1 work (temp site, content scraping, assets)
 
 ### Spanish Documentation (Documentos en Español)
 - **[README (Español)](planning-es/README.md)** - Resumen del proyecto

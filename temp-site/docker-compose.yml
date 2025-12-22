@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: petfriendlyvet-web
+    restart: unless-stopped
+    networks:
+      - webproxy
+
+networks:
+  webproxy:
+    external: true
