@@ -471,7 +471,51 @@ This represents a significant first-mover advantage for Pet-Friendly with:
 
 ---
 
-## 9. Technical Preparation
+## 9. Security & Secrets Management
+
+### Public Repository Policy
+
+This repository is **intentionally public** on GitHub. The value is in implementation, client relationships, and domain knowledge - not the code itself.
+
+**Protected by .gitignore:**
+```
+# Environment & Secrets
+.env*                    # All environment files
+*.pem, *.key             # SSL/SSH certificates
+secrets.json             # Generic secrets
+credentials.json         # API credentials
+
+# Cloud/Service Credentials
+client_secret*.json      # Google OAuth
+service_account*.json    # GCP service accounts
+stripe_*.json            # Stripe keys
+
+# Database
+*.sqlite3                # Local SQLite databases
+*.sql                    # Database dumps
+*.backup, *.bak          # Backup files
+```
+
+### Secrets That Must NEVER Be Committed
+
+| Secret | Where It Goes | Example |
+|--------|---------------|---------|
+| Django SECRET_KEY | .env | `SECRET_KEY=abc123...` |
+| Database password | .env | `DATABASE_URL=postgres://...` |
+| Stripe keys | .env | `STRIPE_SECRET_KEY=sk_live_...` |
+| OpenRouter API key | .env | `OPENROUTER_API_KEY=...` |
+| Twilio credentials | .env | `TWILIO_AUTH_TOKEN=...` |
+| WhatsApp API token | .env | `WHATSAPP_TOKEN=...` |
+| AWS/SES credentials | .env | `AWS_SECRET_ACCESS_KEY=...` |
+| Facturama API key | .env | `FACTURAMA_API_KEY=...` |
+
+### Environment File Template
+
+A `.env.example` file will be provided (safe to commit) showing required variables without real values.
+
+---
+
+## 10. Technical Preparation
 
 ### Domain and Hosting
 
@@ -503,7 +547,7 @@ This represents a significant first-mover advantage for Pet-Friendly with:
 
 ---
 
-## 10. Content Requirements Checklist
+## 11. Content Requirements Checklist
 
 Created checklist for Dr. Pablo to provide remaining content:
 
@@ -539,7 +583,7 @@ Created checklist for Dr. Pablo to provide remaining content:
 
 ---
 
-## Prepoch Deliverables Summary
+## 12. Prepoch Deliverables Summary
 
 | Deliverable | Status | Location |
 |-------------|--------|----------|
@@ -556,7 +600,7 @@ Created checklist for Dr. Pablo to provide remaining content:
 
 ---
 
-## Transition to Epoch 1
+## 13. Transition to Epoch 1
 
 ### Prerequisites Met
 
@@ -588,7 +632,7 @@ The Prepoch work provides a solid foundation for beginning Epoch 1:
 
 ---
 
-## Appendix: File Inventory
+## 14. Appendix: File Inventory
 
 ### Root Directory
 
