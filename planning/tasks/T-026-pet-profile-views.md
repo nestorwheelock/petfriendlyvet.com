@@ -1,5 +1,7 @@
 # T-026: Pet Profile Views & Dashboard
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Full Stack Developer
 **Objective**: Implement pet profile dashboard for owners

@@ -1,5 +1,7 @@
 # T-029: Appointment Booking Views
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Full Stack Developer
 **Objective**: Implement appointment booking UI and calendar views

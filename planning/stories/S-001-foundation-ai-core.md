@@ -1,9 +1,18 @@
 # S-001: Foundation + AI Core
 
+> **REQUIRED READING:** Before implementation, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 **Story Type:** Epic
 **Priority:** Critical
 **Epoch:** 1
 **Status:** PENDING
+
+### Standards Compliance
+- [ ] All code follows TDD (tests first)
+- [ ] Architecture follows ADR-001 (monorepo with extractable packages)
+- [ ] No cross-package internal imports
+- [ ] Public APIs defined in services.py
+- [ ] >95% test coverage
 
 ## Overview
 

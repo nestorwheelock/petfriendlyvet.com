@@ -1,5 +1,7 @@
 # T-001: Django Project Setup
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Backend Developer
 **Objective**: Set up Django project with proper structure, modular architecture, and all dependencies
@@ -8,6 +10,12 @@
 ### Constraints
 **Allowed File Paths**: Root project directory, config/, apps/, requirements/
 **Forbidden Paths**: None
+
+### Standards Compliance
+- [ ] Follow TDD (tests first)
+- [ ] Follow ADR-001 (monorepo with extractable packages)
+- [ ] No cross-package imports
+- [ ] Services for public APIs
 
 ## Context
 This is the foundational task for the Pet-Friendly veterinary clinic website. The project uses a modular architecture designed for 9 pip-installable packages, with Django 5.x, PostgreSQL, and a modern frontend stack (HTMX + Alpine.js + Tailwind CSS).

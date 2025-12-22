@@ -1,5 +1,7 @@
 # T-012: Admin Chat Interface
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Full Stack Developer
 **Objective**: Implement admin/staff AI chat with elevated permissions

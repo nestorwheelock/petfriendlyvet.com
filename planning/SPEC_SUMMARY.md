@@ -81,6 +81,10 @@
 
 ## Technical Architecture
 
+> **Key Documents:**
+> - [ARCHITECTURE_DECISIONS.md](ARCHITECTURE_DECISIONS.md) - ADR-001: Monorepo with extractable packages
+> - [CODING_STANDARDS.md](CODING_STANDARDS.md) - TDD rules, import rules, code style
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         FRONTEND                                 │

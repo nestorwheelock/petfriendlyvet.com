@@ -1,5 +1,7 @@
 # T-049: Message Escalation Engine
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Backend Developer
 **Objective**: Implement automatic message escalation across channels

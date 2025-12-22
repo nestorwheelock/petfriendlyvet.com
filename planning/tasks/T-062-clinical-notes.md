@@ -1,5 +1,7 @@
 # T-062: Clinical Notes & Internal Documentation
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Full Stack Developer
 **Objective**: Implement internal clinical notes and SOAP documentation

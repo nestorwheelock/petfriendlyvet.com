@@ -1,5 +1,7 @@
 # T-017: OkVet.co Export Research
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Technical Analyst
 **Objective**: Research OkVet.co data export capabilities and document structure

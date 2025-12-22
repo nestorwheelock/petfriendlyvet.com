@@ -1,5 +1,7 @@
 # S-010: Pharmacy Management
 
+> **REQUIRED READING:** Before implementation, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 **Story Type:** User Story
 **Priority:** High
 **Epoch:** 3 (with E-Commerce)

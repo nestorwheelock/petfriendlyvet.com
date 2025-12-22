@@ -1,5 +1,7 @@
 # S-018: SEO & Content Marketing
 
+> **REQUIRED READING:** Before implementation, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 **Story Type:** User Story
 **Priority:** Medium
 **Epoch:** 5 (with CRM)

@@ -129,6 +129,8 @@ Please review these planning documents before approving:
 - **[Competitive Intelligence](planning/wireframes/10-competitive-intelligence.txt)** - Competitor map, pricing, visitor tracking
 
 ### Technical Documentation
+- **[Architecture Decisions](planning/ARCHITECTURE_DECISIONS.md)** - ADR-001: Monorepo with extractable packages
+- **[Coding Standards](planning/CODING_STANDARDS.md)** - TDD rules, import rules, code style (REQUIRED READING)
 - **[Task Index](planning/TASK_INDEX.md)** - Master reference of all 65 tasks with dependencies
 - **[Dependencies](planning/DEPENDENCIES.md)** - Build order and execution phases
 - **[Database Schema](planning/DATABASE_SCHEMA.md)** - Complete schema with ~75 tables

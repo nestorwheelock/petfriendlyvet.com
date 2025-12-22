@@ -1,5 +1,7 @@
 # T-050: Emergency Services Models
 
+> **REQUIRED READING:** Before starting, review [CODING_STANDARDS.md](../CODING_STANDARDS.md) and [ARCHITECTURE_DECISIONS.md](../ARCHITECTURE_DECISIONS.md)
+
 ## AI Coding Brief
 **Role**: Backend Developer
 **Objective**: Implement emergency case tracking and triage
