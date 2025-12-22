@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Admin Chat" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <!-- Admin Header -->
+    <div class="bg-primary-600 text-white py-4 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-white hover:text-primary-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </a>
+                <h1 class="text-xl font-bold">{% trans "AI Admin Assistant" %}</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-primary-200">{{ user.username }}</span>
+                <a href="{% url 'ai_assistant:conversation_list' %}" class="text-sm text-primary-200 hover:text-white">
+                    {% trans "Conversations" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6" x-data="adminChat()">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Quick Commands Sidebar (Desktop) -->
+            <div class="hidden lg:block">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <h2 class="font-semibold text-gray-900 mb-4">{% trans "Quick Commands" %}</h2>
+                    <div class="space-y-2">
+                        {% for cmd in quick_commands %}
+                        <button @click="sendQuickCommand('{{ cmd.command }}')"
+                                class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors">
+                            {{ cmd.label }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Tool Execution Log -->
+                    <div class="mt-6" x-show="toolsUsed.length > 0">
+                        <h3 class="font-semibold text-gray-700 text-sm mb-2">{% trans "Tools Executed" %}</h3>
+                        <div class="space-y-1 text-xs">
+                            <template x-for="tool in toolsUsed" :key="tool.name">
+                                <div class="bg-gray-100 rounded p-2">
+                                    <span class="font-medium text-primary-600" x-text="tool.name"></span>
+                                    <span class="text-gray-500" x-text="tool.result"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-200px)] sm:h-[600px]">
+                    <!-- Chat Messages -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4" x-ref="messageContainer" id="admin-messages">
+                        <!-- Welcome Message -->
+                        <template x-if="messages.length === 0">
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-2">
+                                    {% trans "Hello" %}, {{ user.first_name|default:user.username }}!
+                                </h2>
+                                <p class="text-gray-600 mb-6">
+                                    {% trans "I'm your AI assistant. I can help you manage appointments, search clients, check inventory, and more." %}
+                                </p>
+
+                                <!-- Mobile Quick Commands -->
+                                <div class="lg:hidden grid grid-cols-2 gap-2 max-w-md mx-auto">
+                                    {% for cmd in quick_commands %}
+                                    <button @click="sendQuickCommand('{{ cmd.command }}')"
+                                            class="quick-action px-3 py-2 text-sm rounded-lg bg-gray-100 hover:bg-primary-50 hover:text-primary-600 transition-colors">
+                                        {{ cmd.label }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Message List -->
+                        <template x-for="(msg, index) in messages" :key="index">
+                            <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                <div :class="msg.role === 'user'
+                                             ? 'bg-primary-500 text-white rounded-lg rounded-br-none p-4 max-w-[85%]'
+                                             : 'bg-gray-100 rounded-lg rounded-bl-none p-4 max-w-[85%]'">
+                                    <p x-text="msg.content" class="whitespace-pre-wrap"></p>
+                                    <div class="flex items-center justify-between mt-2 text-xs opacity-60">
+                                        <span x-text="formatTime(msg.timestamp)"></span>
+                                        <span x-show="msg.tools_used && msg.tools_used.length > 0"
+                                              class="text-primary-300">
+                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            Tools used
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Typing Indicator -->
+                        <div x-show="isTyping" class="flex justify-start">
+                            <div class="bg-gray-100 rounded-lg p-4">
+                                <div class="flex space-x-1">
+                                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div x-show="error" class="text-center">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
+                                <p class="text-red-600" x-text="error"></p>
+                                <button @click="retryLastMessage()" class="mt-2 text-sm text-red-700 underline hover:no-underline">
+                                    {% trans "Try again" %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t border-gray-200 p-4 bg-white">
+                        <form @submit.prevent="sendMessage()" class="flex items-center space-x-3">
+                            <input type="text"
+                                   x-model="input"
+                                   :disabled="isTyping"
+                                   placeholder="{% trans 'Type a command or question...' %}"
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent disabled:bg-gray-100"
+                                   autocomplete="off">
+                            <button type="submit"
+                                    :disabled="!input.trim() || isTyping"
+                                    class="bg-primary-500 text-white px-6 py-3 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function adminChat() {
+    return {
+        messages: [],
+        input: '',
+        isTyping: false,
+        error: null,
+        toolsUsed: [],
+        sessionId: null,
+        lastMessageContent: null,
+
+        init() {
+            this.sessionId = 'admin_{{ user.id }}_' + Date.now();
+
+            // Load saved messages
+            const saved = localStorage.getItem('admin_chat_' + this.sessionId);
+            if (saved) {
+                try {
+                    this.messages = JSON.parse(saved);
+                } catch (e) {
+                    this.messages = [];
+                }
+            }
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const container = this.$refs.messageContainer;
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
+        },
+
+        formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        saveMessages() {
+            localStorage.setItem('admin_chat_' + this.sessionId, JSON.stringify(this.messages));
+        },
+
+        async sendMessage() {
+            if (!this.input.trim() || this.isTyping) return;
+
+            const userMessage = this.input.trim();
+            this.lastMessageContent = userMessage;
+            this.input = '';
+            this.error = null;
+
+            this.messages.push({
+                role: 'user',
+                content: userMessage,
+                timestamp: new Date().toISOString()
+            });
+            this.saveMessages();
+            this.scrollToBottom();
+
+            this.isTyping = true;
+
+            try {
+                const response = await fetch('{% url "ai_assistant:admin_chat_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                       this.getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        session_id: this.sessionId,
+                        language: document.documentElement.lang || 'es'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+
+                this.messages.push({
+                    role: 'assistant',
+                    content: data.response,
+                    timestamp: new Date().toISOString(),
+                    tools_used: data.tools_used || []
+                });
+
+                if (data.tools_used && data.tools_used.length > 0) {
+                    this.toolsUsed = [...this.toolsUsed, ...data.tools_used];
+                }
+
+                this.saveMessages();
+
+            } catch (err) {
+                console.error('Admin chat error:', err);
+                this.error = err.message || 'Error al procesar mensaje. Por favor intenta de nuevo.';
+            } finally {
+                this.isTyping = false;
+                this.scrollToBottom();
+            }
+        },
+
+        sendQuickCommand(command) {
+            this.input = command;
+            this.sendMessage();
+        },
+
+        retryLastMessage() {
+            if (this.lastMessageContent) {
+                this.input = this.lastMessageContent;
+                this.error = null;
+                this.sendMessage();
+            }
+        },
+
+        getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    }
+}
+</script>
+{% endblock %}
