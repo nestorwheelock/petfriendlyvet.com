@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "pfv-license",
+    # Future components (uncomment when created):
+    # "pfv-crypto",
+    # "pfv-image",
+    # "pfv-pdf",
+    # "pfv-search",
+    # "pfv-export",
+    # "pfv-ai",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Nestor Wheelock <nestor@southcitycomputer.com>"]
+license = "LicenseRef-Commercial"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+anyhow = "1.0"
