@@ -55,3 +55,8 @@ class ContactView(View):
 def health_check(request):
     """Health check endpoint for load balancers."""
     return render(request, 'core/health.html', {'status': 'ok'})
+
+
+def csrf_failure(request, reason=''):
+    """Custom CSRF failure view with friendly error page."""
+    return render(request, '403_csrf.html', {'reason': reason}, status=403)

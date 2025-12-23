@@ -77,3 +77,41 @@ class TestTestSettings:
     def test_skip_license_check_is_enabled(self):
         """Test settings should skip license validation."""
         assert getattr(settings, 'SCC_SKIP_LICENSE_CHECK', False) is True
+
+
+class TestProductionSecuritySettings:
+    """Tests for production security settings (B-001: CSRF trusted origins)."""
+
+    def test_csrf_trusted_origins_is_configured(self):
+        """CSRF_TRUSTED_ORIGINS must be configured in production settings."""
+        from config.settings import production
+        assert hasattr(production, 'CSRF_TRUSTED_ORIGINS'), \
+            'CSRF_TRUSTED_ORIGINS must be defined in production settings'
+        assert isinstance(production.CSRF_TRUSTED_ORIGINS, list), \
+            'CSRF_TRUSTED_ORIGINS must be a list'
+        assert len(production.CSRF_TRUSTED_ORIGINS) > 0, \
+            'CSRF_TRUSTED_ORIGINS must not be empty'
+
+    def test_csrf_trusted_origins_contains_main_domain(self):
+        """CSRF_TRUSTED_ORIGINS must include petfriendlyvet.com."""
+        from config.settings import production
+        assert 'https://petfriendlyvet.com' in production.CSRF_TRUSTED_ORIGINS, \
+            'CSRF_TRUSTED_ORIGINS must include https://petfriendlyvet.com'
+
+    def test_csrf_trusted_origins_contains_www_subdomain(self):
+        """CSRF_TRUSTED_ORIGINS must include www.petfriendlyvet.com."""
+        from config.settings import production
+        assert 'https://www.petfriendlyvet.com' in production.CSRF_TRUSTED_ORIGINS, \
+            'CSRF_TRUSTED_ORIGINS must include https://www.petfriendlyvet.com'
+
+    def test_csrf_trusted_origins_contains_dev_subdomain(self):
+        """CSRF_TRUSTED_ORIGINS must include dev.petfriendlyvet.com."""
+        from config.settings import production
+        assert 'https://dev.petfriendlyvet.com' in production.CSRF_TRUSTED_ORIGINS, \
+            'CSRF_TRUSTED_ORIGINS must include https://dev.petfriendlyvet.com'
+
+    def test_cors_allowed_origins_contains_dev_subdomain(self):
+        """CORS_ALLOWED_ORIGINS must include dev.petfriendlyvet.com."""
+        from config.settings import production
+        assert 'https://dev.petfriendlyvet.com' in production.CORS_ALLOWED_ORIGINS, \
+            'CORS_ALLOWED_ORIGINS must include https://dev.petfriendlyvet.com'

@@ -16,6 +16,11 @@ if SCRIPT_NAME:
     LOGIN_REDIRECT_URL = f'{SCRIPT_NAME}/'
     LOGOUT_REDIRECT_URL = f'{SCRIPT_NAME}/'
 
+# Proxy settings - nginx terminates SSL
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -41,4 +46,15 @@ AWS_SES_REGION_ENDPOINT = f'email.{AWS_SES_REGION_NAME}.amazonaws.com'
 CORS_ALLOWED_ORIGINS = [
     'https://petfriendlyvet.com',
     'https://www.petfriendlyvet.com',
+    'https://dev.petfriendlyvet.com',
 ]
+
+# CSRF trusted origins for cross-origin requests
+# NOTE: dev.petfriendlyvet.com intentionally excluded to test custom 403 page (B-001)
+CSRF_TRUSTED_ORIGINS = [
+    'https://petfriendlyvet.com',
+    'https://www.petfriendlyvet.com',
+]
+
+# Custom CSRF failure view (friendly error page)
+CSRF_FAILURE_VIEW = 'apps.core.views.csrf_failure'

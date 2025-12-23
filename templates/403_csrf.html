@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Error de seguridad" %}{% endblock %}
+
+{% block content %}
+<section class="min-h-[60vh] flex items-center justify-center py-16 px-4">
+    <div class="text-center max-w-lg">
+        <h1 class="text-9xl font-bold text-amber-500 mb-4">403</h1>
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">{% trans "Error de verificación" %}</h2>
+        <p class="text-lg text-gray-600 mb-6">
+            {% trans "Tu sesión ha expirado o hubo un problema de seguridad con tu solicitud." %}
+        </p>
+        <p class="text-gray-500 mb-8">
+            {% trans "Esto puede ocurrir si la página estuvo abierta mucho tiempo. Por favor, recarga la página e intenta de nuevo." %}
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="javascript:location.reload()" class="btn-primary">
+                {% trans "Recargar página" %}
+            </a>
+            <a href="{% url 'core:home' %}" class="btn-secondary">
+                {% trans "Volver al inicio" %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
