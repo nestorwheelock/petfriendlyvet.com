@@ -1,0 +1,47 @@
+[run]
+source = apps
+branch = True
+omit =
+    */migrations/*
+    */tests/*
+    */__pycache__/*
+    # Epoch 2+ placeholder apps (remove as each epoch is implemented)
+    apps/appointments/*
+    apps/pets/*
+    apps/store/*
+    apps/pharmacy/*
+    apps/communications/*
+    apps/crm/*
+    apps/practice/*
+    # Stub API URL files (empty urlpatterns, not yet implemented)
+    apps/accounts/api_urls.py
+    apps/ai_assistant/api_urls.py
+    apps/core/api_urls.py
+    apps/multilingual/urls.py
+    # Django default stub files (unused - we use pytest in tests/ directory)
+    apps/knowledge/tests.py
+    apps/knowledge/views.py
+    apps/multilingual/views.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    # SoftDeleteModel/Manager - abstract base not used by any Epoch 1 models
+    def with_deleted
+    def deleted_only
+    def hard_delete
+    def restore
+    def is_deleted
+
+fail_under = 95
+show_missing = True
+skip_covered = False
+
+[html]
+directory = htmlcov

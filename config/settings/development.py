@@ -3,12 +3,21 @@ from .base import *
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+# Use ALLOWED_HOSTS from environment, with dev defaults
+import os
+ALLOWED_HOSTS = os.getenv(
+    'DJANGO_ALLOWED_HOSTS',
+    'localhost,127.0.0.1,0.0.0.0,dev.petfriendlyvet.com,dev.nestorwheelock.com,dev.linuxremotesupport.com'
+).split(',')
 
-# Debug toolbar
-INSTALLED_APPS += ['debug_toolbar']
-MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-INTERNAL_IPS = ['127.0.0.1', '172.17.0.1']  # Docker bridge
+# Debug toolbar (optional - only if installed)
+try:
+    import debug_toolbar  # noqa: F401
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ['127.0.0.1', '172.17.0.1']  # Docker bridge
+except ImportError:
+    pass  # debug_toolbar not installed (e.g., in Docker with production deps)
 
 # Use console email backend in development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

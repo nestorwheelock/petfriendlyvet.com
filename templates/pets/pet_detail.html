@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ pet.name }} - {% trans "Pet Profile" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="{% url 'pets:dashboard' %}" class="hover:text-primary-600">{% trans "Dashboard" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li><a href="{% url 'pets:pet_list' %}" class="hover:text-primary-600">{% trans "My Pets" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li class="text-gray-900 font-medium">{{ pet.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Pet Header -->
+    <div class="bg-white shadow rounded-lg mb-8">
+        <div class="px-6 py-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        {% if pet.photo %}
+                            <img src="{{ pet.photo.url }}" alt="{{ pet.name }}" class="h-24 w-24 rounded-full object-cover">
+                        {% else %}
+                            <div class="h-24 w-24 rounded-full bg-primary-100 flex items-center justify-center">
+                                <span class="text-primary-600 text-4xl font-medium">{{ pet.name|first }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="ml-6">
+                        <h1 class="text-3xl font-bold text-gray-900">{{ pet.name }}</h1>
+                        <p class="text-lg text-gray-500">{{ pet.get_species_display }}{% if pet.breed %} &middot; {{ pet.breed }}{% endif %}</p>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            {% if pet.gender %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ pet.get_gender_display }}
+                            </span>
+                            {% endif %}
+                            {% if pet.is_neutered %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {% trans "Neutered/Spayed" %}
+                            </span>
+                            {% endif %}
+                            {% if pet.age_years %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ pet.age_years }} {% trans "years old" %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <a href="{% url 'pets:pet_edit' pk=pet.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        {% trans "Edit Pet" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Pet Details -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Basic Info -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Basic Information" %}</h2>
+                </div>
+                <div class="px-6 py-4">
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {% if pet.date_of_birth %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans "Date of Birth" %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ pet.date_of_birth|date:"F j, Y" }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if pet.weight_kg %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans "Weight" %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ pet.weight_kg }} kg</dd>
+                        </div>
+                        {% endif %}
+                        {% if pet.microchip_id %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans "Microchip ID" %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900 font-mono">{{ pet.microchip_id }}</dd>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans "Added" %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ pet.created_at|date:"F j, Y" }}</dd>
+                        </div>
+                    </dl>
+                    {% if pet.notes %}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500">{% trans "Notes" %}</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ pet.notes|linebreaks }}</dd>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Vaccinations -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Vaccinations" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% if vaccinations %}
+                        {% for vax in vaccinations %}
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ vax.vaccine_name }}</p>
+                                    <p class="text-sm text-gray-500">{% trans "Administered" %}: {{ vax.date_administered|date:"F j, Y" }}</p>
+                                </div>
+                                {% if vax.next_due_date %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if vax.is_overdue %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                    {% trans "Due" %}: {{ vax.next_due_date|date:"M j, Y" }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if vax.notes %}
+                            <p class="mt-2 text-sm text-gray-600">{{ vax.notes }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-500">{% trans "No vaccination records yet" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Medical Conditions -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Medical Conditions" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% if medical_conditions %}
+                        {% for condition in medical_conditions %}
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ condition.name }}</p>
+                                    {% if condition.diagnosed_date %}
+                                    <p class="text-sm text-gray-500">{% trans "Diagnosed" %}: {{ condition.diagnosed_date|date:"F j, Y" }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if condition.is_active %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if condition.is_active %}{% trans "Active" %}{% else %}{% trans "Resolved" %}{% endif %}
+                                </span>
+                            </div>
+                            {% if condition.description %}
+                            <p class="mt-2 text-sm text-gray-600">{{ condition.description }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-500">{% trans "No medical conditions recorded" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-8">
+            <!-- Recent Appointments -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Recent Appointments" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% if recent_appointments %}
+                        {% for appt in recent_appointments %}
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ appt.service.name }}</p>
+                                    <p class="text-sm text-gray-500">{{ appt.scheduled_start|date:"M j, Y" }}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if appt.status == 'completed' %}bg-green-100 text-green-800
+                                    {% elif appt.status == 'cancelled' %}bg-red-100 text-red-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ appt.get_status_display }}
+                                </span>
+                            </div>
+                            {% if appt.veterinarian %}
+                            <p class="mt-1 text-sm text-gray-500">{% trans "with" %} {{ appt.veterinarian.get_full_name }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-500">{% trans "No appointments yet" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Quick Actions" %}</h2>
+                </div>
+                <div class="px-6 py-4 space-y-3">
+                    <a href="{% url 'pets:pet_edit' pk=pet.pk %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        {% trans "Edit Profile" %}
+                    </a>
+                    <a href="{% url 'pets:dashboard' %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                        </svg>
+                        {% trans "Book Appointment" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

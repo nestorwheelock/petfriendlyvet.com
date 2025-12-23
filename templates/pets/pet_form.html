@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit" %} {{ object.name }}{% else %}{% trans "Add Pet" %}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="{% url 'pets:dashboard' %}" class="hover:text-primary-600">{% trans "Dashboard" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li><a href="{% url 'pets:pet_list' %}" class="hover:text-primary-600">{% trans "My Pets" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li class="text-gray-900 font-medium">{% if object %}{% trans "Edit" %} {{ object.name }}{% else %}{% trans "Add Pet" %}{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if object %}{% trans "Edit Pet Profile" %}{% else %}{% trans "Add New Pet" %}{% endif %}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if object %}{% trans "Update your pet's information below." %}{% else %}{% trans "Fill in the details about your pet." %}{% endif %}
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Basic Information -->
+            <div>
+                <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Basic Information" %}</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_name" class="block text-sm font-medium text-gray-700">{% trans "Name" %} <span class="text-red-500">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_species" class="block text-sm font-medium text-gray-700">{% trans "Species" %} <span class="text-red-500">*</span></label>
+                        {{ form.species }}
+                        {% if form.species.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.species.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_breed" class="block text-sm font-medium text-gray-700">{% trans "Breed" %}</label>
+                        {{ form.breed }}
+                        {% if form.breed.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.breed.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_gender" class="block text-sm font-medium text-gray-700">{% trans "Gender" %}</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.gender.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Details -->
+            <div class="pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Physical Details" %}</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_date_of_birth" class="block text-sm font-medium text-gray-700">{% trans "Date of Birth" %}</label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_weight_kg" class="block text-sm font-medium text-gray-700">{% trans "Weight (kg)" %}</label>
+                        {{ form.weight_kg }}
+                        {% if form.weight_kg.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.weight_kg.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_microchip_id" class="block text-sm font-medium text-gray-700">{% trans "Microchip ID" %}</label>
+                        {{ form.microchip_id }}
+                        {% if form.microchip_id.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.microchip_id.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center h-full pt-6">
+                        <div class="flex items-center">
+                            {{ form.is_neutered }}
+                            <label for="id_is_neutered" class="ml-2 block text-sm text-gray-700">{% trans "Neutered/Spayed" %}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo -->
+            <div class="pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Photo" %}</h2>
+                {% if object and object.photo %}
+                <div class="mb-4">
+                    <p class="text-sm text-gray-500 mb-2">{% trans "Current photo:" %}</p>
+                    <img src="{{ object.photo.url }}" alt="{{ object.name }}" class="h-24 w-24 rounded-full object-cover">
+                </div>
+                {% endif %}
+                <div>
+                    <label for="id_photo" class="block text-sm font-medium text-gray-700">{% if object and object.photo %}{% trans "Change photo" %}{% else %}{% trans "Upload photo" %}{% endif %}</label>
+                    {{ form.photo }}
+                    {% if form.photo.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.photo.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">{% trans "JPG, PNG, or GIF. Max 5MB." %}</p>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Additional Notes" %}</h2>
+                <div>
+                    <label for="id_notes" class="block text-sm font-medium text-gray-700">{% trans "Notes" %}</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">{% trans "Any special needs, allergies, or information the vet should know." %}</p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="pt-6 border-t border-gray-200 flex justify-end space-x-3">
+                <a href="{% if object %}{% url 'pets:pet_detail' pk=object.pk %}{% else %}{% url 'pets:pet_list' %}{% endif %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Add Pet" %}{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

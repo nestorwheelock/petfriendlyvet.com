@@ -311,3 +311,364 @@ class TestAdminSearchAndFiltering:
         url = reverse('admin:knowledge_knowledgearticle_changelist')
         response = client.get(url, {'is_published__exact': '1'})
         assert response.status_code == 200
+
+
+@pytest.mark.django_db
+class TestKnowledgeAdminSaveModel:
+    """Test admin save_model methods."""
+
+    @pytest.fixture
+    def admin_user(self):
+        return User.objects.create_superuser(
+            username='adminsave',
+            email='adminsave@example.com',
+            password='adminpass123'
+        )
+
+    @pytest.fixture
+    def category(self):
+        from apps.knowledge.models import KnowledgeCategory
+        return KnowledgeCategory.objects.create(
+            name='Save Test', name_es='Prueba Guardar',
+            name_en='Save Test', slug='save-test'
+        )
+
+    def test_article_save_sets_created_by(self, admin_user, category):
+        """save_model should set created_by on new articles."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        # Create article without pk (new article)
+        article = KnowledgeArticle(
+            category=category,
+            slug='new-article-test',
+            title='',
+            title_es='Nuevo Artículo',
+            title_en='New Article',
+            content='',
+            content_es='Contenido en español',
+            content_en='Content in English'
+        )
+
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+        request.user = admin_user
+
+        # save_model should set created_by
+        article_admin.save_model(request, article, form=None, change=False)
+
+        # Check created_by was set
+        assert article.created_by == admin_user
+        # Title should be set from Spanish translation
+        assert article.title == 'Nuevo Artículo'
+        assert article.content == 'Contenido en español'
+
+    def test_article_save_fills_title_from_translation(self, client, admin_user, category):
+        """save_model should fill title from translations if empty."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        # Create article without title
+        article = KnowledgeArticle(
+            category=category,
+            slug='fill-title',
+            title='',  # Empty
+            title_es='Título en Español',
+            title_en='Title in English',
+            content='',  # Empty
+            content_es='Contenido',
+            content_en='Content'
+        )
+
+        # Simulate admin save
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        # Create mock request
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+        request.user = admin_user
+
+        # Call save_model
+        article_admin.save_model(request, article, form=None, change=False)
+
+        # Verify title was filled from translation
+        assert article.title == 'Título en Español'
+        assert article.content == 'Contenido'
+
+    def test_article_save_uses_english_if_spanish_empty(self, client, admin_user, category):
+        """save_model should use English if Spanish is empty."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        article = KnowledgeArticle(
+            category=category,
+            slug='english-only',
+            title='',
+            title_es='',  # Empty Spanish
+            title_en='English Title',
+            content='',
+            content_es='',
+            content_en='English Content'
+        )
+
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+        request.user = admin_user
+
+        article_admin.save_model(request, article, form=None, change=False)
+
+        assert article.title == 'English Title'
+        assert article.content == 'English Content'
+
+    def test_faq_save_fills_question_from_translation(self, category):
+        """FAQ save_model should fill question from translations."""
+        from apps.knowledge.models import FAQ
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import FAQAdmin
+
+        faq = FAQ(
+            category=category,
+            question='',  # Empty
+            question_es='¿Cuál es su horario?',
+            question_en='What are your hours?',
+            answer='',  # Empty
+            answer_es='9am-8pm',
+            answer_en='9am-8pm'
+        )
+
+        admin_site = AdminSite()
+        faq_admin = FAQAdmin(FAQ, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+
+        faq_admin.save_model(request, faq, form=None, change=False)
+
+        assert faq.question == '¿Cuál es su horario?'
+        assert faq.answer == '9am-8pm'
+
+    def test_faq_save_uses_english_if_spanish_empty(self, category):
+        """FAQ save_model should use English if Spanish is empty."""
+        from apps.knowledge.models import FAQ
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import FAQAdmin
+
+        faq = FAQ(
+            category=category,
+            question='',
+            question_es='',
+            question_en='What services do you offer?',
+            answer='',
+            answer_es='',
+            answer_en='Full veterinary care'
+        )
+
+        admin_site = AdminSite()
+        faq_admin = FAQAdmin(FAQ, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+
+        faq_admin.save_model(request, faq, form=None, change=False)
+
+        assert faq.question == 'What services do you offer?'
+        assert faq.answer == 'Full veterinary care'
+
+    def test_article_save_keeps_existing_title(self, admin_user, category):
+        """save_model should not overwrite existing title."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        # Article with title already set
+        article = KnowledgeArticle(
+            category=category,
+            slug='existing-title',
+            title='Existing Title',  # Already set
+            title_es='Título en Español',
+            title_en='Title in English',
+            content='Existing Content',  # Already set
+            content_es='Contenido',
+            content_en='Content'
+        )
+
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+        request.user = admin_user
+
+        article_admin.save_model(request, article, form=None, change=False)
+
+        # Should keep existing values
+        assert article.title == 'Existing Title'
+        assert article.content == 'Existing Content'
+
+    def test_article_save_existing_keeps_created_by(self, admin_user, category):
+        """save_model should not change created_by on existing articles."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        # Create article with another user
+        other_user = User.objects.create_user(
+            username='other',
+            email='other@example.com',
+            password='testpass123'
+        )
+
+        article = KnowledgeArticle.objects.create(
+            category=category,
+            slug='existing-article',
+            title='Existing',
+            title_es='Existente',
+            title_en='Existing',
+            content='Content',
+            content_es='Contenido',
+            content_en='Content',
+            created_by=other_user
+        )
+
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+        request.user = admin_user
+
+        # change=True means it's an existing article
+        article_admin.save_model(request, article, form=None, change=True)
+
+        # created_by should not be changed
+        assert article.created_by == other_user
+
+    def test_faq_save_keeps_existing_question(self, category):
+        """FAQ save_model should not overwrite existing question."""
+        from apps.knowledge.models import FAQ
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import FAQAdmin
+
+        faq = FAQ(
+            category=category,
+            question='Existing Question',  # Already set
+            question_es='¿Pregunta en español?',
+            question_en='Question in English?',
+            answer='Existing Answer',  # Already set
+            answer_es='Respuesta',
+            answer_en='Answer'
+        )
+
+        admin_site = AdminSite()
+        faq_admin = FAQAdmin(FAQ, admin_site)
+
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post('/admin/')
+
+        faq_admin.save_model(request, faq, form=None, change=False)
+
+        # Should keep existing values
+        assert faq.question == 'Existing Question'
+        assert faq.answer == 'Existing Answer'
+
+
+@pytest.mark.django_db
+class TestKnowledgeAdminDisplayMethods:
+    """Test admin display helper methods."""
+
+    @pytest.fixture
+    def category(self):
+        from apps.knowledge.models import KnowledgeCategory
+        return KnowledgeCategory.objects.create(
+            name='Display Test', name_es='Prueba Display',
+            name_en='Display Test', slug='display-test'
+        )
+
+    def test_article_version_count_display(self, category):
+        """version_count should display formatted version count."""
+        from apps.knowledge.models import KnowledgeArticle
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import KnowledgeArticleAdmin
+
+        article = KnowledgeArticle.objects.create(
+            category=category,
+            title='Version Display Test',
+            title_es='Test',
+            title_en='Test',
+            content='Content',
+            content_es='Contenido',
+            content_en='Content',
+            slug='version-display'
+        )
+
+        admin_site = AdminSite()
+        article_admin = KnowledgeArticleAdmin(KnowledgeArticle, admin_site)
+
+        result = article_admin.version_count(article)
+        assert 'v1' in result
+
+    def test_faq_question_short_truncates(self, category):
+        """question_short should truncate long questions."""
+        from apps.knowledge.models import FAQ
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import FAQAdmin
+
+        long_question = 'This is a very long question that should be truncated because it exceeds fifty characters'
+        faq = FAQ.objects.create(
+            category=category,
+            question=long_question,
+            question_es=long_question,
+            question_en=long_question,
+            answer='Short answer',
+            answer_es='Respuesta corta',
+            answer_en='Short answer'
+        )
+
+        admin_site = AdminSite()
+        faq_admin = FAQAdmin(FAQ, admin_site)
+
+        result = faq_admin.question_short(faq)
+        assert len(result) == 53  # 50 chars + '...'
+        assert result.endswith('...')
+
+    def test_faq_question_short_no_truncate(self, category):
+        """question_short should not truncate short questions."""
+        from apps.knowledge.models import FAQ
+        from django.contrib.admin.sites import AdminSite
+        from apps.knowledge.admin import FAQAdmin
+
+        short_question = 'Short question?'
+        faq = FAQ.objects.create(
+            category=category,
+            question=short_question,
+            question_es=short_question,
+            question_en=short_question,
+            answer='Answer',
+            answer_es='Respuesta',
+            answer_en='Answer'
+        )
+
+        admin_site = AdminSite()
+        faq_admin = FAQAdmin(FAQ, admin_site)
+
+        result = faq_admin.question_short(faq)
+        assert result == short_question
+        assert '...' not in result

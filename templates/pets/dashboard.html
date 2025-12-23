@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "My Dashboard" %}</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Pets Section -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "My Pets" %}</h2>
+                    <a href="{% url 'pets:pet_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+                        {% trans "Add Pet" %}
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% if pets %}
+                        {% for pet in pets %}
+                        <a href="{% url 'pets:pet_detail' pk=pet.pk %}" class="block px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    {% if pet.photo %}
+                                        <img src="{{ pet.photo.url }}" alt="{{ pet.name }}" class="h-12 w-12 rounded-full object-cover">
+                                    {% else %}
+                                        <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
+                                            <span class="text-primary-600 text-lg font-medium">{{ pet.name|first }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-lg font-medium text-gray-900">{{ pet.name }}</p>
+                                        <span class="text-sm text-gray-500">{{ pet.get_species_display }}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">
+                                        {% if pet.breed %}{{ pet.breed }} &middot; {% endif %}
+                                        {% if pet.age_years %}{{ pet.age_years }} {% trans "years old" %}{% endif %}
+                                    </p>
+                                </div>
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-6 py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">{% trans "No pets yet" %}</h3>
+                            <p class="mt-1 text-sm text-gray-500">{% trans "Get started by adding your first pet." %}</p>
+                            <div class="mt-6">
+                                <a href="{% url 'pets:pet_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                                    {% trans "Add Pet" %}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments Section -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">{% trans "Upcoming Appointments" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% if upcoming_appointments %}
+                        {% for appt in upcoming_appointments %}
+                        <div class="px-6 py-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ appt.service.name }}</p>
+                                    {% if appt.pet %}
+                                        <p class="text-sm text-gray-500">{{ appt.pet.name }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ appt.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">
+                                {{ appt.scheduled_start|date:"l, F j" }} {% trans "at" %} {{ appt.scheduled_start|time:"g:i A" }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-500">{% trans "No upcoming appointments" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

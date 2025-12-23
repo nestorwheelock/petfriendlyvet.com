@@ -56,6 +56,7 @@ LOCAL_APPS = [
     'apps.communications',
     'apps.crm',
     'apps.practice',
+    'apps.error_tracking',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -73,6 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'apps.error_tracking.middleware.ErrorCaptureMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -306,6 +308,16 @@ FACTURAMA_SANDBOX = os.getenv('FACTURAMA_SANDBOX', 'True').lower() == 'true'
 # SCC License Configuration
 SCC_LICENSE_FILE = os.getenv('SCC_LICENSE_FILE', 'license.key')
 SCC_LICENSE_BINARY = os.getenv('SCC_LICENSE_BINARY', 'rust/target/release/scc-license')
+
+
+# Error Tracking Configuration (apps.error_tracking)
+ERROR_TRACKING = {
+    'ENABLED': os.getenv('ERROR_TRACKING_ENABLED', 'True').lower() == 'true',
+    'AUTO_CREATE_BUGS': os.getenv('ERROR_AUTO_CREATE_BUGS', 'True').lower() == 'true',
+    'BUG_THRESHOLD': int(os.getenv('ERROR_BUG_THRESHOLD', '1')),
+    'EXCLUDE_PATHS': ['/health/', '/static/', '/media/', '/favicon.ico'],
+    'EXCLUDE_STATUS_CODES': [],
+}
 
 
 # Logging
