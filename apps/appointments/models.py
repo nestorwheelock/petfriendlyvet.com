@@ -142,6 +142,8 @@ class Appointment(models.Model):
     confirmed_at = models.DateTimeField(_('confirmed at'), null=True, blank=True)
     completed_at = models.DateTimeField(_('completed at'), null=True, blank=True)
     cancelled_at = models.DateTimeField(_('cancelled at'), null=True, blank=True)
+    reminder_sent = models.BooleanField(_('reminder sent'), default=False)
+    reminder_sent_at = models.DateTimeField(_('reminder sent at'), null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

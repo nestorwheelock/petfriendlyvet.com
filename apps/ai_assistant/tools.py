@@ -475,3 +475,378 @@ def get_vaccination_status(pet_id: int, user_id: int) -> dict:
         'pet_id': pet.id,
         'vaccinations': vax_list
     }
+
+
+# =============================================================================
+# Appointment Tools
+# =============================================================================
+
+@tool(
+    name='list_services',
+    description='List available clinic services, optionally filtered by category',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'category': {
+                'type': 'string',
+                'description': 'Service category to filter by',
+                'enum': ['clinic', 'grooming', 'lab', 'surgery', 'dental',
+                         'emergency', 'other', 'all']
+            }
+        },
+        'required': []
+    },
+    permission='public',
+    module='appointments'
+)
+def list_services(category: str = 'all') -> dict:
+    """Return list of available services."""
+    from apps.appointments.models import ServiceType
+
+    services = ServiceType.objects.filter(is_active=True)
+
+    if category and category != 'all':
+        services = services.filter(category=category)
+
+    service_list = []
+    for svc in services:
+        service_list.append({
+            'id': svc.id,
+            'name': svc.name,
+            'description': svc.description,
+            'duration_minutes': svc.duration_minutes,
+            'price': str(svc.price),
+            'category': svc.category,
+            'requires_pet': svc.requires_pet
+        })
+
+    return {'services': service_list}
+
+
+@tool(
+    name='check_availability',
+    description='Check available appointment slots for a given date and service',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'service_id': {
+                'type': 'integer',
+                'description': 'The ID of the service type'
+            },
+            'date': {
+                'type': 'string',
+                'description': 'Date to check availability (YYYY-MM-DD format)'
+            },
+            'staff_id': {
+                'type': 'integer',
+                'description': 'Optional staff member ID to filter by'
+            }
+        },
+        'required': ['service_id', 'date']
+    },
+    permission='public',
+    module='appointments'
+)
+def check_availability(
+    service_id: int,
+    date: str,
+    staff_id: int = None
+) -> dict:
+    """Return available time slots for a given date."""
+    from datetime import datetime
+    from django.contrib.auth import get_user_model
+    from apps.appointments.models import ServiceType
+    from apps.appointments.services import AvailabilityService
+
+    User = get_user_model()
+
+    try:
+        service = ServiceType.objects.get(id=service_id)
+    except ServiceType.DoesNotExist:
+        return {'error': f'Service with ID {service_id} not found'}
+
+    try:
+        check_date = datetime.strptime(date, '%Y-%m-%d').date()
+    except ValueError:
+        return {'error': 'Invalid date format. Use YYYY-MM-DD'}
+
+    staff = None
+    if staff_id:
+        try:
+            staff = User.objects.get(id=staff_id)
+        except User.DoesNotExist:
+            return {'error': f'Staff member with ID {staff_id} not found'}
+
+    slots = AvailabilityService.get_available_slots(
+        date=check_date,
+        service=service,
+        staff=staff
+    )
+
+    # Format slots for response
+    slot_list = []
+    for slot in slots:
+        slot_list.append({
+            'time': slot['time'].strftime('%H:%M'),
+            'staff_id': slot['staff_id']
+        })
+
+    return {
+        'date': date,
+        'service_id': service_id,
+        'service_name': service.name,
+        'slots': slot_list
+    }
+
+
+@tool(
+    name='book_appointment',
+    description='Book an appointment for a pet',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the pet owner'
+            },
+            'pet_id': {
+                'type': 'integer',
+                'description': 'The ID of the pet (optional for some services)'
+            },
+            'service_id': {
+                'type': 'integer',
+                'description': 'The ID of the service type'
+            },
+            'staff_id': {
+                'type': 'integer',
+                'description': 'The ID of the staff member/veterinarian'
+            },
+            'date': {
+                'type': 'string',
+                'description': 'Appointment date (YYYY-MM-DD format)'
+            },
+            'time': {
+                'type': 'string',
+                'description': 'Appointment time (HH:MM format)'
+            },
+            'notes': {
+                'type': 'string',
+                'description': 'Optional notes for the appointment'
+            }
+        },
+        'required': ['user_id', 'service_id', 'staff_id', 'date', 'time']
+    },
+    permission='customer',
+    module='appointments'
+)
+def book_appointment(
+    user_id: int,
+    service_id: int,
+    staff_id: int,
+    date: str,
+    time: str,
+    pet_id: int = None,
+    notes: str = ''
+) -> dict:
+    """Book an appointment."""
+    from datetime import datetime, time as time_type
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from apps.pets.models import Pet
+    from apps.appointments.models import ServiceType
+    from apps.appointments.services import AvailabilityService
+
+    User = get_user_model()
+
+    try:
+        owner = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return {'error': f'User with ID {user_id} not found'}
+
+    try:
+        service = ServiceType.objects.get(id=service_id)
+    except ServiceType.DoesNotExist:
+        return {'error': f'Service with ID {service_id} not found'}
+
+    try:
+        staff = User.objects.get(id=staff_id)
+    except User.DoesNotExist:
+        return {'error': f'Staff member with ID {staff_id} not found'}
+
+    pet = None
+    if pet_id:
+        try:
+            pet = Pet.objects.get(id=pet_id)
+        except Pet.DoesNotExist:
+            return {'error': f'Pet with ID {pet_id} not found'}
+
+        if pet.owner_id != user_id:
+            return {'error': 'Access denied. This pet belongs to another user.'}
+
+    try:
+        appt_date = datetime.strptime(date, '%Y-%m-%d').date()
+        appt_time = datetime.strptime(time, '%H:%M').time()
+    except ValueError:
+        return {'error': 'Invalid date or time format. Use YYYY-MM-DD and HH:MM'}
+
+    start_datetime = timezone.make_aware(
+        datetime.combine(appt_date, appt_time)
+    )
+
+    try:
+        appointment = AvailabilityService.book_appointment(
+            owner=owner,
+            pet=pet,
+            service=service,
+            staff=staff,
+            start_time=start_datetime,
+            notes=notes
+        )
+    except ValueError as e:
+        return {'error': str(e)}
+
+    return {
+        'appointment_id': appointment.id,
+        'confirmation': f'Appointment booked for {appointment.scheduled_start.strftime("%B %d, %Y at %I:%M %p")}',
+        'status': appointment.status,
+        'pet_name': pet.name if pet else None,
+        'service_name': service.name,
+        'veterinarian': staff.get_full_name() or staff.username
+    }
+
+
+@tool(
+    name='list_user_appointments',
+    description='List appointments for a user',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the user'
+            },
+            'status': {
+                'type': 'string',
+                'description': 'Filter by status',
+                'enum': ['scheduled', 'confirmed', 'in_progress',
+                         'completed', 'cancelled', 'no_show']
+            },
+            'upcoming_only': {
+                'type': 'boolean',
+                'description': 'Only show future appointments'
+            }
+        },
+        'required': ['user_id']
+    },
+    permission='customer',
+    module='appointments'
+)
+def list_user_appointments(
+    user_id: int,
+    status: str = None,
+    upcoming_only: bool = False
+) -> dict:
+    """Return list of user's appointments."""
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from apps.appointments.models import Appointment
+
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return {'error': f'User with ID {user_id} not found'}
+
+    appointments = Appointment.objects.filter(owner=user)
+
+    if status:
+        appointments = appointments.filter(status=status)
+
+    if upcoming_only:
+        appointments = appointments.filter(scheduled_start__gte=timezone.now())
+
+    appointments = appointments.order_by('scheduled_start')
+
+    appt_list = []
+    for appt in appointments:
+        appt_data = {
+            'id': appt.id,
+            'pet_name': appt.pet.name if appt.pet else None,
+            'service_name': appt.service.name,
+            'scheduled_start': appt.scheduled_start.isoformat(),
+            'scheduled_end': appt.scheduled_end.isoformat(),
+            'status': appt.status,
+            'veterinarian': (
+                appt.veterinarian.get_full_name() or appt.veterinarian.username
+            ) if appt.veterinarian else None
+        }
+        appt_list.append(appt_data)
+
+    return {'appointments': appt_list}
+
+
+@tool(
+    name='cancel_appointment',
+    description='Cancel an appointment',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the user requesting cancellation'
+            },
+            'appointment_id': {
+                'type': 'integer',
+                'description': 'The ID of the appointment to cancel'
+            },
+            'reason': {
+                'type': 'string',
+                'description': 'Reason for cancellation'
+            }
+        },
+        'required': ['user_id', 'appointment_id']
+    },
+    permission='customer',
+    module='appointments'
+)
+def cancel_appointment(
+    user_id: int,
+    appointment_id: int,
+    reason: str = ''
+) -> dict:
+    """Cancel an appointment."""
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from apps.appointments.models import Appointment
+
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return {'error': f'User with ID {user_id} not found'}
+
+    try:
+        appointment = Appointment.objects.get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return {'error': f'Appointment with ID {appointment_id} not found'}
+
+    if appointment.owner_id != user_id:
+        return {'error': 'Access denied. This appointment belongs to another user.'}
+
+    if appointment.status in ['completed', 'cancelled']:
+        return {
+            'error': f'Cannot cancel appointment with status: {appointment.status}'
+        }
+
+    appointment.status = 'cancelled'
+    appointment.cancellation_reason = reason
+    appointment.cancelled_at = timezone.now()
+    appointment.save()
+
+    return {
+        'success': True,
+        'message': 'Appointment cancelled successfully',
+        'appointment_id': appointment.id
+    }
