@@ -58,6 +58,7 @@ LOCAL_APPS = [
     'apps.practice',
     'apps.notifications',
     'apps.services',
+    'apps.travel',
     'apps.error_tracking',
 ]
 

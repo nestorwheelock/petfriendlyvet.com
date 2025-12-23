@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Request Health Certificate" %} - {{ pet.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="{% url 'travel:certificate_list' %}" class="hover:text-primary-600">{% trans "Certificates" %}</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li class="text-gray-900">{% trans "Request Certificate" %}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Request Health Certificate" %}</h1>
+            <p class="mt-2 text-gray-600">
+                {% blocktrans with pet_name=pet.name %}
+                    Request a travel health certificate for {{ pet_name }}.
+                {% endblocktrans %}
+            </p>
+        </div>
+
+        <!-- Pet Info Card -->
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div class="flex items-center">
+                {% if pet.photo %}
+                    <img src="{{ pet.photo.url }}" alt="{{ pet.name }}"
+                         class="h-12 w-12 rounded-full object-cover">
+                {% else %}
+                    <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
+                        <svg class="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </div>
+                {% endif %}
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ pet.name }}</h3>
+                    <p class="text-sm text-gray-600">{{ pet.species|title }} - {{ pet.breed }}</p>
+                </div>
+                {% if pet.microchip_id %}
+                    <span class="ml-auto text-sm text-gray-500">
+                        <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                        {{ pet.microchip_id }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post" class="p-6 space-y-6">
+            {% csrf_token %}
+
+            <!-- Destination -->
+            <div>
+                <label for="id_destination" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Destination Country" %} <span class="text-red-500">*</span>
+                </label>
+                {{ form.destination }}
+                {% if form.destination.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.destination.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">{% trans "Select the country you'll be traveling to." %}</p>
+            </div>
+
+            <!-- Travel Date -->
+            <div>
+                <label for="id_travel_date" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Travel Date" %} <span class="text-red-500">*</span>
+                </label>
+                {{ form.travel_date }}
+                {% if form.travel_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.travel_date.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">{% trans "When do you plan to travel?" %}</p>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label for="id_notes" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Additional Notes" %}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- What Happens Next -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-blue-800 mb-2">{% trans "What happens next?" %}</h4>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>• {% trans "We'll review your pet's vaccination records" %}</li>
+                    <li>• {% trans "We'll check all destination requirements" %}</li>
+                    <li>• {% trans "You may need to schedule an exam before travel" %}</li>
+                    <li>• {% trans "Once approved, we'll issue your health certificate" %}</li>
+                </ul>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <a href="{% url 'travel:certificate_list' %}"
+                   class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium">
+                    {% trans "Submit Request" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

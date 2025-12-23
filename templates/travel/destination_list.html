@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Travel Destinations" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Travel Destinations" %}</h1>
+        <p class="mt-2 text-gray-600">{% trans "View requirements for international pet travel." %}</p>
+    </div>
+
+    {% if destinations %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for destination in destinations %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                {{ destination.country_name }}
+                            </h3>
+                            <span class="text-sm font-medium text-gray-500">{{ destination.country_code }}</span>
+                        </div>
+
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">{% trans "Certificate Validity" %}</span>
+                                <span class="font-medium">{{ destination.certificate_validity_days }} {% trans "days" %}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">{% trans "Quarantine" %}</span>
+                                {% if destination.quarantine_required %}
+                                    <span class="text-red-600 font-medium">
+                                        {% trans "Required" %}
+                                        {% if destination.quarantine_days %}
+                                            ({{ destination.quarantine_days }} {% trans "days" %})
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="text-green-600 font-medium">{% trans "Not Required" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <a href="{% url 'travel:destination_detail' destination.pk %}"
+                           class="mt-4 block w-full text-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">
+                            {% trans "View Requirements" %}
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12 bg-white rounded-lg shadow-md">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">{% trans "No destinations found" %}</h3>
+            <p class="mt-1 text-sm text-gray-500">{% trans "Check back later for travel destinations." %}</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-8 text-center">
+        <a href="{% url 'travel:certificate_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            {% trans "View My Certificates" %} &rarr;
+        </a>
+    </div>
+</div>
+{% endblock %}

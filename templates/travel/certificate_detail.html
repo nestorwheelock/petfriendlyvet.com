@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ certificate.pet.name }} - {{ certificate.destination.country_name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="{% url 'travel:certificate_list' %}" class="hover:text-primary-600">{% trans "Certificates" %}</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li class="text-gray-900">{{ certificate.pet.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-4">
+                    {% if certificate.pet.photo %}
+                        <img src="{{ certificate.pet.photo.url }}" alt="{{ certificate.pet.name }}"
+                             class="h-16 w-16 rounded-full object-cover">
+                    {% else %}
+                        <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg class="h-8 w-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">{{ certificate.pet.name }}</h1>
+                        <p class="text-gray-600">
+                            {% trans "Travel to" %} {{ certificate.destination.country_name }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Status Badge -->
+                {% if certificate.status == 'pending' %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        {% trans "Pending" %}
+                    </span>
+                {% elif certificate.status == 'in_review' %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {% trans "In Review" %}
+                    </span>
+                {% elif certificate.status == 'issued' %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {% trans "Issued" %}
+                    </span>
+                {% elif certificate.status == 'expired' %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        {% trans "Expired" %}
+                    </span>
+                {% elif certificate.status == 'cancelled' %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        {% trans "Cancelled" %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Key Dates -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <span class="block text-sm text-gray-500">{% trans "Travel Date" %}</span>
+                    <span class="block text-lg font-semibold text-gray-900">{{ certificate.travel_date|date:"M d" }}</span>
+                    <span class="block text-sm text-gray-500">{{ certificate.travel_date|date:"Y" }}</span>
+                </div>
+                {% if certificate.issue_date %}
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <span class="block text-sm text-green-600">{% trans "Issue Date" %}</span>
+                        <span class="block text-lg font-semibold text-green-800">{{ certificate.issue_date|date:"M d" }}</span>
+                        <span class="block text-sm text-green-600">{{ certificate.issue_date|date:"Y" }}</span>
+                    </div>
+                {% endif %}
+                {% if certificate.expiry_date %}
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <span class="block text-sm text-red-600">{% trans "Expiry Date" %}</span>
+                        <span class="block text-lg font-semibold text-red-800">{{ certificate.expiry_date|date:"M d" }}</span>
+                        <span class="block text-sm text-red-600">{{ certificate.expiry_date|date:"Y" }}</span>
+                    </div>
+                {% endif %}
+                {% if certificate.certificate_number %}
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <span class="block text-sm text-blue-600">{% trans "Certificate #" %}</span>
+                        <span class="block text-lg font-semibold text-blue-800">{{ certificate.certificate_number }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Destination Info -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Destination Information" %}</h2>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium">{{ certificate.destination.country_name }}</span>
+                        <span class="text-gray-500">{{ certificate.destination.country_code }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        {% trans "Certificate valid for" %} {{ certificate.destination.certificate_validity_days }} {% trans "days" %}
+                    </p>
+                    {% if certificate.destination.quarantine_required %}
+                        <p class="mt-2 text-sm text-red-600">
+                            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            {% trans "Quarantine required upon arrival" %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Requirements Status -->
+            {% if certificate.requirements.all %}
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Requirements Checklist" %}</h2>
+                    <div class="space-y-3">
+                        {% for req in certificate.requirements.all %}
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                {% if req.is_verified %}
+                                    <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% else %}
+                                    <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                {% endif %}
+                                <div class="flex-1">
+                                    <span class="font-medium text-gray-900 capitalize">{{ req.requirement_type|title }}</span>
+                                    <p class="text-sm text-gray-600">{{ req.description }}</p>
+                                </div>
+                                {% if req.is_verified %}
+                                    <span class="text-xs text-gray-500">{{ req.verified_at|date:"M d, Y" }}</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Notes -->
+            {% if certificate.notes %}
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-2">{% trans "Notes" %}</h2>
+                    <p class="text-gray-600 whitespace-pre-line">{{ certificate.notes }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Download PDF -->
+            {% if certificate.pdf_document %}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <a href="{{ certificate.pdf_document.url }}"
+                       class="inline-flex items-center px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700"
+                       download>
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {% trans "Download Certificate PDF" %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-6">
+        <a href="{% url 'travel:certificate_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            &larr; {% trans "Back to Certificates" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

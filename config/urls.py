@@ -27,6 +27,7 @@ urlpatterns += i18n_patterns(
     path('practice/', include('apps.practice.urls')),
     path('notifications/', include('apps.notifications.urls')),
     path('services/', include('apps.services.urls')),
+    path('travel/', include('apps.travel.urls')),
     prefix_default_language=False,
 )
 
