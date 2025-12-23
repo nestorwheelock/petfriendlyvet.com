@@ -1,0 +1,72 @@
+#!/bin/bash
+# Deployment Configuration for petfriendlyvet.com
+# Copy this file to deploy.conf and update with your credentials
+# cp scripts/deploy.conf-example scripts/deploy.conf
+
+# =============================================================================
+# Server Settings
+# =============================================================================
+REMOTE_HOST="root@YOUR_SERVER_IP"          # Update with your VPS IP
+REMOTE_PATH="/root/petfriendlyvet"
+REMOTE_PORT="7777"
+SITE_URL="https://petfriendlyvet.com"
+REMOTE_PASSWORD="your-ssh-password"         # Update with SSH password
+
+# =============================================================================
+# Subdirectory Deployment (optional)
+# =============================================================================
+# Set SCRIPT_NAME to deploy under a URL prefix (e.g., /dev for petfriendlyvet.com/dev)
+# Leave empty for root deployment
+SCRIPT_NAME="/dev"
+
+# Full URL with subdirectory
+DEPLOY_URL="${SITE_URL}${SCRIPT_NAME}"
+
+# =============================================================================
+# Database Settings
+# =============================================================================
+DB_CONTAINER="petfriendlyvet-db-1"
+DB_NAME="petfriendlyvet"
+DB_USER="petfriendly"
+DB_PASSWORD="your_db_password"              # Update with DB password
+
+# Local Docker database
+LOCAL_DB_CONTAINER="petfriendlyvet-local-db"
+LOCAL_DB_USER="postgres"
+LOCAL_DB_PASSWORD="postgres"
+
+# =============================================================================
+# Media Optimization Settings
+# =============================================================================
+# Image settings
+IMAGE_MAX_WIDTH=1920
+IMAGE_QUALITY=85
+THUMB_WIDTH=400
+THUMB_QUALITY=80
+
+# Video settings (ffmpeg)
+VIDEO_MAX_HEIGHT=1080
+VIDEO_CRF=28
+USE_NVENC=true  # Set to false if no NVIDIA GPU
+
+# =============================================================================
+# Sync Excludes
+# =============================================================================
+EXCLUDE_PATTERNS=(
+    ".git"
+    "__pycache__"
+    "*.pyc"
+    ".env"
+    "*.sqlite3"
+    "node_modules"
+    ".pytest_cache"
+    ".coverage"
+    "staticfiles"
+    "media"
+)
+
+# =============================================================================
+# Backup Settings
+# =============================================================================
+BACKUP_DIR="$HOME/.deploy_backups/petfriendlyvet"
+KEEP_BACKUPS=5
