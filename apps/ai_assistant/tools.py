@@ -1,7 +1,10 @@
 """Tool calling framework for AI assistant."""
 import json
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -115,10 +118,11 @@ class ToolRegistry:
             result = tool.handler(**params)
             return ToolResult(success=True, data=result)
         except Exception as e:
+            logger.exception("Tool execution error for '%s'", tool_name)
             return ToolResult(
                 success=False,
                 data=None,
-                error=str(e)
+                error="Tool execution failed. Please try again."
             )
 
     @classmethod

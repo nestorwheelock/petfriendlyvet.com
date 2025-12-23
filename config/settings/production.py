@@ -58,3 +58,44 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Custom CSRF failure view (friendly error page)
 CSRF_FAILURE_VIEW = 'apps.core.views.csrf_failure'
+
+
+# Content Security Policy - Enforce in production (django-csp 4.0+)
+# Copy base directives to enforced policy (not report-only)
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "script-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "unpkg.com",
+            "cdn.jsdelivr.net",
+        ],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "fonts.googleapis.com",
+            "cdn.jsdelivr.net",
+        ],
+        "font-src": [
+            "'self'",
+            "fonts.gstatic.com",
+            "cdn.jsdelivr.net",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",
+            "https:",
+            "blob:",
+        ],
+        "connect-src": [
+            "'self'",
+            "https://openrouter.ai",
+        ],
+        "frame-ancestors": ["'none'"],
+        "form-action": ["'self'"],
+        "base-uri": ["'self'"],
+    }
+}
+# Clear report-only in production (enforce the policy)
+CONTENT_SECURITY_POLICY_REPORT_ONLY = None

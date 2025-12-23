@@ -75,3 +75,46 @@ class BaseModel(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         abstract = True
+
+
+class ContactSubmission(TimeStampedModel):
+    """Model to store and track contact form submissions."""
+
+    SUBJECT_CHOICES = [
+        ('question', 'General Question'),
+        ('appointment', 'Appointment Request'),
+        ('emergency', 'Emergency'),
+        ('pricing', 'Pricing Information'),
+        ('feedback', 'Feedback'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('read', 'Read'),
+        ('responded', 'Responded'),
+        ('archived', 'Archived'),
+    ]
+
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True)
+    subject = models.CharField(max_length=50, choices=SUBJECT_CHOICES, default='question')
+    message = models.TextField()
+
+    # Tracking fields
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+
+    # Response tracking
+    responded_at = models.DateTimeField(null=True, blank=True)
+    response_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Contact Submission'
+        verbose_name_plural = 'Contact Submissions'
+
+    def __str__(self):
+        return f"{self.name} - {self.subject} ({self.created_at.strftime('%Y-%m-%d')})"

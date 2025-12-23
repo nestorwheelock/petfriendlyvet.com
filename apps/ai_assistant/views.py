@@ -1,7 +1,9 @@
 """Views for AI assistant functionality."""
 import json
+import logging
 import uuid
 
+from django.conf import settings
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
@@ -11,9 +13,41 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
+
 from .services import AIService
 from .models import Conversation, Message
 from .tools import ToolRegistry, handle_tool_calls
+
+logger = logging.getLogger(__name__)
+
+
+def get_client_ip(request):
+    """Get client IP address from request."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
+
+def rate_limit_key(group, request):
+    """Generate rate limit key based on user or IP."""
+    if request.user.is_authenticated:
+        return f'user:{request.user.id}'
+    return f'ip:{get_client_ip(request)}'
+
+
+def ratelimit_handler(request, exception):
+    """Custom handler for rate limited requests."""
+    logger.warning(
+        "Rate limit exceeded for %s",
+        get_client_ip(request)
+    )
+    return JsonResponse({
+        'error': True,
+        'message': 'Rate limit exceeded. Please try again later.'
+    }, status=429, headers={'Retry-After': '60'})
 
 
 QUICK_ACTIONS = [
@@ -45,8 +79,25 @@ def is_staff_or_admin(user):
 class ChatView(View):
     """Handle chat messages from the widget."""
 
+    @method_decorator(ratelimit(
+        key=rate_limit_key,
+        rate='10/m',  # Anonymous: 10 requests per minute
+        method=['POST'],
+        block=True
+    ))
     def post(self, request):
         """Process a chat message and return AI response."""
+        # Check if rate limited
+        if getattr(request, 'limited', False):
+            logger.warning(
+                "Rate limit exceeded for %s",
+                rate_limit_key('chat', request)
+            )
+            return JsonResponse({
+                'error': True,
+                'message': 'Rate limit exceeded. Please try again later.'
+            }, status=429, headers={'Retry-After': '60'})
+
         try:
             # Parse request body
             if request.content_type == 'application/json':
@@ -108,9 +159,10 @@ class ChatView(View):
                 'message': 'Invalid JSON'
             }, status=400)
         except Exception as e:
+            logger.exception("Chat API error for session %s", session_id if 'session_id' in dir() else 'unknown')
             return JsonResponse({
                 'error': True,
-                'message': str(e)
+                'message': 'An unexpected error occurred. Please try again.'
             }, status=500)
 
     def get(self, request):
@@ -190,8 +242,25 @@ class AdminChatAPIView(LoginRequiredMixin, View):
             return JsonResponse({'error': True, 'message': 'Access denied'}, status=403)
         return super().dispatch(request, *args, **kwargs)
 
+    @method_decorator(ratelimit(
+        key='user',  # Rate limit by authenticated user
+        rate='50/h',  # Staff: 50 requests per hour
+        method=['POST'],
+        block=True
+    ))
     def post(self, request):
         """Process admin chat message with tool visibility."""
+        # Check if rate limited
+        if getattr(request, 'limited', False):
+            logger.warning(
+                "Admin rate limit exceeded for user %s",
+                request.user.username
+            )
+            return JsonResponse({
+                'error': True,
+                'message': 'Rate limit exceeded. Please try again later.'
+            }, status=429, headers={'Retry-After': '3600'})
+
         try:
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
@@ -257,9 +326,10 @@ class AdminChatAPIView(LoginRequiredMixin, View):
                 'message': 'Invalid JSON'
             }, status=400)
         except Exception as e:
+            logger.exception("Admin chat API error for user %s, session %s", request.user.username, session_id if 'session_id' in dir() else 'unknown')
             return JsonResponse({
                 'error': True,
-                'message': str(e)
+                'message': 'An unexpected error occurred. Please try again.'
             }, status=500)
 
 

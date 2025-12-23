@@ -205,3 +205,245 @@ class TestMultiToolHandling:
         from apps.ai_assistant.tools import handle_tool_calls
         assert handle_tool_calls is not None
         assert callable(handle_tool_calls)
+
+    @pytest.mark.asyncio
+    async def test_handle_tool_calls_executes_tools(self):
+        """handle_tool_calls should execute tools and return results."""
+        from apps.ai_assistant.tools import handle_tool_calls
+
+        tool_calls = [
+            {
+                'id': 'call_1',
+                'function': {
+                    'name': 'get_clinic_hours',
+                    'arguments': '{}'
+                }
+            }
+        ]
+
+        results = await handle_tool_calls(tool_calls, {})
+
+        assert len(results) == 1
+        assert results[0]['tool_call_id'] == 'call_1'
+        assert results[0]['role'] == 'tool'
+        assert 'hours' in results[0]['content'].lower() or 'monday' in results[0]['content'].lower()
+
+    @pytest.mark.asyncio
+    async def test_handle_tool_calls_multiple(self):
+        """handle_tool_calls should handle multiple tools."""
+        from apps.ai_assistant.tools import handle_tool_calls
+
+        tool_calls = [
+            {'id': 'call_1', 'function': {'name': 'get_clinic_hours', 'arguments': '{}'}},
+            {'id': 'call_2', 'function': {'name': 'get_contact_info', 'arguments': '{}'}},
+        ]
+
+        results = await handle_tool_calls(tool_calls, {})
+
+        assert len(results) == 2
+        assert results[0]['tool_call_id'] == 'call_1'
+        assert results[1]['tool_call_id'] == 'call_2'
+
+    @pytest.mark.asyncio
+    async def test_handle_tool_calls_invalid_json(self):
+        """handle_tool_calls should handle invalid JSON arguments."""
+        from apps.ai_assistant.tools import handle_tool_calls
+
+        tool_calls = [
+            {'id': 'call_1', 'function': {'name': 'get_clinic_hours', 'arguments': 'invalid json'}}
+        ]
+
+        results = await handle_tool_calls(tool_calls, {})
+
+        assert len(results) == 1
+        # Should still execute with empty params
+
+
+class TestToolResultToMessage:
+    """Test ToolResult.to_message method."""
+
+    def test_to_message_error_case(self):
+        """to_message should format error correctly."""
+        from apps.ai_assistant.tools import ToolResult
+
+        result = ToolResult(success=False, data=None, error='Something went wrong')
+        message = result.to_message()
+
+        assert 'Error:' in message
+        assert 'Something went wrong' in message
+
+
+class TestToolRegistryClear:
+    """Test ToolRegistry.clear method."""
+
+    def test_clear_removes_all_tools(self):
+        """clear should remove all registered tools."""
+        from apps.ai_assistant.tools import ToolRegistry, Tool
+
+        # Store original tools count
+        original_tools = ToolRegistry.get_tools().copy()
+
+        # Register a test tool
+        test_tool = Tool(
+            name='temp_test_tool',
+            description='Temporary test',
+            parameters={},
+            handler=lambda: None
+        )
+        ToolRegistry.register(test_tool)
+
+        # Clear and verify
+        ToolRegistry.clear()
+        assert len(ToolRegistry.get_tools()) == 0
+
+        # Re-register original tools for other tests
+        for tool in original_tools:
+            ToolRegistry.register(tool)
+
+
+class TestToolDecoratorDefault:
+    """Test @tool decorator with default parameters."""
+
+    def test_decorator_sets_default_parameters(self):
+        """Decorator should set default empty parameters."""
+        from apps.ai_assistant.tools import tool, ToolRegistry
+
+        @tool(name='test_default_params', description='Test')
+        def test_func():
+            return {}
+
+        tools = ToolRegistry.get_tools()
+        test_tool = next((t for t in tools if t.name == 'test_default_params'), None)
+
+        assert test_tool is not None
+        assert test_tool.parameters == {'type': 'object', 'properties': {}}
+
+
+class TestToolExecutionException:
+    """Test tool execution exception handling."""
+
+    def test_execute_handles_exception(self):
+        """Execute should catch exceptions and return sanitized error."""
+        from apps.ai_assistant.tools import ToolRegistry, Tool
+
+        # Register a tool that raises an exception
+        def failing_handler():
+            raise ValueError("Intentional test error")
+
+        failing_tool = Tool(
+            name='failing_tool',
+            description='Always fails',
+            parameters={},
+            handler=failing_handler
+        )
+        ToolRegistry.register(failing_tool)
+
+        result = ToolRegistry.execute('failing_tool', {}, {})
+
+        assert result.success is False
+        # Error message should be sanitized (not leak internal details)
+        assert 'Intentional test error' not in result.error
+        assert 'failed' in result.error.lower()
+
+
+class TestGetClinicHoursSpecificDay:
+    """Test get_clinic_hours with specific day."""
+
+    def test_get_hours_specific_day(self):
+        """get_clinic_hours should return specific day hours."""
+        from apps.ai_assistant.tools import get_clinic_hours
+
+        result = get_clinic_hours(day='tuesday')
+
+        assert 'day' in result
+        assert 'hours' in result
+        assert result['day'] == 'tuesday'
+        assert '9:00 AM' in result['hours']
+
+    def test_get_hours_unknown_day(self):
+        """get_clinic_hours should handle unknown day."""
+        from apps.ai_assistant.tools import get_clinic_hours
+
+        result = get_clinic_hours(day='invalidday')
+
+        assert 'error' in result
+        assert 'Unknown day' in result['error']
+
+    def test_get_hours_all_days(self):
+        """get_clinic_hours should return all days."""
+        from apps.ai_assistant.tools import get_clinic_hours
+
+        result = get_clinic_hours(day='all')
+
+        assert 'hours' in result
+        assert 'monday' in result['hours']
+        assert result['hours']['monday'] == 'Closed'
+
+
+class TestGetServicesSpecificCategory:
+    """Test get_services with specific category."""
+
+    def test_get_services_clinic(self):
+        """get_services should return clinic services."""
+        from apps.ai_assistant.tools import get_services
+
+        result = get_services(category='clinic')
+
+        assert 'category' in result
+        assert 'services' in result
+        assert 'General Consultation' in result['services']
+
+    def test_get_services_pharmacy(self):
+        """get_services should return pharmacy services."""
+        from apps.ai_assistant.tools import get_services
+
+        result = get_services(category='pharmacy')
+
+        assert 'category' in result
+        assert 'Prescription Medications' in result['services']
+
+    def test_get_services_store(self):
+        """get_services should return store services."""
+        from apps.ai_assistant.tools import get_services
+
+        result = get_services(category='store')
+
+        assert 'Pet Food' in result['services']
+
+    def test_get_services_unknown_category(self):
+        """get_services should handle unknown category."""
+        from apps.ai_assistant.tools import get_services
+
+        result = get_services(category='unknown')
+
+        assert 'error' in result
+        assert 'Unknown category' in result['error']
+
+    def test_get_services_all(self):
+        """get_services should return all services."""
+        from apps.ai_assistant.tools import get_services
+
+        result = get_services(category='all')
+
+        assert 'services' in result
+        assert 'clinic' in result['services']
+        assert 'pharmacy' in result['services']
+        assert 'store' in result['services']
+
+
+class TestGetContactInfo:
+    """Test get_contact_info tool."""
+
+    def test_get_contact_info_returns_data(self):
+        """get_contact_info should return contact details."""
+        from apps.ai_assistant.tools import get_contact_info
+
+        result = get_contact_info()
+
+        assert 'name' in result
+        assert 'phone' in result
+        assert 'whatsapp' in result
+        assert 'address' in result
+        assert 'email' in result
+        assert 'Pet-Friendly' in result['name']
+        assert '+52 998 316 2438' in result['phone']

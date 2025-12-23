@@ -102,6 +102,104 @@ class TestContactView:
 
 
 @pytest.mark.django_db
+class TestContactFormSubmission:
+    """Tests for contact form submission and storage (T-070)."""
+
+    def test_contact_submission_model_exists(self):
+        """ContactSubmission model should exist."""
+        from apps.core.models import ContactSubmission
+        assert ContactSubmission is not None
+
+    def test_contact_submission_created_on_valid_post(self, client):
+        """Valid form submission should create ContactSubmission record."""
+        from apps.core.models import ContactSubmission
+
+        initial_count = ContactSubmission.objects.count()
+        client.post(
+            reverse('core:contact'),
+            {
+                'name': 'Test User',
+                'email': 'test@example.com',
+                'phone': '+521234567890',
+                'subject': 'question',
+                'message': 'This is a test message.',
+            },
+        )
+        assert ContactSubmission.objects.count() == initial_count + 1
+
+    def test_contact_submission_stores_correct_data(self, client):
+        """ContactSubmission should store the submitted data correctly."""
+        from apps.core.models import ContactSubmission
+
+        client.post(
+            reverse('core:contact'),
+            {
+                'name': 'Jane Doe',
+                'email': 'jane@example.com',
+                'phone': '+521234567890',
+                'subject': 'pricing',
+                'message': 'What are your prices?',
+            },
+        )
+        submission = ContactSubmission.objects.latest('created_at')
+        assert submission.name == 'Jane Doe'
+        assert submission.email == 'jane@example.com'
+        assert submission.subject == 'pricing'
+        assert 'prices' in submission.message
+
+    def test_contact_submission_stores_ip_address(self, client):
+        """ContactSubmission should store the client IP address."""
+        from apps.core.models import ContactSubmission
+
+        client.post(
+            reverse('core:contact'),
+            {
+                'name': 'Test User',
+                'email': 'test@example.com',
+                'subject': 'question',
+                'message': 'Hello',
+            },
+        )
+        submission = ContactSubmission.objects.latest('created_at')
+        assert submission.ip_address is not None
+
+    def test_honeypot_field_prevents_spam(self, client):
+        """Filling honeypot field should silently reject submission."""
+        from apps.core.models import ContactSubmission
+
+        initial_count = ContactSubmission.objects.count()
+        response = client.post(
+            reverse('core:contact'),
+            {
+                'name': 'Spammer',
+                'email': 'spam@example.com',
+                'subject': 'spam',
+                'message': 'Buy now!',
+                'website': 'http://spam.com',  # Honeypot field
+            },
+        )
+        # Should appear successful but not save
+        assert response.status_code == 302
+        assert ContactSubmission.objects.count() == initial_count
+
+    def test_email_sent_on_contact_submission(self, client, settings):
+        """Email notification should be sent on submission."""
+        from django.core import mail
+
+        client.post(
+            reverse('core:contact'),
+            {
+                'name': 'Test User',
+                'email': 'test@example.com',
+                'subject': 'question',
+                'message': 'Test message',
+            },
+        )
+        # Check email was sent (using locmem backend in tests)
+        assert len(mail.outbox) >= 1
+
+
+@pytest.mark.django_db
 class TestHealthCheck:
     """Tests for the health check endpoint."""
 

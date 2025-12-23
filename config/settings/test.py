@@ -3,6 +3,9 @@ from .base import *
 
 DEBUG = False
 
+# Allow test server host
+ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1']
+
 # Use SQLite for faster tests
 DATABASES = {
     'default': {
@@ -43,3 +46,6 @@ SCC_SKIP_LICENSE_CHECK = True
 # Celery settings for tests
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Disable rate limiting for tests (prevents test failures from shared state)
+RATELIMIT_ENABLE = False

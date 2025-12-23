@@ -104,11 +104,12 @@ class TestProductionSecuritySettings:
         assert 'https://www.petfriendlyvet.com' in production.CSRF_TRUSTED_ORIGINS, \
             'CSRF_TRUSTED_ORIGINS must include https://www.petfriendlyvet.com'
 
-    def test_csrf_trusted_origins_contains_dev_subdomain(self):
-        """CSRF_TRUSTED_ORIGINS must include dev.petfriendlyvet.com."""
+    def test_csrf_trusted_origins_excludes_dev_subdomain(self):
+        """CSRF_TRUSTED_ORIGINS intentionally excludes dev for custom 403 page testing (B-001)."""
         from config.settings import production
-        assert 'https://dev.petfriendlyvet.com' in production.CSRF_TRUSTED_ORIGINS, \
-            'CSRF_TRUSTED_ORIGINS must include https://dev.petfriendlyvet.com'
+        # dev.petfriendlyvet.com intentionally excluded to test custom CSRF failure page
+        assert 'https://dev.petfriendlyvet.com' not in production.CSRF_TRUSTED_ORIGINS, \
+            'dev.petfriendlyvet.com should be excluded from CSRF_TRUSTED_ORIGINS (B-001)'
 
     def test_cors_allowed_origins_contains_dev_subdomain(self):
         """CORS_ALLOWED_ORIGINS must include dev.petfriendlyvet.com."""

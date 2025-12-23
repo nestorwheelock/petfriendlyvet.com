@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
 ]
 
@@ -228,6 +229,54 @@ AI_MODEL = os.getenv('AI_MODEL', 'anthropic/claude-sonnet-4')
 AI_MAX_TOKENS = int(os.getenv('AI_MAX_TOKENS', '4096'))
 AI_RATE_LIMIT_PER_USER = int(os.getenv('AI_RATE_LIMIT_PER_USER', '50'))
 AI_COST_LIMIT_DAILY = float(os.getenv('AI_COST_LIMIT_DAILY', '10.00'))
+
+
+# Rate Limiting Configuration (django-ratelimit)
+# Uses cache backend for rate limit storage
+RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_ENABLE = True
+RATELIMIT_VIEW = 'apps.ai_assistant.views.ratelimit_handler'
+
+
+# Content Security Policy (django-csp 4.0+)
+# Development: Report-only mode to identify issues without breaking functionality
+# Uses CONTENT_SECURITY_POLICY_REPORT_ONLY in dev, CONTENT_SECURITY_POLICY in production
+
+CONTENT_SECURITY_POLICY_REPORT_ONLY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "script-src": [
+            "'self'",
+            "'unsafe-inline'",  # Required for HTMX and Alpine.js event handlers
+            "unpkg.com",
+            "cdn.jsdelivr.net",
+        ],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",  # Required for inline styles and CSS-in-JS
+            "fonts.googleapis.com",
+            "cdn.jsdelivr.net",
+        ],
+        "font-src": [
+            "'self'",
+            "fonts.gstatic.com",
+            "cdn.jsdelivr.net",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",
+            "https:",
+            "blob:",
+        ],
+        "connect-src": [
+            "'self'",
+            "https://openrouter.ai",  # AI API
+        ],
+        "frame-ancestors": ["'none'"],
+        "form-action": ["'self'"],
+        "base-uri": ["'self'"],
+    }
+}
 
 
 # Stripe Configuration (Mexico)

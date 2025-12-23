@@ -34,6 +34,8 @@ twilio>=8.10
 
 # Security
 python-dotenv>=1.0
+django-ratelimit>=4.1
+django-csp>=3.8
 
 # Utilities
 Pillow>=10.1

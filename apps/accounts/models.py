@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .validators import validate_file_size, validate_image_type, avatar_upload_path
+
 
 class User(AbstractUser):
     """Custom user model for Pet-Friendly Vet."""
@@ -58,10 +60,11 @@ class User(AbstractUser):
         default='owner'
     )
 
-    # Profile picture
+    # Profile picture (with security validators)
     avatar = models.ImageField(
         _('avatar'),
-        upload_to='avatars/',
+        upload_to=avatar_upload_path,
+        validators=[validate_file_size, validate_image_type],
         null=True,
         blank=True
     )
