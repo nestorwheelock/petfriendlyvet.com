@@ -20,7 +20,8 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <a href="javascript:location.reload()" class="inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors">
                 <span class="mr-2">🔄</span>
                 {% trans "Recargar página" %}
@@ -30,6 +31,21 @@
                 {% trans "Volver al inicio" %}
             </a>
         </div>
+
+        <div class="border-t border-gray-200 pt-6 mt-6">
+            <p class="text-gray-600 mb-4">{% trans "¿Quieres un mejor servicio? Crea una cuenta o inicia sesión:" %}</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'accounts:login' %}" class="inline-flex items-center justify-center px-5 py-2 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors">
+                    <span class="mr-2">👤</span>
+                    {% trans "Iniciar sesión" %}
+                </a>
+                <a href="{% url 'accounts:login' %}" class="inline-flex items-center justify-center px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors">
+                    <span class="mr-2">✨</span>
+                    {% trans "Crear cuenta" %}
+                </a>
+            </div>
+        </div>
+
         <p class="mt-8 text-sm text-gray-500">
             {% trans "¿Necesitas ayuda? Llámanos al" %} <a href="tel:+529988000000" class="text-primary-500 hover:underline">+52 998 800 0000</a>
         </p>
