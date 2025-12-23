@@ -1,27 +1,38 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "Error de seguridad" %}{% endblock %}
+{% block title %}{% trans "Estamos trabajando" %}{% endblock %}
 
 {% block content %}
-<section class="min-h-[60vh] flex items-center justify-center py-16 px-4">
+<section class="min-h-[60vh] flex items-center justify-center py-16 px-4 bg-gradient-to-b from-amber-50 to-white">
     <div class="text-center max-w-lg">
-        <h1 class="text-9xl font-bold text-amber-500 mb-4">403</h1>
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">{% trans "Error de verificación" %}</h2>
+        <div class="text-8xl mb-6">🏗️🐾</div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">{% trans "¡Estamos construyendo!" %}</h1>
         <p class="text-lg text-gray-600 mb-6">
-            {% trans "Tu sesión ha expirado o hubo un problema de seguridad con tu solicitud." %}
+            {% trans "Nuestro equipo está trabajando duro para mejorar tu experiencia." %}
         </p>
-        <p class="text-gray-500 mb-8">
-            {% trans "Esto puede ocurrir si la página estuvo abierta mucho tiempo. Por favor, recarga la página e intenta de nuevo." %}
-        </p>
+        <div class="bg-amber-100 border-l-4 border-amber-500 p-4 mb-8 text-left rounded-r">
+            <div class="flex items-center">
+                <span class="text-2xl mr-3">🔧</span>
+                <div>
+                    <p class="text-amber-800 font-medium">{% trans "Zona de construcción" %}</p>
+                    <p class="text-amber-700 text-sm">{% trans "Esta función está siendo actualizada. Por favor, recarga la página o regresa al inicio." %}</p>
+                </div>
+            </div>
+        </div>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="javascript:location.reload()" class="btn-primary">
+            <a href="javascript:location.reload()" class="inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors">
+                <span class="mr-2">🔄</span>
                 {% trans "Recargar página" %}
             </a>
-            <a href="{% url 'core:home' %}" class="btn-secondary">
+            <a href="{% url 'core:home' %}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                <span class="mr-2">🏠</span>
                 {% trans "Volver al inicio" %}
             </a>
         </div>
+        <p class="mt-8 text-sm text-gray-500">
+            {% trans "¿Necesitas ayuda? Llámanos al" %} <a href="tel:+529988000000" class="text-primary-500 hover:underline">+52 998 800 0000</a>
+        </p>
     </div>
 </section>
 {% endblock %}
