@@ -97,7 +97,7 @@ print('Downloaded: $src -> $dst')
 
 cmd_status() {
     log_info "Checking production status..."
-    ssh_cmd "cd $REMOTE_PATH && docker compose ps"
+    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml ps"
     echo ""
     log_info "Testing site response..."
     # Use DEPLOY_URL which includes SCRIPT_NAME if set
@@ -257,7 +257,7 @@ cmd_code() {
 
     # Rebuild container
     log_info "Rebuilding container..."
-    ssh_cmd "cd $REMOTE_PATH && docker compose down && docker compose up -d --build" 300
+    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d --build" 300
 
     # Run migrations
     log_info "Running migrations..."
@@ -306,7 +306,7 @@ cmd_push() {
 cmd_rollback() {
     log_info "Rolling back to previous deployment..."
     ssh_cmd "cd $REMOTE_PATH && rm -rf . && cp -r /tmp/deploy_backup/* ."
-    ssh_cmd "cd $REMOTE_PATH && docker compose down && docker compose up -d --build" 300
+    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d --build" 300
     log_success "Rollback complete"
     cmd_status
 }

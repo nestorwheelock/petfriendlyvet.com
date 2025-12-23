@@ -1,5 +1,5 @@
 # Stage 1: Build Rust components
-FROM rust:1.75-slim-bookworm as rust-builder
+FROM rust:1.82-slim-bookworm as rust-builder
 
 WORKDIR /rust
 
