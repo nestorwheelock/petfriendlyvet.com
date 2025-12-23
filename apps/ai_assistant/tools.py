@@ -320,3 +320,158 @@ def get_contact_info() -> dict:
         'address': 'Puerto Morelos, Quintana Roo, Mexico',
         'email': 'contact@petfriendlyvet.com'
     }
+
+
+# =============================================================================
+# Pet Tools
+# =============================================================================
+
+@tool(
+    name='list_user_pets',
+    description='List all pets owned by a user',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the user whose pets to list'
+            }
+        },
+        'required': ['user_id']
+    },
+    permission='customer',
+    module='pets'
+)
+def list_user_pets(user_id: int) -> dict:
+    """Return list of pets owned by user."""
+    from django.contrib.auth import get_user_model
+    from apps.pets.models import Pet
+
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return {'error': f'User with ID {user_id} not found'}
+
+    pets = Pet.objects.filter(owner=user).values(
+        'id', 'name', 'species', 'breed', 'gender', 'date_of_birth'
+    )
+
+    pet_list = []
+    for pet in pets:
+        pet_data = {
+            'id': pet['id'],
+            'name': pet['name'],
+            'species': pet['species'],
+            'breed': pet['breed'] or '',
+            'gender': pet['gender'],
+        }
+        if pet['date_of_birth']:
+            pet_data['date_of_birth'] = pet['date_of_birth'].isoformat()
+        pet_list.append(pet_data)
+
+    return {'pets': pet_list}
+
+
+@tool(
+    name='get_pet_profile',
+    description='Get detailed profile for a specific pet',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'pet_id': {
+                'type': 'integer',
+                'description': 'The ID of the pet'
+            },
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the user (for ownership verification)'
+            }
+        },
+        'required': ['pet_id', 'user_id']
+    },
+    permission='customer',
+    module='pets'
+)
+def get_pet_profile(pet_id: int, user_id: int) -> dict:
+    """Return detailed pet profile."""
+    from apps.pets.models import Pet
+
+    try:
+        pet = Pet.objects.get(id=pet_id)
+    except Pet.DoesNotExist:
+        return {'error': f'Pet with ID {pet_id} not found'}
+
+    if pet.owner_id != user_id:
+        return {'error': 'Access denied. This pet belongs to another user.'}
+
+    profile = {
+        'id': pet.id,
+        'name': pet.name,
+        'species': pet.species,
+        'breed': pet.breed or '',
+        'gender': pet.gender,
+        'age_years': pet.age_years,
+        'weight_kg': float(pet.weight_kg) if pet.weight_kg else None,
+        'microchip_id': pet.microchip_id or '',
+        'is_neutered': pet.is_neutered,
+    }
+
+    if pet.date_of_birth:
+        profile['date_of_birth'] = pet.date_of_birth.isoformat()
+
+    return profile
+
+
+@tool(
+    name='get_vaccination_status',
+    description='Get vaccination status and upcoming due dates for a pet',
+    parameters={
+        'type': 'object',
+        'properties': {
+            'pet_id': {
+                'type': 'integer',
+                'description': 'The ID of the pet'
+            },
+            'user_id': {
+                'type': 'integer',
+                'description': 'The ID of the user (for ownership verification)'
+            }
+        },
+        'required': ['pet_id', 'user_id']
+    },
+    permission='customer',
+    module='pets'
+)
+def get_vaccination_status(pet_id: int, user_id: int) -> dict:
+    """Return vaccination status for a pet."""
+    from apps.pets.models import Pet, Vaccination
+
+    try:
+        pet = Pet.objects.get(id=pet_id)
+    except Pet.DoesNotExist:
+        return {'error': f'Pet with ID {pet_id} not found'}
+
+    if pet.owner_id != user_id:
+        return {'error': 'Access denied. This pet belongs to another user.'}
+
+    vaccinations = Vaccination.objects.filter(pet=pet).order_by('-date_administered')
+
+    vax_list = []
+    for vax in vaccinations:
+        vax_data = {
+            'id': vax.id,
+            'vaccine_name': vax.vaccine_name,
+            'date_administered': vax.date_administered.isoformat(),
+            'next_due_date': vax.next_due_date.isoformat() if vax.next_due_date else None,
+            'is_overdue': vax.is_overdue,
+            'is_due_soon': vax.is_due_soon,
+        }
+        vax_list.append(vax_data)
+
+    return {
+        'pet_name': pet.name,
+        'pet_id': pet.id,
+        'vaccinations': vax_list
+    }

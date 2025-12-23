@@ -447,3 +447,293 @@ class TestGetContactInfo:
         assert 'email' in result
         assert 'Pet-Friendly' in result['name']
         assert '+52 998 316 2438' in result['phone']
+
+
+# =============================================================================
+# Pet Tools Tests
+# =============================================================================
+
+@pytest.mark.django_db
+class TestPetToolsRegistration:
+    """Test pet tools are registered."""
+
+    def test_list_user_pets_tool_registered(self):
+        """list_user_pets tool should be registered."""
+        from apps.ai_assistant.tools import ToolRegistry
+        tools = ToolRegistry.get_tools()
+        tool_names = [t.name for t in tools]
+        assert 'list_user_pets' in tool_names
+
+    def test_get_pet_profile_tool_registered(self):
+        """get_pet_profile tool should be registered."""
+        from apps.ai_assistant.tools import ToolRegistry
+        tools = ToolRegistry.get_tools()
+        tool_names = [t.name for t in tools]
+        assert 'get_pet_profile' in tool_names
+
+    def test_get_vaccination_status_tool_registered(self):
+        """get_vaccination_status tool should be registered."""
+        from apps.ai_assistant.tools import ToolRegistry
+        tools = ToolRegistry.get_tools()
+        tool_names = [t.name for t in tools]
+        assert 'get_vaccination_status' in tool_names
+
+    def test_pet_tools_require_customer_permission(self):
+        """Pet tools should require customer permission level."""
+        from apps.ai_assistant.tools import ToolRegistry
+        tools = ToolRegistry.get_tools()
+
+        pet_tool_names = ['list_user_pets', 'get_pet_profile', 'get_vaccination_status']
+        for tool in tools:
+            if tool.name in pet_tool_names:
+                assert tool.permission_level == 'customer'
+
+
+@pytest.mark.django_db
+class TestListUserPetsTool:
+    """Test list_user_pets tool."""
+
+    @pytest.fixture
+    def owner(self):
+        return User.objects.create_user(
+            username='petowner',
+            email='owner@test.com',
+            password='pass123',
+            role='owner'
+        )
+
+    @pytest.fixture
+    def pets(self, owner):
+        from apps.pets.models import Pet
+        from datetime import date
+        Pet.objects.create(
+            owner=owner,
+            name='Luna',
+            species='dog',
+            breed='Golden Retriever',
+            date_of_birth=date(2021, 3, 15)
+        )
+        Pet.objects.create(
+            owner=owner,
+            name='Mochi',
+            species='cat',
+            breed='Siamese',
+            date_of_birth=date(2022, 7, 20)
+        )
+        return owner.pets.all()
+
+    def test_list_user_pets_returns_pets(self, owner, pets):
+        """list_user_pets should return user's pets."""
+        from apps.ai_assistant.tools import list_user_pets
+
+        result = list_user_pets(user_id=owner.id)
+
+        assert 'pets' in result
+        assert len(result['pets']) == 2
+        pet_names = [p['name'] for p in result['pets']]
+        assert 'Luna' in pet_names
+        assert 'Mochi' in pet_names
+
+    def test_list_user_pets_includes_species(self, owner, pets):
+        """list_user_pets should include species info."""
+        from apps.ai_assistant.tools import list_user_pets
+
+        result = list_user_pets(user_id=owner.id)
+
+        assert result['pets'][0]['species'] in ['dog', 'cat']
+
+    def test_list_user_pets_empty_for_no_pets(self, owner):
+        """list_user_pets should return empty list for user with no pets."""
+        from apps.ai_assistant.tools import list_user_pets
+
+        result = list_user_pets(user_id=owner.id)
+
+        assert 'pets' in result
+        assert len(result['pets']) == 0
+
+    def test_list_user_pets_invalid_user(self):
+        """list_user_pets should handle invalid user ID."""
+        from apps.ai_assistant.tools import list_user_pets
+
+        result = list_user_pets(user_id=99999)
+
+        assert 'error' in result
+
+
+@pytest.mark.django_db
+class TestGetPetProfileTool:
+    """Test get_pet_profile tool."""
+
+    @pytest.fixture
+    def owner(self):
+        return User.objects.create_user(
+            username='petowner',
+            email='owner@test.com',
+            password='pass123',
+            role='owner'
+        )
+
+    @pytest.fixture
+    def pet(self, owner):
+        from apps.pets.models import Pet
+        from datetime import date
+        from decimal import Decimal
+        return Pet.objects.create(
+            owner=owner,
+            name='Max',
+            species='dog',
+            breed='Labrador',
+            gender='male',
+            date_of_birth=date(2020, 5, 10),
+            weight_kg=Decimal('28.5'),
+            microchip_id='123456789012345',
+            is_neutered=True
+        )
+
+    def test_get_pet_profile_returns_details(self, owner, pet):
+        """get_pet_profile should return pet details."""
+        from apps.ai_assistant.tools import get_pet_profile
+
+        result = get_pet_profile(pet_id=pet.id, user_id=owner.id)
+
+        assert result['name'] == 'Max'
+        assert result['species'] == 'dog'
+        assert result['breed'] == 'Labrador'
+        assert result['gender'] == 'male'
+        assert result['microchip_id'] == '123456789012345'
+        assert result['is_neutered'] is True
+
+    def test_get_pet_profile_includes_age(self, owner, pet):
+        """get_pet_profile should include calculated age."""
+        from apps.ai_assistant.tools import get_pet_profile
+
+        result = get_pet_profile(pet_id=pet.id, user_id=owner.id)
+
+        assert 'age_years' in result
+        assert result['age_years'] >= 4  # Pet born in 2020
+
+    def test_get_pet_profile_not_found(self, owner):
+        """get_pet_profile should handle pet not found."""
+        from apps.ai_assistant.tools import get_pet_profile
+
+        result = get_pet_profile(pet_id=99999, user_id=owner.id)
+
+        assert 'error' in result
+
+    def test_get_pet_profile_wrong_owner(self, pet):
+        """get_pet_profile should deny access to other user's pet."""
+        from apps.ai_assistant.tools import get_pet_profile
+
+        other_user = User.objects.create_user(
+            username='other',
+            email='other@test.com',
+            password='pass123'
+        )
+
+        result = get_pet_profile(pet_id=pet.id, user_id=other_user.id)
+
+        assert 'error' in result
+
+
+@pytest.mark.django_db
+class TestGetVaccinationStatusTool:
+    """Test get_vaccination_status tool."""
+
+    @pytest.fixture
+    def owner(self):
+        return User.objects.create_user(
+            username='petowner',
+            email='owner@test.com',
+            password='pass123',
+            role='owner'
+        )
+
+    @pytest.fixture
+    def pet_with_vaccinations(self, owner):
+        from apps.pets.models import Pet, Vaccination
+        from datetime import date, timedelta
+
+        pet = Pet.objects.create(
+            owner=owner,
+            name='Buddy',
+            species='dog'
+        )
+
+        # Current vaccination
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=30),
+            next_due_date=date.today() + timedelta(days=335)
+        )
+
+        # Overdue vaccination
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='DHPP',
+            date_administered=date.today() - timedelta(days=400),
+            next_due_date=date.today() - timedelta(days=35)
+        )
+
+        # Due soon vaccination
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Bordetella',
+            date_administered=date.today() - timedelta(days=340),
+            next_due_date=date.today() + timedelta(days=15)
+        )
+
+        return pet
+
+    def test_get_vaccination_status_returns_summary(self, owner, pet_with_vaccinations):
+        """get_vaccination_status should return vaccination summary."""
+        from apps.ai_assistant.tools import get_vaccination_status
+
+        result = get_vaccination_status(pet_id=pet_with_vaccinations.id, user_id=owner.id)
+
+        assert 'pet_name' in result
+        assert result['pet_name'] == 'Buddy'
+        assert 'vaccinations' in result
+        assert len(result['vaccinations']) == 3
+
+    def test_get_vaccination_status_identifies_overdue(self, owner, pet_with_vaccinations):
+        """get_vaccination_status should identify overdue vaccinations."""
+        from apps.ai_assistant.tools import get_vaccination_status
+
+        result = get_vaccination_status(pet_id=pet_with_vaccinations.id, user_id=owner.id)
+
+        overdue = [v for v in result['vaccinations'] if v['is_overdue']]
+        assert len(overdue) >= 1
+        assert any(v['vaccine_name'] == 'DHPP' for v in overdue)
+
+    def test_get_vaccination_status_identifies_due_soon(self, owner, pet_with_vaccinations):
+        """get_vaccination_status should identify vaccinations due soon."""
+        from apps.ai_assistant.tools import get_vaccination_status
+
+        result = get_vaccination_status(pet_id=pet_with_vaccinations.id, user_id=owner.id)
+
+        due_soon = [v for v in result['vaccinations'] if v['is_due_soon']]
+        assert len(due_soon) >= 1
+        assert any(v['vaccine_name'] == 'Bordetella' for v in due_soon)
+
+    def test_get_vaccination_status_not_found(self, owner):
+        """get_vaccination_status should handle pet not found."""
+        from apps.ai_assistant.tools import get_vaccination_status
+
+        result = get_vaccination_status(pet_id=99999, user_id=owner.id)
+
+        assert 'error' in result
+
+    def test_get_vaccination_status_wrong_owner(self, pet_with_vaccinations):
+        """get_vaccination_status should deny access to other user's pet."""
+        from apps.ai_assistant.tools import get_vaccination_status
+
+        other_user = User.objects.create_user(
+            username='other',
+            email='other@test.com',
+            password='pass123'
+        )
+
+        result = get_vaccination_status(pet_id=pet_with_vaccinations.id, user_id=other_user.id)
+
+        assert 'error' in result
