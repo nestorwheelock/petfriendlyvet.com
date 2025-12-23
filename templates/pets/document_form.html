@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Upload Document" %} - {{ pet.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="{% url 'pets:dashboard' %}" class="hover:text-primary-600">{% trans "Dashboard" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li><a href="{% url 'pets:pet_detail' pk=pet.pk %}" class="hover:text-primary-600">{{ pet.name }}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li><a href="{% url 'pets:document_list' pet_pk=pet.pk %}" class="hover:text-primary-600">{% trans "Documents" %}</a></li>
+            <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
+            <li class="text-gray-900 font-medium">{% trans "Upload" %}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-gray-900">{% trans "Upload Document for" %} {{ pet.name }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{% trans "Upload vaccination records, lab results, X-rays, or other documents." %}</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="id_title" class="block text-sm font-medium text-gray-700">{% trans "Title" %} <span class="text-red-500">*</span></label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_document_type" class="block text-sm font-medium text-gray-700">{% trans "Document Type" %} <span class="text-red-500">*</span></label>
+                {{ form.document_type }}
+                {% if form.document_type.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.document_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_file" class="block text-sm font-medium text-gray-700">{% trans "File" %}</label>
+                {{ form.file }}
+                {% if form.file.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.file.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">{% trans "Supported formats: PDF, JPG, PNG, GIF. Max size: 10MB." %}</p>
+            </div>
+
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-gray-700">{% trans "Description" %}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="pt-4 border-t border-gray-200 flex justify-end space-x-3">
+                <a href="{% url 'pets:document_list' pet_pk=pet.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    {% trans "Upload Document" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

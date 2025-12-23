@@ -25,6 +25,8 @@ urlpatterns += i18n_patterns(
     path('chat/', include('apps.ai_assistant.urls')),
     path('crm/', include('apps.crm.urls')),
     path('practice/', include('apps.practice.urls')),
+    path('notifications/', include('apps.notifications.urls')),
+    path('services/', include('apps.services.urls')),
     prefix_default_language=False,
 )
 

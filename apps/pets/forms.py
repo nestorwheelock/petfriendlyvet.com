@@ -1,7 +1,7 @@
 """Forms for pets management."""
 from django import forms
 
-from .models import Pet
+from .models import Pet, PetDocument
 
 
 class PetForm(forms.ModelForm):
@@ -59,5 +59,35 @@ class PetForm(forms.ModelForm):
                 'class': 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500',
                 'rows': 3,
                 'placeholder': 'Additional notes (optional)'
+            }),
+        }
+
+
+class PetDocumentForm(forms.ModelForm):
+    """Form for uploading pet documents."""
+
+    class Meta:
+        model = PetDocument
+        fields = [
+            'title',
+            'document_type',
+            'description',
+            'file',
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500',
+                'placeholder': 'Document title'
+            }),
+            'document_type': forms.Select(attrs={
+                'class': 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500',
+                'rows': 3,
+                'placeholder': 'Description (optional)'
+            }),
+            'file': forms.FileInput(attrs={
+                'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100'
             }),
         }

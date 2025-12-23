@@ -152,6 +152,11 @@ class Vaccination(models.Model):
     )
     batch_number = models.CharField(_('batch number'), max_length=100, blank=True)
     notes = models.TextField(_('notes'), blank=True)
+
+    # Reminder tracking
+    reminder_sent = models.BooleanField(_('reminder sent'), default=False)
+    reminder_sent_at = models.DateTimeField(_('reminder sent at'), null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
