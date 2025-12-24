@@ -28,8 +28,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="h-full flex flex-col bg-white text-gray-800 font-sans"
-      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-      x-data="{ mobileMenuOpen: false }">
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
     <!-- Skip to content for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-500 text-white px-4 py-2 rounded">
@@ -60,7 +59,7 @@
 
     {% block extra_js %}{% endblock %}
 
-    <!-- Alpine.js - loaded at end to ensure all components are defined -->
+    <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 </body>
 </html>

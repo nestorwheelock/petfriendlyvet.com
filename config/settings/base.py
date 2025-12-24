@@ -264,6 +264,7 @@ CONTENT_SECURITY_POLICY_REPORT_ONLY = {
         "script-src": [
             "'self'",
             "'unsafe-inline'",  # Required for HTMX and Alpine.js event handlers
+            "'unsafe-eval'",    # Required for Alpine.js expression evaluation
             "unpkg.com",
             "cdn.jsdelivr.net",
         ],

@@ -68,6 +68,7 @@ CONTENT_SECURITY_POLICY = {
         "script-src": [
             "'self'",
             "'unsafe-inline'",
+            "'unsafe-eval'",  # Required for Alpine.js expression evaluation
             "unpkg.com",
             "cdn.jsdelivr.net",
         ],
