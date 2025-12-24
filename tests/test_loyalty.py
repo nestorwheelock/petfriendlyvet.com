@@ -323,14 +323,14 @@ class TestLoyaltyAITools:
         """Test create_referral tool is registered."""
         from apps.ai_assistant.tools import ToolRegistry
 
-        tool = ToolRegistry.get_tool('create_referral')
+        tool = ToolRegistry.get_tool('create_friend_referral')
         assert tool is not None
 
     def test_create_referral(self, user):
-        """Test creating a referral."""
-        from apps.ai_assistant.tools import create_referral
+        """Test creating a friend referral."""
+        from apps.ai_assistant.tools import create_friend_referral
 
-        result = create_referral(
+        result = create_friend_referral(
             referrer_id=user.id,
             referred_email='friend@example.com'
         )

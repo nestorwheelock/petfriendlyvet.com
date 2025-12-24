@@ -4703,8 +4703,8 @@ def get_available_rewards(user_id: int) -> dict:
 
 
 @tool(
-    name="create_referral",
-    description="Create a referral for a customer to invite others",
+    name="create_friend_referral",
+    description="Create a referral for a customer to invite friends and earn rewards",
     parameters={
         "type": "object",
         "properties": {
@@ -4720,8 +4720,8 @@ def get_available_rewards(user_id: int) -> dict:
         "required": ["referrer_id", "referred_email"]
     }
 )
-def create_referral(referrer_id: int, referred_email: str) -> dict:
-    """Create a referral."""
+def create_friend_referral(referrer_id: int, referred_email: str) -> dict:
+    """Create a friend referral for loyalty program."""
     from apps.loyalty.models import Referral
     from apps.accounts.models import User
 

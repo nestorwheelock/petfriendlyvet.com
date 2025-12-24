@@ -5,6 +5,9 @@ Provides fixtures for browser-based E2E testing with Django live server.
 Note: We set DJANGO_ALLOW_ASYNC_UNSAFE=true to allow Django's synchronous
 database operations within pytest-playwright's async context. This is safe
 for testing but should not be used in production.
+
+Note: Browser tests may conflict with async tests in the same run. For best
+results, run browser tests separately: pytest -m browser
 """
 import os
 import pytest

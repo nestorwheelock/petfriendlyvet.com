@@ -592,13 +592,25 @@ class TestBugCreationService:
         assert 'server-error' in filepath.name.lower() or 'api-endpoint' in filepath.name.lower()
 
     @pytest.mark.django_db
-    @patch('subprocess.run')
-    def test_create_github_issue(self, mock_run):
-        """Should create GitHub issue using gh CLI."""
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout='https://github.com/owner/repo/issues/42\n',
-        )
+    @patch('httpx.Client')
+    def test_create_github_issue(self, mock_client_class, settings):
+        """Should create GitHub issue using GitHub API."""
+        # Configure GitHub settings
+        settings.GITHUB_TOKEN = 'test-token'
+        settings.GITHUB_REPO = 'owner/repo'
+
+        # Mock the httpx client response
+        mock_response = MagicMock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            'number': 42,
+            'html_url': 'https://github.com/owner/repo/issues/42'
+        }
+        mock_client = MagicMock()
+        mock_client.__enter__ = MagicMock(return_value=mock_client)
+        mock_client.__exit__ = MagicMock(return_value=False)
+        mock_client.post.return_value = mock_response
+        mock_client_class.return_value = mock_client
 
         service = BugCreationService()
 
@@ -612,11 +624,7 @@ class TestBugCreationService:
 
         assert issue_number == 42
         assert issue_url == 'https://github.com/owner/repo/issues/42'
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert 'gh' in call_args
-        assert 'issue' in call_args
-        assert 'create' in call_args
+        mock_client.post.assert_called_once()
 
     @pytest.mark.django_db
     @patch('subprocess.run')
@@ -642,13 +650,25 @@ class TestBugCreationService:
         assert issue_url == ''
 
     @pytest.mark.django_db
-    @patch('subprocess.run')
-    def test_create_full_bug(self, mock_run, tmp_path):
+    @patch('httpx.Client')
+    def test_create_full_bug(self, mock_client_class, tmp_path, settings):
         """Should create both bug file and GitHub issue."""
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout='https://github.com/owner/repo/issues/99\n',
-        )
+        # Configure GitHub settings
+        settings.GITHUB_TOKEN = 'test-token'
+        settings.GITHUB_REPO = 'owner/repo'
+
+        # Mock the httpx client response
+        mock_response = MagicMock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            'number': 99,
+            'html_url': 'https://github.com/owner/repo/issues/99'
+        }
+        mock_client = MagicMock()
+        mock_client.__enter__ = MagicMock(return_value=mock_client)
+        mock_client.__exit__ = MagicMock(return_value=False)
+        mock_client.post.return_value = mock_response
+        mock_client_class.return_value = mock_client
 
         service = BugCreationService()
 
