@@ -12,6 +12,9 @@ Usage:
     python manage.py generate_test_scenarios
     python manage.py generate_test_scenarios --customers 50
     python manage.py generate_test_scenarios --clear
+
+    # Simulate 6 months of clinic history (2 new customers/day)
+    python manage.py generate_test_scenarios --simulate-history --months 6
 """
 import random
 from datetime import date, datetime, time, timedelta
@@ -24,6 +27,82 @@ from faker import Faker
 
 User = get_user_model()
 fake = Faker(['es_MX', 'en_US'])
+
+# Clinical note templates for realistic documentation
+CLINICAL_NOTES = {
+    'consultation': [
+        "Paciente presenta buen estado general. Mucosas rosadas, tiempo de llenado capilar normal.",
+        "Auscultación cardiopulmonar sin alteraciones. Frecuencia cardíaca y respiratoria dentro de rangos normales.",
+        "Abdomen blando, no doloroso a la palpación. Sin masas palpables.",
+        "Piel y pelaje en buenas condiciones. Sin evidencia de parásitos externos.",
+        "Paciente alerta y reactivo. Comportamiento normal durante la consulta.",
+        "Se recomienda continuar con alimentación actual y ejercicio moderado.",
+        "Propietario refiere que mascota come y bebe con normalidad.",
+        "Sin cambios en comportamiento según propietario.",
+    ],
+    'vaccination': [
+        "Se aplica vacuna según protocolo. Paciente toleró bien la aplicación.",
+        "Se recomienda observación por 24-48 hrs por posibles reacciones.",
+        "Próxima vacuna programada según calendario de vacunación.",
+        "Se actualiza cartilla de vacunación.",
+        "Paciente en buen estado para recibir vacuna. Sin contraindicaciones.",
+    ],
+    'followup': [
+        "Evolución favorable desde última consulta.",
+        "Paciente muestra mejoría significativa.",
+        "Se ajusta tratamiento según evolución.",
+        "Continuar con medicación indicada.",
+        "Propietario reporta mejoría en síntomas.",
+        "Herida/lesión cicatrizando adecuadamente.",
+    ],
+    'illness': [
+        "Paciente presenta decaimiento y pérdida de apetito desde hace {} días.",
+        "Se observa {} leve. Se indica tratamiento sintomático.",
+        "Propietario reporta vómitos/diarrea intermitentes.",
+        "Se solicitan estudios complementarios para descartar patología.",
+        "Paciente deshidratado. Se administra fluidoterapia.",
+        "Se prescribe antibiótico/antiinflamatorio por {} días.",
+    ],
+    'dental': [
+        "Se realiza limpieza dental bajo anestesia general.",
+        "Se extraen {} piezas dentales con movilidad grado III.",
+        "Sarro moderado/severo. Gingivitis presente.",
+        "Paciente recuperó bien de anestesia. Alta con indicaciones.",
+    ],
+    'surgery': [
+        "Cirugía realizada sin complicaciones.",
+        "Paciente estable durante procedimiento.",
+        "Se indica reposo absoluto por {} días.",
+        "Curación cada 48 hrs. Retiro de puntos en 10-14 días.",
+        "Collar isabelino obligatorio hasta retiro de puntos.",
+    ],
+}
+
+VISIT_DIAGNOSES = [
+    "Paciente sano. Chequeo rutinario.",
+    "Gastroenteritis leve. Tratamiento sintomático.",
+    "Otitis externa bilateral. Tratamiento tópico.",
+    "Dermatitis alérgica. Se inicia tratamiento.",
+    "Conjuntivitis. Colirio indicado.",
+    "Parasitosis intestinal. Desparasitación.",
+    "Infección urinaria. Antibiótico por 7 días.",
+    "Artritis degenerativa. Manejo del dolor.",
+    "Obesidad. Plan de alimentación y ejercicio.",
+    "Ansiedad por separación. Modificación conductual.",
+]
+
+VISIT_TREATMENTS = [
+    "Observación. Control en 1 semana si persisten síntomas.",
+    "Metronidazol 250mg c/12h x 5 días. Dieta blanda.",
+    "Limpieza ótica + gotas Otomax c/12h x 10 días.",
+    "Apoquel 16mg c/24h. Baños medicados semanales.",
+    "Tobramicina oftálmica c/8h x 7 días.",
+    "Fenbendazol 50mg/kg dosis única. Repetir en 15 días.",
+    "Enrofloxacina 5mg/kg c/24h x 7 días.",
+    "Rimadyl 2mg/kg c/12h. Suplemento articular.",
+    "Reducción 20% ración. Caminatas 30 min diarios.",
+    "Ejercicio antes de salir. Enriquecimiento ambiental.",
+]
 
 
 class Command(BaseCommand):
@@ -46,6 +125,23 @@ class Command(BaseCommand):
             action='store_true',
             help='Skip clinic setup (use existing staff/products)'
         )
+        parser.add_argument(
+            '--simulate-history',
+            action='store_true',
+            help='Simulate clinic history over time (ignores --customers)'
+        )
+        parser.add_argument(
+            '--months',
+            type=int,
+            default=6,
+            help='Number of months of history to simulate (default: 6)'
+        )
+        parser.add_argument(
+            '--customers-per-day',
+            type=int,
+            default=2,
+            help='Average new customers per day (default: 2)'
+        )
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE('🏥 Pet-Friendly Vet - Test Scenario Generator'))
@@ -57,8 +153,16 @@ class Command(BaseCommand):
         if not options['skip_clinic']:
             self.setup_clinic()
 
-        self.create_customer_scenarios(options['customers'])
-        self.create_workflow_scenarios()
+        if options['simulate_history']:
+            # Historical simulation mode
+            self.simulate_clinic_history(
+                months=options['months'],
+                customers_per_day=options['customers_per_day']
+            )
+        else:
+            # Original mode
+            self.create_customer_scenarios(options['customers'])
+            self.create_workflow_scenarios()
 
         self.stdout.write('=' * 60)
         self.stdout.write(self.style.SUCCESS('✅ Test scenarios generated successfully!'))
@@ -378,6 +482,446 @@ class Command(BaseCommand):
             self.drivers.append(driver)
 
         self.stdout.write(f'    Created {len(self.zones)} zones, {slots_created} slots, {len(self.drivers)} drivers')
+
+    # =========================================================================
+    # HISTORICAL SIMULATION MODE
+    # =========================================================================
+
+    def simulate_clinic_history(self, months=6, customers_per_day=2):
+        """Simulate clinic operations over a period of months."""
+        self.stdout.write(self.style.NOTICE(f'\n📅 HISTORICAL SIMULATION: {months} months, ~{customers_per_day} customers/day'))
+
+        from apps.pets.models import Pet, MedicalCondition, Vaccination, Visit, Medication, ClinicalNote, WeightRecord
+        from apps.crm.models import OwnerProfile, CustomerTag, Interaction
+        from apps.appointments.models import Appointment, ServiceType
+        from apps.store.models import Order, OrderItem, Product
+
+        # Create customer tags
+        tags_data = ['VIP', 'Nuevo Cliente', 'Frecuente', 'Referido', 'Moroso', 'Rescate']
+        self.tags = []
+        for tag_name in tags_data:
+            tag, _ = CustomerTag.objects.get_or_create(
+                name=tag_name,
+                defaults={'color': fake.hex_color()}
+            )
+            self.tags.append(tag)
+
+        # Calculate simulation period
+        end_date = date.today()
+        start_date = end_date - timedelta(days=months * 30)
+        total_days = (end_date - start_date).days
+
+        self.stdout.write(f'  Simulating from {start_date} to {end_date} ({total_days} days)')
+
+        # Track all customers and pets for follow-up visits
+        self.all_customers = []
+        self.all_pets = []
+        self.customer_counter = 0
+
+        # Statistics
+        stats = {
+            'customers': 0,
+            'pets': 0,
+            'appointments_scheduled': 0,
+            'appointments_completed': 0,
+            'visits': 0,
+            'vaccinations': 0,
+            'orders': 0,
+            'clinical_notes': 0,
+        }
+
+        # Simulate day by day
+        current_date = start_date
+        day_num = 0
+
+        while current_date <= end_date:
+            day_num += 1
+
+            # Skip Sundays (clinic closed)
+            if current_date.weekday() == 6:
+                current_date += timedelta(days=1)
+                continue
+
+            # Progress indicator every 30 days
+            if day_num % 30 == 0:
+                self.stdout.write(f'  📆 Day {day_num}/{total_days}: {current_date} - {stats["customers"]} customers, {stats["visits"]} visits')
+
+            # === NEW CUSTOMERS FOR THE DAY ===
+            # Vary the number (0-4 new customers, averaging customers_per_day)
+            new_customers_today = random.choices(
+                [0, 1, 2, 3, 4],
+                weights=[10, 25, 35, 20, 10],  # Distribution centered on 2
+                k=1
+            )[0]
+
+            for _ in range(new_customers_today):
+                customer_data = self._create_historical_customer(current_date)
+                if customer_data:
+                    self.all_customers.append(customer_data)
+                    self.all_pets.extend(customer_data['pets'])
+                    stats['customers'] += 1
+                    stats['pets'] += len(customer_data['pets'])
+
+            # === DAILY APPOINTMENTS (from existing customers) ===
+            # Simulate 8-15 appointments per day
+            appointments_today = random.randint(8, 15)
+
+            for _ in range(appointments_today):
+                if not self.all_pets:
+                    continue
+
+                # Pick a random pet from existing customers
+                pet = random.choice(self.all_pets)
+
+                # Create and complete an appointment
+                appt_result = self._simulate_appointment(pet, current_date)
+                if appt_result:
+                    stats['appointments_scheduled'] += 1
+                    if appt_result.get('completed'):
+                        stats['appointments_completed'] += 1
+                        stats['visits'] += 1
+                        stats['clinical_notes'] += appt_result.get('notes_count', 0)
+                    if appt_result.get('vaccination'):
+                        stats['vaccinations'] += 1
+
+            # === RANDOM ORDERS (some days) ===
+            if random.random() < 0.4:  # 40% of days have orders
+                orders_today = random.randint(1, 5)
+                for _ in range(orders_today):
+                    if self.all_customers:
+                        customer = random.choice(self.all_customers)
+                        if self._create_historical_order(customer['user'], current_date):
+                            stats['orders'] += 1
+
+            current_date += timedelta(days=1)
+
+        # Create some future appointments
+        self._create_future_appointments()
+
+        self.stdout.write(self.style.SUCCESS(f'\n  ✅ Historical simulation complete!'))
+        self.stdout.write(f'  📊 Generated: {stats["customers"]} customers, {stats["pets"]} pets')
+        self.stdout.write(f'  📅 Appointments: {stats["appointments_scheduled"]} scheduled, {stats["appointments_completed"]} completed')
+        self.stdout.write(f'  🏥 Visits: {stats["visits"]}, Clinical Notes: {stats["clinical_notes"]}')
+        self.stdout.write(f'  💉 Vaccinations: {stats["vaccinations"]}, Orders: {stats["orders"]}')
+
+    def _create_historical_customer(self, registration_date):
+        """Create a customer who registered on a specific date."""
+        from apps.pets.models import Pet, Vaccination
+        from apps.crm.models import OwnerProfile
+
+        self.customer_counter += 1
+        username = f'customer_{self.customer_counter}'
+
+        user = User.objects.create(
+            username=username,
+            email=f'{username}@test.petfriendlyvet.com',
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            phone_number=fake.phone_number()[:15],
+            role='owner',
+        )
+        user.set_password('customer123')
+        user.save()
+
+        # Owner profile
+        profile = OwnerProfile.objects.create(
+            user=user,
+            preferred_contact_method=random.choice(['phone', 'whatsapp', 'email']),
+            referral_source=random.choice(['Google', 'Instagram', 'Referido', 'Facebook', 'Paso por aquí']),
+            total_visits=0,
+            total_spent=Decimal('0'),
+        )
+        profile.tags.add(self.tags[1])  # Nuevo Cliente
+
+        # Create 1-3 pets
+        num_pets = random.choices([1, 2, 3], weights=[60, 30, 10], k=1)[0]
+        pets = []
+
+        for _ in range(num_pets):
+            pet = self._create_pet_for_customer(user, registration_date)
+            pets.append(pet)
+
+        return {
+            'user': user,
+            'profile': profile,
+            'pets': pets,
+            'registration_date': registration_date,
+        }
+
+    def _create_pet_for_customer(self, owner, registration_date):
+        """Create a pet with appropriate age for registration date."""
+        from apps.pets.models import Pet
+
+        species = random.choices(
+            ['dog', 'cat', 'rabbit', 'bird'],
+            weights=[60, 30, 7, 3],
+            k=1
+        )[0]
+
+        if species == 'dog':
+            names = ['Max', 'Luna', 'Rocky', 'Bella', 'Charlie', 'Coco', 'Bruno', 'Lola', 'Thor', 'Nina']
+            breeds = ['Labrador', 'Golden Retriever', 'Bulldog Francés', 'Chihuahua', 'Mestizo', 'Poodle', 'Schnauzer']
+            weight_range = (3, 40)
+        elif species == 'cat':
+            names = ['Michi', 'Whiskers', 'Gatito', 'Felix', 'Luna', 'Simba', 'Nala', 'Cleo']
+            breeds = ['Siamés', 'Persa', 'Mestizo', 'Maine Coon', 'Angora']
+            weight_range = (2, 8)
+        elif species == 'rabbit':
+            names = ['Bunny', 'Copito', 'Pelusa', 'Tambor', 'Nieve']
+            breeds = ['Holland Lop', 'Mini Rex', 'Angora', 'Mestizo']
+            weight_range = (1, 4)
+        else:  # bird
+            names = ['Piolín', 'Tweety', 'Kiwi', 'Coco', 'Loro']
+            breeds = ['Periquito', 'Canario', 'Cotorro', 'Loro']
+            weight_range = (0.02, 0.5)
+
+        # Age: mostly young to middle-aged pets
+        age_days = random.choices(
+            [random.randint(60, 365), random.randint(365, 1825), random.randint(1825, 4380)],
+            weights=[30, 50, 20],
+            k=1
+        )[0]
+
+        pet = Pet.objects.create(
+            owner=owner,
+            name=random.choice(names),
+            species=species,
+            breed=random.choice(breeds),
+            gender=random.choice(['male', 'female']),
+            date_of_birth=registration_date - timedelta(days=age_days),
+            weight_kg=Decimal(str(round(random.uniform(*weight_range), 1))),
+            is_neutered=random.random() < 0.6,
+            microchip_id=fake.numerify('###############') if random.random() < 0.4 else '',
+        )
+
+        return pet
+
+    def _simulate_appointment(self, pet, appt_date):
+        """Simulate an appointment being scheduled and completed."""
+        from apps.pets.models import Visit, Vaccination, ClinicalNote, WeightRecord
+        from apps.appointments.models import Appointment, ServiceType
+        from apps.crm.models import OwnerProfile
+
+        # Get a random service type
+        services = list(ServiceType.objects.filter(is_active=True))
+        if not services:
+            return None
+
+        service = random.choice(services)
+        vet = random.choice(self.vets)
+
+        # Appointment time
+        hour = random.choice([9, 10, 11, 12, 14, 15, 16, 17])
+        appt_datetime = timezone.make_aware(
+            datetime.combine(appt_date, time(hour, random.choice([0, 30])))
+        )
+
+        # Create appointment
+        appointment = Appointment.objects.create(
+            owner=pet.owner,
+            pet=pet,
+            veterinarian=vet,
+            service=service,
+            scheduled_start=appt_datetime,
+            scheduled_end=appt_datetime + timedelta(minutes=service.duration_minutes),
+            status='completed',  # Past appointments are completed
+            confirmed_at=appt_datetime - timedelta(days=1),
+            completed_at=appt_datetime + timedelta(minutes=service.duration_minutes),
+            notes=f"Cita para {service.name}",
+        )
+
+        result = {'completed': True, 'notes_count': 0, 'vaccination': False}
+
+        # Create the associated visit record
+        visit = Visit.objects.create(
+            pet=pet,
+            date=appt_datetime,
+            reason=service.name,
+            diagnosis=random.choice(VISIT_DIAGNOSES),
+            treatment=random.choice(VISIT_TREATMENTS),
+            veterinarian=vet,
+            weight_kg=pet.weight_kg + Decimal(str(round(random.uniform(-0.5, 0.5), 1))),
+            follow_up_date=appt_date + timedelta(days=random.choice([7, 14, 30])) if random.random() < 0.3 else None,
+        )
+
+        # Add clinical notes
+        note_type = 'consultation'
+        if 'Vacun' in service.name:
+            note_type = 'vaccination'
+        elif 'Seguimiento' in service.name:
+            note_type = 'followup'
+        elif 'Dental' in service.name:
+            note_type = 'dental'
+        elif 'Cirugía' in service.name or 'Esteril' in service.name:
+            note_type = 'surgery'
+
+        # 1-3 clinical notes per visit
+        num_notes = random.randint(1, 3)
+        for _ in range(num_notes):
+            note_template = random.choice(CLINICAL_NOTES.get(note_type, CLINICAL_NOTES['consultation']))
+            # Replace placeholders if present
+            if '{}' in note_template:
+                note_template = note_template.format(random.randint(1, 5))
+
+            ClinicalNote.objects.create(
+                pet=pet,
+                author=vet,
+                visit=visit,
+                note=note_template,
+                note_type=random.choice(['observation', 'treatment', 'followup']),
+            )
+            result['notes_count'] += 1
+
+        # Record weight
+        WeightRecord.objects.create(
+            pet=pet,
+            weight_kg=visit.weight_kg,
+            recorded_by=vet,
+        )
+
+        # Vaccination if it's a vaccination appointment
+        if 'Vacun' in service.name:
+            vaccine_names = ['Rabia', 'Múltiple Canina', 'Bordetella', 'Leptospirosis'] if pet.species == 'dog' else ['Rabia', 'Triple Felina']
+            Vaccination.objects.create(
+                pet=pet,
+                vaccine_name=random.choice(vaccine_names),
+                date_administered=appt_date,
+                next_due_date=appt_date + timedelta(days=365),
+                administered_by=vet,
+                batch_number=fake.bothify('VAC-#####'),
+            )
+            result['vaccination'] = True
+
+        # Update owner profile stats
+        try:
+            profile = pet.owner.owner_profile
+            profile.total_visits += 1
+            profile.total_spent += service.price
+            profile.save()
+
+            # Upgrade to 'Frecuente' if enough visits
+            if profile.total_visits >= 5:
+                profile.tags.add(self.tags[2])  # Frecuente
+                profile.tags.remove(self.tags[1])  # Remove Nuevo Cliente
+        except OwnerProfile.DoesNotExist:
+            pass
+
+        return result
+
+    def _create_historical_order(self, user, order_date):
+        """Create an order placed on a specific date."""
+        from apps.store.models import Order, OrderItem, Product
+
+        products = list(Product.objects.filter(is_active=True)[:20])
+        if not products:
+            return False
+
+        # Pick 1-4 products
+        order_products = random.sample(products, min(random.randint(1, 4), len(products)))
+        quantities = {p.id: random.randint(1, 3) for p in order_products}
+
+        subtotal = sum(p.price * quantities[p.id] for p in order_products)
+        fulfillment = random.choice(['pickup', 'delivery'])
+        shipping_cost = Decimal('50.00') if fulfillment == 'delivery' else Decimal('0')
+        tax = subtotal * Decimal('0.16')
+        total = subtotal + shipping_cost + tax
+
+        # Past orders are mostly delivered
+        status = random.choices(
+            ['delivered', 'cancelled'],
+            weights=[90, 10],
+            k=1
+        )[0]
+
+        order = Order.objects.create(
+            user=user,
+            order_number=Order.generate_order_number(),
+            status=status,
+            fulfillment_method=fulfillment,
+            payment_method=random.choice(['cash', 'card']),
+            shipping_address=fake.address() if fulfillment == 'delivery' else '',
+            subtotal=subtotal,
+            shipping_cost=shipping_cost,
+            tax=tax,
+            total=total,
+        )
+        # Backdate the order
+        Order.objects.filter(pk=order.pk).update(
+            created_at=timezone.make_aware(datetime.combine(order_date, time(random.randint(9, 18), 0)))
+        )
+
+        for product in order_products:
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                product_name=product.name,
+                product_sku=product.sku,
+                price=product.price,
+                quantity=quantities[product.id],
+            )
+
+        return True
+
+    def _create_future_appointments(self):
+        """Create upcoming appointments for the next 2 weeks."""
+        from apps.appointments.models import Appointment, ServiceType
+
+        self.stdout.write('  Creating future appointments...')
+
+        if not self.all_pets:
+            return
+
+        services = list(ServiceType.objects.filter(is_active=True))
+        if not services:
+            return
+
+        today = date.today()
+        appointments_created = 0
+
+        # Create 5-10 appointments per day for the next 14 days
+        for day_offset in range(1, 15):
+            appt_date = today + timedelta(days=day_offset)
+
+            # Skip Sunday
+            if appt_date.weekday() == 6:
+                continue
+
+            num_appointments = random.randint(5, 10)
+
+            for _ in range(num_appointments):
+                pet = random.choice(self.all_pets)
+                service = random.choice(services)
+                vet = random.choice(self.vets)
+
+                hour = random.choice([9, 10, 11, 12, 14, 15, 16, 17])
+                appt_datetime = timezone.make_aware(
+                    datetime.combine(appt_date, time(hour, random.choice([0, 30])))
+                )
+
+                status = random.choices(
+                    ['scheduled', 'confirmed'],
+                    weights=[30, 70],
+                    k=1
+                )[0]
+
+                Appointment.objects.create(
+                    owner=pet.owner,
+                    pet=pet,
+                    veterinarian=vet,
+                    service=service,
+                    scheduled_start=appt_datetime,
+                    scheduled_end=appt_datetime + timedelta(minutes=service.duration_minutes),
+                    status=status,
+                    confirmed_at=appt_datetime - timedelta(days=1) if status == 'confirmed' else None,
+                    notes=f"Cita programada para {service.name}",
+                )
+                appointments_created += 1
+
+        self.stdout.write(f'    Created {appointments_created} future appointments')
+
+    # =========================================================================
+    # ORIGINAL SCENARIO MODE
+    # =========================================================================
 
     def create_customer_scenarios(self, num_customers):
         """Create customers with diverse pet scenarios."""
