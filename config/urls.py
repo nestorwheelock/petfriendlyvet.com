@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/driver/', include('apps.delivery.api_urls')),
     path('api/delivery/', include('apps.delivery.customer_api_urls')),
     path('api/delivery/admin/', include('apps.delivery.admin_api_urls')),
+    path('api/billing/', include('apps.billing.api_urls')),
     # Delivery driver dashboard (no i18n for mobile drivers)
     path('delivery/', include('apps.delivery.urls')),
 ]

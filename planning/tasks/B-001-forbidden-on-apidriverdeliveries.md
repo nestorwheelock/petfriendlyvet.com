@@ -1,4 +1,4 @@
-# B-001: Forbidden on /accounts/login/
+# B-001: Forbidden on /api/driver/deliveries/
 
 **Severity**: Medium
 **Status**: Open
@@ -7,16 +7,16 @@
 
 ## Description
 
-HTTP 403 error detected on URL pattern: /accounts/login/
+HTTP 403 error detected on URL pattern: /api/driver/deliveries/
 
 ## Steps to Reproduce
 
-1. Navigate to URL pattern: `/accounts/login/`
+1. Navigate to URL pattern: `/api/driver/deliveries/`
 2. The error occurs automatically
 
 ## Technical Details
 
-- **Fingerprint**: `359941b95ef862a7`
+- **Fingerprint**: `a13d738ae7a60e99`
 - **Error Type**: forbidden
 - **HTTP Status**: 403
 

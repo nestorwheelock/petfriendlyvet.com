@@ -1,4 +1,4 @@
-# B-002: Not Found on /en/store
+# B-001: Not Found on /api/crm/profiles/{id}/history/
 
 **Severity**: Low
 **Status**: Open
@@ -7,16 +7,16 @@
 
 ## Description
 
-HTTP 404 error detected on URL pattern: /en/store
+HTTP 404 error detected on URL pattern: /api/crm/profiles/{id}/history/
 
 ## Steps to Reproduce
 
-1. Navigate to URL pattern: `/en/store`
+1. Navigate to URL pattern: `/api/crm/profiles/{id}/history/`
 2. The error occurs automatically
 
 ## Technical Details
 
-- **Fingerprint**: `52f28e6fbc8502b4`
+- **Fingerprint**: `bd8561f470861d65`
 - **Error Type**: not_found
 - **HTTP Status**: 404
 
