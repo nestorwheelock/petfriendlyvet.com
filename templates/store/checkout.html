@@ -8,7 +8,9 @@
     <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "Finalizar compra" %}</h1>
 
     {% if cart.item_count > 0 %}
-    <form method="post" action="{% url 'store:process_checkout' %}">
+    <form method="post" action="{% url 'store:process_checkout' %}"
+          x-data="checkoutForm({{ cart.total }})"
+          x-init="updateTotals()">
         {% csrf_token %}
         <div class="lg:grid lg:grid-cols-12 lg:gap-8">
             <!-- Checkout Form -->
@@ -17,12 +19,12 @@
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Método de entrega" %}</h2>
 
-                    <div class="space-y-4" x-data="{ method: 'pickup' }">
+                    <div class="space-y-4">
                         <!-- Pickup Option -->
                         <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
                                :class="method === 'pickup' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
                             <input type="radio" name="fulfillment_method" value="pickup" class="sr-only"
-                                   x-model="method">
+                                   x-model="method" @change="updateTotals()">
                             <span class="flex flex-1">
                                 <span class="flex flex-col">
                                     <span class="block text-sm font-medium text-gray-900">
@@ -42,7 +44,7 @@
                         <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
                                :class="method === 'delivery' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
                             <input type="radio" name="fulfillment_method" value="delivery" class="sr-only"
-                                   x-model="method">
+                                   x-model="method" @change="updateTotals()">
                             <span class="flex flex-1">
                                 <span class="flex flex-col">
                                     <span class="block text-sm font-medium text-gray-900">
@@ -109,7 +111,7 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Método de pago" %}</h2>
 
-                    <div class="space-y-4" x-data="{ payment: 'cash' }">
+                    <div class="space-y-4">
                         <!-- Cash Option -->
                         <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
                                :class="payment === 'cash' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
@@ -247,7 +249,7 @@
                                 ${{ cart.total|floatformat:2 }}
                             </dd>
                         </div>
-                        <div class="flex items-center justify-between" x-data x-show="$root.querySelector('[name=fulfillment_method]:checked')?.value === 'delivery'">
+                        <div class="flex items-center justify-between" x-show="method === 'delivery'" x-transition>
                             <dt class="text-sm text-gray-600">{% trans "Envío" %}</dt>
                             <dd class="text-sm font-medium text-gray-900">$50.00</dd>
                         </div>
@@ -292,26 +294,25 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const subtotal = {{ cart.total }};
-    const taxRate = 0.16;
-    const shippingCost = 50.00;
+function checkoutForm(subtotal) {
+    return {
+        method: 'pickup',
+        payment: 'cash',
+        subtotal: subtotal,
+        taxRate: 0.16,
+        shippingCost: 50.00,
+        tax: 0,
+        total: 0,
 
-    function updateTotals() {
-        const method = document.querySelector('[name=fulfillment_method]:checked')?.value || 'pickup';
-        const tax = subtotal * taxRate;
-        const shipping = method === 'delivery' ? shippingCost : 0;
-        const total = subtotal + tax + shipping;
+        updateTotals() {
+            this.tax = this.subtotal * this.taxRate;
+            const shipping = this.method === 'delivery' ? this.shippingCost : 0;
+            this.total = this.subtotal + this.tax + shipping;
 
-        document.getElementById('tax-amount').textContent = '$' + tax.toFixed(2);
-        document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+            document.getElementById('tax-amount').textContent = '$' + this.tax.toFixed(2);
+            document.getElementById('total-amount').textContent = '$' + this.total.toFixed(2);
+        }
     }
-
-    document.querySelectorAll('[name=fulfillment_method]').forEach(function(radio) {
-        radio.addEventListener('change', updateTotals);
-    });
-
-    updateTotals();
-});
+}
 </script>
 {% endblock %}

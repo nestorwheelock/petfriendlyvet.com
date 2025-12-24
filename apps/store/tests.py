@@ -461,3 +461,76 @@ class CartItemModelTests(TestCase):
             quantity=3
         )
         self.assertEqual(item.subtotal, Decimal('136.50'))
+
+
+class OrderCreationTests(TestCase):
+    """Tests for Order creation and totals."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.category = Category.objects.create(
+            name='Test Category',
+            name_es='Categoría',
+            name_en='Category',
+            slug='test-cat'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 2)  # 2 x $100 = $200
+
+    def test_order_pickup_no_shipping_cost(self):
+        """Test that pickup orders have no shipping cost."""
+        order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='pickup',
+            payment_method='cash'
+        )
+        self.assertEqual(order.subtotal, Decimal('200.00'))
+        self.assertEqual(order.shipping_cost, Decimal('0'))
+        self.assertEqual(order.tax, Decimal('32.00'))  # 16% of 200
+        self.assertEqual(order.total, Decimal('232.00'))  # 200 + 32
+
+    def test_order_delivery_includes_shipping_cost(self):
+        """Test that delivery orders include $50 shipping cost."""
+        order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            payment_method='cash',
+            shipping_name='Test User',
+            shipping_address='123 Test St',
+            shipping_phone='555-1234'
+        )
+        self.assertEqual(order.subtotal, Decimal('200.00'))
+        self.assertEqual(order.shipping_cost, Decimal('50.00'))
+        self.assertEqual(order.tax, Decimal('32.00'))  # 16% of 200
+        self.assertEqual(order.total, Decimal('282.00'))  # 200 + 32 + 50
+
+    def test_order_stores_shipping_info(self):
+        """Test that delivery orders store shipping information."""
+        order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            payment_method='cash',
+            shipping_name='John Doe',
+            shipping_address='456 Main St, Puerto Morelos',
+            shipping_phone='+52 998 123 4567'
+        )
+        self.assertEqual(order.shipping_name, 'John Doe')
+        self.assertEqual(order.shipping_address, '456 Main St, Puerto Morelos')
+        self.assertEqual(order.shipping_phone, '+52 998 123 4567')
