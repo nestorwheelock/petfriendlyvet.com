@@ -79,11 +79,17 @@
                 <hr class="my-8">
 
                 <!-- Account Actions -->
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="#" class="btn-secondary">
+                <div class="flex flex-col sm:flex-row gap-4 flex-wrap">
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn-secondary">
                         {% trans "Editar Perfil" %}
                     </a>
-                    <a href="{% url 'accounts:logout' %}" class="btn-outline text-red-600 border-red-600 hover:bg-red-50">
+                    <a href="{% url 'accounts:change_password' %}" class="btn-secondary">
+                        {% trans "Cambiar Contraseña" %}
+                    </a>
+                    <a href="{% url 'accounts:delete_account' %}" class="btn-outline text-red-600 border-red-600 hover:bg-red-50">
+                        {% trans "Eliminar Cuenta" %}
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="btn-outline text-gray-600 border-gray-600 hover:bg-gray-50">
                         {% trans "Cerrar Sesión" %}
                     </a>
                 </div>

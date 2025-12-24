@@ -45,7 +45,7 @@
                         <input type="checkbox" name="remember" class="h-4 w-4 text-primary-500 border-gray-300 rounded">
                         <span class="ml-2 text-sm text-gray-600">{% trans "Recordarme" %}</span>
                     </label>
-                    <a href="#" class="text-sm text-primary-600 hover:text-primary-700">
+                    <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary-600 hover:text-primary-700">
                         {% trans "¿Olvidaste tu contraseña?" %}
                     </a>
                 </div>
@@ -80,7 +80,7 @@
 
             <p class="mt-6 text-center text-sm text-gray-600">
                 {% trans "¿No tienes cuenta?" %}
-                <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">
+                <a href="{% url 'accounts:register' %}" class="text-primary-600 hover:text-primary-700 font-medium">
                     {% trans "Regístrate" %}
                 </a>
             </p>

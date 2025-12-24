@@ -1,7 +1,150 @@
 """Account views."""
-from django.contrib.auth import views as auth_views
+from django import forms
+from django.contrib import messages
+from django.contrib.auth import views as auth_views, login, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.translation import gettext_lazy as _
+from django.views.generic import CreateView, UpdateView, TemplateView, FormView
+
+from .models import User
+
+
+class RegistrationForm(forms.ModelForm):
+    """User registration form."""
+
+    password1 = forms.CharField(
+        label=_('Password'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'placeholder': '••••••••'
+        })
+    )
+    password2 = forms.CharField(
+        label=_('Confirm Password'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'placeholder': '••••••••'
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'phone_number']
+        widgets = {
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'tu@email.com'
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'Juan'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'García'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': '+52 55 1234 5678'
+            }),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email=email).exists():
+            raise forms.ValidationError(_('This email is already registered.'))
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError(_('Passwords do not match.'))
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = self.cleaned_data['email']
+        user.set_password(self.cleaned_data['password1'])
+        if commit:
+            user.save()
+        return user
+
+
+class ProfileEditForm(forms.ModelForm):
+    """User profile edit form."""
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone_number', 'preferred_language', 'marketing_consent']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'
+            }),
+            'preferred_language': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'
+            }),
+            'marketing_consent': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-primary-500 border-gray-300 rounded'
+            }),
+        }
+
+
+class PasswordResetRequestForm(forms.Form):
+    """Password reset request form."""
+
+    email = forms.EmailField(
+        label=_('Email'),
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'placeholder': 'tu@email.com'
+        })
+    )
+
+
+class SetNewPasswordForm(forms.Form):
+    """Set new password form."""
+
+    password1 = forms.CharField(
+        label=_('New Password'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'placeholder': '••••••••'
+        })
+    )
+    password2 = forms.CharField(
+        label=_('Confirm New Password'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'placeholder': '••••••••'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError(_('Passwords do not match.'))
+
+        return cleaned_data
 
 
 class LoginView(auth_views.LoginView):
@@ -16,7 +159,138 @@ class LogoutView(auth_views.LogoutView):
     pass
 
 
+class RegisterView(CreateView):
+    """User registration view."""
+
+    template_name = 'accounts/register.html'
+    form_class = RegistrationForm
+    success_url = reverse_lazy('accounts:profile')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        messages.success(self.request, _('Welcome! Your account has been created.'))
+        return response
+
+
 class ProfileView(LoginRequiredMixin, TemplateView):
     """User profile view - requires authentication."""
 
     template_name = 'accounts/profile.html'
+
+
+class ProfileEditView(LoginRequiredMixin, UpdateView):
+    """Edit user profile."""
+
+    template_name = 'accounts/profile_edit.html'
+    form_class = ProfileEditForm
+    success_url = reverse_lazy('accounts:profile')
+
+    def get_object(self):
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, _('Your profile has been updated.'))
+        return super().form_valid(form)
+
+
+class ChangePasswordView(LoginRequiredMixin, FormView):
+    """Change password view."""
+
+    template_name = 'accounts/change_password.html'
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('accounts:profile')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        update_session_auth_hash(self.request, form.user)
+        messages.success(self.request, _('Your password has been changed.'))
+        return super().form_valid(form)
+
+
+class PasswordResetRequestView(FormView):
+    """Request password reset email."""
+
+    template_name = 'accounts/password_reset.html'
+    form_class = PasswordResetRequestForm
+    success_url = reverse_lazy('accounts:password_reset_sent')
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        try:
+            user = User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_url = self.request.build_absolute_uri(
+                reverse_lazy('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+            send_mail(
+                subject=_('Password Reset - Pet-Friendly Vet'),
+                message=f'Click this link to reset your password: {reset_url}',
+                from_email=None,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+        except User.DoesNotExist:
+            pass
+        return super().form_valid(form)
+
+
+class PasswordResetSentView(TemplateView):
+    """Password reset email sent confirmation."""
+
+    template_name = 'accounts/password_reset_sent.html'
+
+
+class PasswordResetConfirmView(FormView):
+    """Confirm password reset with new password."""
+
+    template_name = 'accounts/password_reset_confirm.html'
+    form_class = SetNewPasswordForm
+    success_url = reverse_lazy('accounts:login')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user = self.get_user(kwargs.get('uidb64'))
+        self.valid_link = self.user is not None and default_token_generator.check_token(
+            self.user, kwargs.get('token')
+        )
+        if not self.valid_link:
+            return redirect('accounts:password_reset_invalid')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_user(self, uidb64):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            return User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return None
+
+    def form_valid(self, form):
+        self.user.set_password(form.cleaned_data['password1'])
+        self.user.save()
+        messages.success(self.request, _('Your password has been reset. Please login.'))
+        return super().form_valid(form)
+
+
+class PasswordResetInvalidView(TemplateView):
+    """Invalid password reset link."""
+
+    template_name = 'accounts/password_reset_invalid.html'
+
+
+class DeleteAccountView(LoginRequiredMixin, TemplateView):
+    """Account deletion confirmation - soft deletes by deactivating."""
+
+    template_name = 'accounts/delete_account.html'
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.is_active = False
+        user.save()
+        messages.info(request, _('Your account has been deactivated.'))
+        return redirect('accounts:login')
