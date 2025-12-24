@@ -418,3 +418,128 @@ class DeliveryStatusHistory(models.Model):
 
     def __str__(self):
         return f"{self.delivery}: {self.from_status} → {self.to_status}"
+
+
+PROOF_TYPES = [
+    ('photo', 'Photo'),
+    ('signature', 'Signature'),
+]
+
+
+class DeliveryProof(models.Model):
+    """Proof of delivery (photo or signature with GPS)."""
+
+    delivery = models.ForeignKey(
+        Delivery,
+        on_delete=models.CASCADE,
+        related_name='proofs'
+    )
+    proof_type = models.CharField(max_length=20, choices=PROOF_TYPES)
+    image = models.ImageField(
+        upload_to='delivery_proofs/',
+        null=True,
+        blank=True
+    )
+    signature_data = models.TextField(blank=True, help_text="Base64 encoded signature")
+    recipient_name = models.CharField(max_length=100, blank=True)
+
+    # GPS from browser Geolocation API
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    gps_accuracy = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="GPS accuracy in meters"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.delivery.delivery_number} - {self.proof_type}"
+
+
+class DeliveryRating(models.Model):
+    """Customer rating for a delivery."""
+
+    delivery = models.OneToOneField(
+        Delivery,
+        on_delete=models.CASCADE,
+        related_name='rating'
+    )
+    rating = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ]
+    )
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.delivery.delivery_number}: {self.rating} stars"
+
+
+NOTIFICATION_TYPES = [
+    ('sms', 'SMS'),
+    ('whatsapp', 'WhatsApp'),
+    ('email', 'Email'),
+    ('push', 'Push Notification'),
+]
+
+NOTIFICATION_STATUSES = [
+    ('pending', 'Pending'),
+    ('sent', 'Sent'),
+    ('delivered', 'Delivered'),
+    ('failed', 'Failed'),
+]
+
+
+class DeliveryNotification(models.Model):
+    """Track notifications sent for a delivery."""
+
+    delivery = models.ForeignKey(
+        Delivery,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    recipient = models.CharField(max_length=200, help_text="Phone number or email")
+    message = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=NOTIFICATION_STATUSES,
+        default='pending'
+    )
+    external_id = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="ID from SMS/WhatsApp provider"
+    )
+    sent_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.delivery.delivery_number} - {self.notification_type}"

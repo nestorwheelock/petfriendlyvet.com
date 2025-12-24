@@ -11,7 +11,8 @@ from django.db import IntegrityError
 
 from .models import (
     DeliveryZone, DeliverySlot, DeliveryDriver,
-    Delivery, DeliveryStatusHistory
+    Delivery, DeliveryStatusHistory,
+    DeliveryProof, DeliveryRating, DeliveryNotification
 )
 from apps.store.models import Category, Product, Cart, Order
 
@@ -351,3 +352,264 @@ class DeliveryTests(TestCase):
         """Delivery string representation."""
         delivery = Delivery.objects.create(order=self.order, zone=self.zone)
         self.assertEqual(str(delivery), delivery.delivery_number)
+
+
+class DeliveryProofTests(TestCase):
+    """Tests for DeliveryProof model."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+
+    def test_create_photo_proof(self):
+        """Can create photo proof of delivery."""
+        proof = DeliveryProof.objects.create(
+            delivery=self.delivery,
+            proof_type='photo',
+            recipient_name='Juan Perez',
+            latitude=Decimal('19.432608'),
+            longitude=Decimal('-99.133209')
+        )
+        self.assertEqual(proof.proof_type, 'photo')
+        self.assertEqual(proof.recipient_name, 'Juan Perez')
+
+    def test_create_signature_proof(self):
+        """Can create signature proof of delivery."""
+        proof = DeliveryProof.objects.create(
+            delivery=self.delivery,
+            proof_type='signature',
+            signature_data='base64encodeddata...',
+            recipient_name='Maria Garcia'
+        )
+        self.assertEqual(proof.proof_type, 'signature')
+        self.assertIsNotNone(proof.signature_data)
+
+    def test_proof_str(self):
+        """Proof string representation."""
+        proof = DeliveryProof.objects.create(
+            delivery=self.delivery,
+            proof_type='photo',
+            recipient_name='Test Person'
+        )
+        self.assertIn(self.delivery.delivery_number, str(proof))
+        self.assertIn('photo', str(proof))
+
+    def test_proof_with_gps(self):
+        """Proof captures GPS coordinates from browser."""
+        proof = DeliveryProof.objects.create(
+            delivery=self.delivery,
+            proof_type='photo',
+            latitude=Decimal('19.432608'),
+            longitude=Decimal('-99.133209'),
+            gps_accuracy=Decimal('10.5')
+        )
+        self.assertIsNotNone(proof.latitude)
+        self.assertIsNotNone(proof.longitude)
+        self.assertIsNotNone(proof.gps_accuracy)
+
+
+class DeliveryRatingTests(TestCase):
+    """Tests for DeliveryRating model."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+
+    def test_create_rating(self):
+        """Can create a rating for a delivery."""
+        rating = DeliveryRating.objects.create(
+            delivery=self.delivery,
+            rating=5,
+            comment='Excelente servicio!'
+        )
+        self.assertEqual(rating.rating, 5)
+        self.assertEqual(rating.comment, 'Excelente servicio!')
+
+    def test_rating_one_to_one(self):
+        """Only one rating per delivery allowed."""
+        DeliveryRating.objects.create(
+            delivery=self.delivery,
+            rating=5
+        )
+        with self.assertRaises(IntegrityError):
+            DeliveryRating.objects.create(
+                delivery=self.delivery,
+                rating=4
+            )
+
+    def test_rating_range(self):
+        """Rating must be between 1 and 5."""
+        rating = DeliveryRating.objects.create(
+            delivery=self.delivery,
+            rating=3
+        )
+        self.assertGreaterEqual(rating.rating, 1)
+        self.assertLessEqual(rating.rating, 5)
+
+    def test_rating_str(self):
+        """Rating string representation."""
+        rating = DeliveryRating.objects.create(
+            delivery=self.delivery,
+            rating=4
+        )
+        self.assertIn(self.delivery.delivery_number, str(rating))
+        self.assertIn('4', str(rating))
+
+
+class DeliveryNotificationTests(TestCase):
+    """Tests for DeliveryNotification model."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+
+    def test_create_sms_notification(self):
+        """Can create SMS notification."""
+        notification = DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='sms',
+            recipient='+525551234567',
+            message='Tu pedido está en camino',
+            status='sent'
+        )
+        self.assertEqual(notification.notification_type, 'sms')
+        self.assertEqual(notification.status, 'sent')
+
+    def test_create_whatsapp_notification(self):
+        """Can create WhatsApp notification."""
+        notification = DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='whatsapp',
+            recipient='+525551234567',
+            message='Tu pedido ha sido entregado'
+        )
+        self.assertEqual(notification.notification_type, 'whatsapp')
+
+    def test_create_email_notification(self):
+        """Can create email notification."""
+        notification = DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='email',
+            recipient='customer@test.com',
+            message='Your order is on the way'
+        )
+        self.assertEqual(notification.notification_type, 'email')
+
+    def test_notification_status_updates(self):
+        """Notification status can be updated."""
+        notification = DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='sms',
+            recipient='+525551234567',
+            message='Test message',
+            status='pending'
+        )
+        notification.status = 'delivered'
+        notification.save()
+        notification.refresh_from_db()
+        self.assertEqual(notification.status, 'delivered')
+
+    def test_notification_str(self):
+        """Notification string representation."""
+        notification = DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='sms',
+            recipient='+525551234567',
+            message='Test'
+        )
+        self.assertIn('sms', str(notification))
+        self.assertIn(self.delivery.delivery_number, str(notification))
+
+    def test_multiple_notifications_per_delivery(self):
+        """Multiple notifications can be sent for one delivery."""
+        DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='sms',
+            recipient='+525551234567',
+            message='Message 1'
+        )
+        DeliveryNotification.objects.create(
+            delivery=self.delivery,
+            notification_type='email',
+            recipient='test@test.com',
+            message='Message 2'
+        )
+        self.assertEqual(self.delivery.notifications.count(), 2)
