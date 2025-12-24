@@ -33,6 +33,63 @@ class DeliveryAppConfigTests(TestCase):
         self.assertEqual(app_config.verbose_name, 'Delivery Management')
 
 
+class DeliveryAdminTests(TestCase):
+    """Tests for delivery admin interfaces."""
+
+    def setUp(self):
+        """Set up admin user and client."""
+        self.admin_user = User.objects.create_superuser(
+            'admin', 'admin@test.com', 'adminpass'
+        )
+        self.client = Client()
+        self.client.force_login(self.admin_user)
+
+    def test_delivery_zone_admin_accessible(self):
+        """DeliveryZone admin is accessible."""
+        response = self.client.get('/admin/delivery/deliveryzone/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_zone_admin_add(self):
+        """Can add DeliveryZone via admin."""
+        response = self.client.get('/admin/delivery/deliveryzone/add/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_slot_admin_accessible(self):
+        """DeliverySlot admin is accessible."""
+        response = self.client.get('/admin/delivery/deliveryslot/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_driver_admin_accessible(self):
+        """DeliveryDriver admin is accessible."""
+        response = self.client.get('/admin/delivery/deliverydriver/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_admin_accessible(self):
+        """Delivery admin is accessible."""
+        response = self.client.get('/admin/delivery/delivery/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_admin_has_status_filter(self):
+        """Delivery admin should have status filter."""
+        response = self.client.get('/admin/delivery/delivery/')
+        self.assertContains(response, 'status')
+
+    def test_delivery_proof_admin_accessible(self):
+        """DeliveryProof admin is accessible."""
+        response = self.client.get('/admin/delivery/deliveryproof/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_rating_admin_accessible(self):
+        """DeliveryRating admin is accessible."""
+        response = self.client.get('/admin/delivery/deliveryrating/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delivery_notification_admin_accessible(self):
+        """DeliveryNotification admin is accessible."""
+        response = self.client.get('/admin/delivery/deliverynotification/')
+        self.assertEqual(response.status_code, 200)
+
+
 class DeliveryZoneTests(TestCase):
     """Tests for DeliveryZone model."""
 
