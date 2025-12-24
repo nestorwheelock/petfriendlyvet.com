@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Delivery, DeliveryDriver, DeliveryProof, PROOF_TYPES
+from .services import DeliveryNotificationService
 
 
 class DriverRequiredMixin(LoginRequiredMixin):
@@ -213,6 +214,9 @@ class DriverUpdateStatusView(DriverRequiredMixin, View):
                 return JsonResponse({'error': f'Invalid status: {new_status}'}, status=400)
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+        # Send notifications for status change
+        DeliveryNotificationService.send_status_notifications(delivery, new_status)
 
         return JsonResponse({
             'success': True,

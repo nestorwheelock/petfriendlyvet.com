@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion de Contratistas" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Contratistas" %}</h1>
+            <p class="text-gray-600">{% trans "Gestion de conductores contratistas" %}</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="/delivery/admin/dashboard/" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                {% trans "Dashboard" %}
+            </a>
+            <button onclick="showCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {% trans "Nuevo Contratista" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Onboarding Status Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-yellow-50 rounded-lg shadow p-4">
+            <p class="text-sm text-yellow-700">{% trans "Pendientes" %}</p>
+            <p class="text-2xl font-bold text-yellow-700" id="stat-pending">0</p>
+        </div>
+        <div class="bg-blue-50 rounded-lg shadow p-4">
+            <p class="text-sm text-blue-700">{% trans "Docs Enviados" %}</p>
+            <p class="text-2xl font-bold text-blue-700" id="stat-docs">0</p>
+        </div>
+        <div class="bg-purple-50 rounded-lg shadow p-4">
+            <p class="text-sm text-purple-700">{% trans "En Revision" %}</p>
+            <p class="text-2xl font-bold text-purple-700" id="stat-review">0</p>
+        </div>
+        <div class="bg-green-50 rounded-lg shadow p-4">
+            <p class="text-sm text-green-700">{% trans "Aprobados" %}</p>
+            <p class="text-2xl font-bold text-green-700" id="stat-approved">0</p>
+        </div>
+        <div class="bg-red-50 rounded-lg shadow p-4">
+            <p class="text-sm text-red-700">{% trans "Rechazados" %}</p>
+            <p class="text-2xl font-bold text-red-700" id="stat-rejected">0</p>
+        </div>
+    </div>
+
+    <!-- Contractors Table -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Contratista" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "RFC/CURP" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Tarifas" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Estado Onboarding" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Activo" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Acciones" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="contractors-tbody">
+                    {% for contractor in contractors %}
+                    <tr data-contractor-id="{{ contractor.id }}">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                    <span class="text-lg font-medium text-gray-600">
+                                        {{ contractor.user.first_name|slice:":1" }}{{ contractor.user.last_name|slice:":1" }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ contractor.user.get_full_name|default:contractor.user.username }}</p>
+                                    <p class="text-sm text-gray-500">{{ contractor.phone }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <p class="text-sm">RFC: {{ contractor.rfc|default:"-" }}</p>
+                            <p class="text-sm text-gray-500">CURP: {{ contractor.curp|default:"-" }}</p>
+                        </td>
+                        <td class="px-4 py-3">
+                            <p class="text-sm">${{ contractor.rate_per_delivery|default:"0" }}/entrega</p>
+                            <p class="text-sm text-gray-500">${{ contractor.rate_per_km|default:"0" }}/km</p>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                {% if contractor.onboarding_status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif contractor.onboarding_status == 'documents_submitted' %}bg-blue-100 text-blue-800
+                                {% elif contractor.onboarding_status == 'under_review' %}bg-purple-100 text-purple-800
+                                {% elif contractor.onboarding_status == 'approved' %}bg-green-100 text-green-800
+                                {% elif contractor.onboarding_status == 'rejected' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ contractor.get_onboarding_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if contractor.is_active %}
+                            <span class="text-green-600">{% trans "Si" %}</span>
+                            {% else %}
+                            <span class="text-gray-400">{% trans "No" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            <button onclick="showEditModal({{ contractor.id }})"
+                                    class="text-sm text-blue-600 hover:text-blue-800 mr-2">
+                                {% trans "Editar" %}
+                            </button>
+                            <button onclick="showOnboardingModal({{ contractor.id }}, '{{ contractor.onboarding_status }}')"
+                                    class="text-sm text-purple-600 hover:text-purple-800">
+                                {% trans "Onboarding" %}
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            {% trans "No hay contratistas registrados" %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Onboarding Modal -->
+<div id="onboarding-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-4 border-b">
+            <h3 class="text-lg font-semibold">{% trans "Actualizar Estado de Onboarding" %}</h3>
+        </div>
+        <form id="onboarding-form">
+            <input type="hidden" id="onboarding-contractor-id">
+            <div class="p-4 space-y-4">
+                <div>
+                    <label for="onboarding-status" class="block text-sm font-medium text-gray-700">{% trans "Estado" %}</label>
+                    <select id="onboarding-status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                        <option value="pending">{% trans "Pendiente" %}</option>
+                        <option value="documents_submitted">{% trans "Documentos Enviados" %}</option>
+                        <option value="under_review">{% trans "En Revision" %}</option>
+                        <option value="approved">{% trans "Aprobado" %}</option>
+                        <option value="rejected">{% trans "Rechazado" %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="onboarding-notes" class="block text-sm font-medium text-gray-700">{% trans "Notas" %}</label>
+                    <textarea id="onboarding-notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                </div>
+            </div>
+            <div class="p-4 border-t flex justify-end space-x-2">
+                <button type="button" onclick="hideOnboardingModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    {% trans "Cancelar" %}
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    {% trans "Guardar" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Create/Edit Contractor Modal -->
+<div id="contractor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div class="p-4 border-b">
+            <h3 class="text-lg font-semibold" id="contractor-modal-title">{% trans "Nuevo Contratista" %}</h3>
+        </div>
+        <form id="contractor-form">
+            <input type="hidden" id="contractor-id">
+            <div class="p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="contractor-rfc" class="block text-sm font-medium text-gray-700">{% trans "RFC" %}</label>
+                        <input type="text" id="contractor-rfc" maxlength="13" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="XAXX010101000">
+                        <p class="text-xs text-gray-500 mt-1" id="rfc-validation"></p>
+                    </div>
+                    <div>
+                        <label for="contractor-curp" class="block text-sm font-medium text-gray-700">{% trans "CURP" %}</label>
+                        <input type="text" id="contractor-curp" maxlength="18" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="XEXX010101HNEXXXA4">
+                        <p class="text-xs text-gray-500 mt-1" id="curp-validation"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="contractor-rate-delivery" class="block text-sm font-medium text-gray-700">{% trans "Tarifa por Entrega ($)" %}</label>
+                        <input type="number" step="0.01" id="contractor-rate-delivery" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="50.00">
+                    </div>
+                    <div>
+                        <label for="contractor-rate-km" class="block text-sm font-medium text-gray-700">{% trans "Tarifa por KM ($)" %}</label>
+                        <input type="number" step="0.01" id="contractor-rate-km" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="5.00">
+                    </div>
+                </div>
+                <div>
+                    <label for="contractor-vehicle" class="block text-sm font-medium text-gray-700">{% trans "Tipo de Vehiculo" %}</label>
+                    <select id="contractor-vehicle" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                        <option value="motorcycle">{% trans "Motocicleta" %}</option>
+                        <option value="car">{% trans "Auto" %}</option>
+                        <option value="bicycle">{% trans "Bicicleta" %}</option>
+                        <option value="walk">{% trans "A pie" %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Zonas" %}</label>
+                    <div class="mt-2 space-y-2">
+                        {% for zone in zones %}
+                        <label class="inline-flex items-center mr-4">
+                            <input type="checkbox" class="contractor-zone rounded border-gray-300" value="{{ zone.id }}">
+                            <span class="ml-2 text-sm">{{ zone.code }} - {{ zone.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t flex justify-end space-x-2">
+                <button type="button" onclick="hideContractorModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    {% trans "Cancelar" %}
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    {% trans "Guardar" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+});
+
+async function loadStats() {
+    try {
+        const response = await fetch('/api/delivery/admin/contractors/');
+        const data = await response.json();
+
+        let pending = 0, docs = 0, review = 0, approved = 0, rejected = 0;
+        data.contractors.forEach(c => {
+            if (c.onboarding_status === 'pending') pending++;
+            else if (c.onboarding_status === 'documents_submitted') docs++;
+            else if (c.onboarding_status === 'under_review') review++;
+            else if (c.onboarding_status === 'approved') approved++;
+            else if (c.onboarding_status === 'rejected') rejected++;
+        });
+
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-docs').textContent = docs;
+        document.getElementById('stat-review').textContent = review;
+        document.getElementById('stat-approved').textContent = approved;
+        document.getElementById('stat-rejected').textContent = rejected;
+    } catch (err) {
+        console.error('Error loading stats:', err);
+    }
+}
+
+function showCreateModal() {
+    document.getElementById('contractor-modal-title').textContent = 'Nuevo Contratista';
+    document.getElementById('contractor-id').value = '';
+    document.getElementById('contractor-rfc').value = '';
+    document.getElementById('contractor-curp').value = '';
+    document.getElementById('contractor-rate-delivery').value = '50.00';
+    document.getElementById('contractor-rate-km').value = '5.00';
+    document.querySelectorAll('.contractor-zone').forEach(cb => cb.checked = false);
+    document.getElementById('contractor-modal').classList.remove('hidden');
+}
+
+async function showEditModal(id) {
+    try {
+        const response = await fetch(`/api/delivery/admin/contractors/${id}/`);
+        const data = await response.json();
+        const c = data.contractor;
+
+        document.getElementById('contractor-modal-title').textContent = 'Editar Contratista';
+        document.getElementById('contractor-id').value = id;
+        document.getElementById('contractor-rfc').value = c.rfc || '';
+        document.getElementById('contractor-curp').value = c.curp || '';
+        document.getElementById('contractor-rate-delivery').value = c.rate_per_delivery || '0';
+        document.getElementById('contractor-rate-km').value = c.rate_per_km || '0';
+        document.getElementById('contractor-vehicle').value = c.vehicle_type;
+
+        document.querySelectorAll('.contractor-zone').forEach(cb => {
+            cb.checked = c.zones.some(z => z.id === parseInt(cb.value));
+        });
+
+        document.getElementById('contractor-modal').classList.remove('hidden');
+    } catch (err) {
+        alert('Error al cargar contratista');
+    }
+}
+
+function hideContractorModal() {
+    document.getElementById('contractor-modal').classList.add('hidden');
+}
+
+function showOnboardingModal(id, status) {
+    document.getElementById('onboarding-contractor-id').value = id;
+    document.getElementById('onboarding-status').value = status;
+    document.getElementById('onboarding-notes').value = '';
+    document.getElementById('onboarding-modal').classList.remove('hidden');
+}
+
+function hideOnboardingModal() {
+    document.getElementById('onboarding-modal').classList.add('hidden');
+}
+
+// RFC validation
+document.getElementById('contractor-rfc').addEventListener('blur', async function() {
+    const rfc = this.value.trim();
+    if (!rfc) return;
+
+    try {
+        const response = await fetch('/api/delivery/admin/contractors/validate-rfc/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ rfc: rfc })
+        });
+        const data = await response.json();
+        const el = document.getElementById('rfc-validation');
+        el.textContent = data.message;
+        el.className = data.valid ? 'text-xs text-green-600 mt-1' : 'text-xs text-red-600 mt-1';
+    } catch (err) {
+        console.error('RFC validation error:', err);
+    }
+});
+
+// CURP validation
+document.getElementById('contractor-curp').addEventListener('blur', async function() {
+    const curp = this.value.trim();
+    if (!curp) return;
+
+    try {
+        const response = await fetch('/api/delivery/admin/contractors/validate-curp/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ curp: curp })
+        });
+        const data = await response.json();
+        const el = document.getElementById('curp-validation');
+        el.textContent = data.message;
+        el.className = data.valid ? 'text-xs text-green-600 mt-1' : 'text-xs text-red-600 mt-1';
+    } catch (err) {
+        console.error('CURP validation error:', err);
+    }
+});
+
+document.getElementById('contractor-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('contractor-id').value;
+    const zones = Array.from(document.querySelectorAll('.contractor-zone:checked')).map(cb => parseInt(cb.value));
+
+    const data = {
+        rfc: document.getElementById('contractor-rfc').value,
+        curp: document.getElementById('contractor-curp').value,
+        rate_per_delivery: document.getElementById('contractor-rate-delivery').value,
+        rate_per_km: document.getElementById('contractor-rate-km').value,
+        vehicle_type: document.getElementById('contractor-vehicle').value,
+        zone_ids: zones
+    };
+
+    try {
+        const url = id ? `/api/delivery/admin/contractors/${id}/` : '/api/delivery/admin/contractors/';
+        const method = id ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            hideContractorModal();
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Error al guardar');
+        }
+    } catch (err) {
+        alert('Error de conexion');
+    }
+});
+
+document.getElementById('onboarding-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('onboarding-contractor-id').value;
+    const data = {
+        onboarding_status: document.getElementById('onboarding-status').value,
+        onboarding_notes: document.getElementById('onboarding-notes').value
+    };
+
+    try {
+        const response = await fetch(`/api/delivery/admin/contractors/${id}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            hideOnboardingModal();
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Error al actualizar');
+        }
+    } catch (err) {
+        alert('Error de conexion');
+    }
+});
+</script>
+{% endblock %}

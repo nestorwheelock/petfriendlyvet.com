@@ -5,9 +5,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
-from django.db.models import Q
+from django.db.models import Q, F
 
 from .models import Category, Product, Cart, CartItem, Order
+from apps.delivery.models import Delivery, DeliverySlot
 
 
 def get_or_create_cart(request):
@@ -277,6 +278,43 @@ def process_checkout(request):
         payment_method=payment_method,
         **shipping_info
     )
+
+    # Create Delivery record for delivery orders
+    if fulfillment_method == 'delivery':
+        slot_id = request.POST.get('delivery_slot')
+        slot = None
+        zone = None
+        scheduled_date = None
+        scheduled_time_start = None
+        scheduled_time_end = None
+
+        if slot_id:
+            try:
+                slot = DeliverySlot.objects.select_related('zone').get(
+                    pk=slot_id,
+                    is_active=True,
+                    booked_count__lt=F('capacity')
+                )
+                zone = slot.zone
+                scheduled_date = slot.date
+                scheduled_time_start = slot.start_time
+                scheduled_time_end = slot.end_time
+                # Increment booked count
+                slot.booked_count = F('booked_count') + 1
+                slot.save(update_fields=['booked_count'])
+            except DeliverySlot.DoesNotExist:
+                pass
+
+        Delivery.objects.create(
+            order=order,
+            slot=slot,
+            zone=zone,
+            address=shipping_info.get('shipping_address', ''),
+            scheduled_date=scheduled_date,
+            scheduled_time_start=scheduled_time_start,
+            scheduled_time_end=scheduled_time_end,
+            status='pending'
+        )
 
     # Success message based on payment method
     if payment_method == 'card':

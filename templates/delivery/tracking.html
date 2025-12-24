@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Rastrear Entrega" %} - {{ delivery.delivery_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% trans "Rastrear Entrega" %}
+        </h1>
+        <p class="text-gray-600">{{ delivery.delivery_number }}</p>
+    </div>
+
+    <!-- Status Card -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <span class="text-sm text-gray-500">{% trans "Estado actual" %}</span>
+                <h2 class="text-xl font-semibold
+                    {% if delivery.status == 'delivered' %}text-green-600
+                    {% elif delivery.status == 'failed' %}text-red-600
+                    {% elif delivery.status == 'out_for_delivery' %}text-blue-600
+                    {% else %}text-gray-900{% endif %}">
+                    {{ delivery.get_status_display }}
+                </h2>
+            </div>
+            {% if delivery.status == 'out_for_delivery' or delivery.status == 'arrived' %}
+            <div class="animate-pulse">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    <span class="w-2 h-2 mr-2 bg-blue-500 rounded-full animate-ping"></span>
+                    {% trans "En vivo" %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Delivery Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+            <div>
+                <span class="text-sm text-gray-500">{% trans "Dirección" %}</span>
+                <p class="font-medium">{{ delivery.address }}</p>
+            </div>
+            {% if delivery.scheduled_date %}
+            <div>
+                <span class="text-sm text-gray-500">{% trans "Fecha programada" %}</span>
+                <p class="font-medium">{{ delivery.scheduled_date|date:"l, j F Y" }}</p>
+            </div>
+            {% endif %}
+            {% if delivery.scheduled_time_start and delivery.scheduled_time_end %}
+            <div>
+                <span class="text-sm text-gray-500">{% trans "Horario" %}</span>
+                <p class="font-medium">{{ delivery.scheduled_time_start|time:"H:i" }} - {{ delivery.scheduled_time_end|time:"H:i" }}</p>
+            </div>
+            {% endif %}
+            {% if delivery.driver %}
+            <div>
+                <span class="text-sm text-gray-500">{% trans "Conductor" %}</span>
+                <p class="font-medium">{{ delivery.driver.user.get_full_name|default:delivery.driver.user.username }}</p>
+                {% if delivery.driver.phone %}
+                <a href="tel:{{ delivery.driver.phone }}" class="text-blue-600 text-sm">{{ delivery.driver.phone }}</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">{% trans "Progreso de entrega" %}</h3>
+        <div class="relative">
+            {% for step in timeline %}
+            <div class="flex items-start mb-6 last:mb-0">
+                <!-- Status indicator -->
+                <div class="flex-shrink-0 relative">
+                    {% if step.is_complete %}
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center
+                        {% if step.is_current %}bg-blue-600{% else %}bg-green-500{% endif %}">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    {% else %}
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 bg-white"></div>
+                    {% endif %}
+                    {% if not forloop.last %}
+                    <div class="absolute top-8 left-4 w-0.5 h-8 -ml-px
+                        {% if step.is_complete and not step.is_current %}bg-green-500{% else %}bg-gray-300{% endif %}">
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Content -->
+                <div class="ml-4">
+                    <p class="font-medium {% if step.is_current %}text-blue-600{% elif step.is_complete %}text-green-600{% else %}text-gray-500{% endif %}">
+                        {{ step.label }}
+                    </p>
+                    <p class="text-sm text-gray-500">{{ step.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Map placeholder for driver location -->
+    {% if delivery.status == 'out_for_delivery' or delivery.status == 'arrived' %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6" id="map-section">
+        <h3 class="text-lg font-semibold mb-4">{% trans "Ubicación del conductor" %}</h3>
+        <div id="delivery-map" class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+            <p class="text-gray-500" id="map-loading">{% trans "Cargando mapa..." %}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Rating Section for Delivered Orders -->
+    {% if delivery.status == 'delivered' %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6" id="rating-section" x-data="ratingForm()">
+        <h3 class="text-lg font-semibold mb-4">{% trans "Califica tu entrega" %}</h3>
+
+        <!-- Existing Rating Display -->
+        <template x-if="existingRating">
+            <div class="text-center">
+                <div class="flex justify-center mb-2">
+                    <template x-for="star in 5" :key="star">
+                        <svg class="w-8 h-8" :class="star <= existingRating ? 'text-yellow-400' : 'text-gray-300'"
+                             fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </template>
+                </div>
+                <p class="text-gray-600" x-text="existingComment || 'Gracias por tu calificación'"></p>
+            </div>
+        </template>
+
+        <!-- Rating Form -->
+        <template x-if="!existingRating && !submitted">
+            <form @submit.prevent="submitRating" class="space-y-4">
+                <!-- Star Rating -->
+                <div class="flex justify-center space-x-2">
+                    <template x-for="star in 5" :key="star">
+                        <button type="button"
+                                @click="rating = star"
+                                @mouseenter="hoverRating = star"
+                                @mouseleave="hoverRating = 0"
+                                class="focus:outline-none transition-transform hover:scale-110">
+                            <svg class="w-10 h-10 transition-colors"
+                                 :class="(hoverRating || rating) >= star ? 'text-yellow-400' : 'text-gray-300'"
+                                 fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Comment -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Comentario (opcional)" %}
+                    </label>
+                    <textarea x-model="comment" rows="3"
+                              class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="{% trans 'Cuéntanos sobre tu experiencia...' %}"></textarea>
+                </div>
+
+                <!-- Error Message -->
+                <p x-show="error" x-text="error" class="text-red-600 text-sm"></p>
+
+                <!-- Submit Button -->
+                <button type="submit"
+                        :disabled="rating === 0 || loading"
+                        class="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span x-show="!loading">{% trans "Enviar calificación" %}</span>
+                    <span x-show="loading">{% trans "Enviando..." %}</span>
+                </button>
+            </form>
+        </template>
+
+        <!-- Success Message -->
+        <template x-if="submitted">
+            <div class="text-center text-green-600">
+                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <p>{% trans "¡Gracias por tu calificación!" %}</p>
+            </div>
+        </template>
+    </div>
+    {% endif %}
+
+    <!-- Order Details Link -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold mb-4">{% trans "Detalles del pedido" %}</h3>
+        <p class="text-gray-600 mb-4">
+            {% trans "Pedido" %}: <span class="font-medium">{{ delivery.order.order_number }}</span>
+        </p>
+        <a href="{% url 'store:order_detail' order_number=delivery.order.order_number %}"
+           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+            {% trans "Ver pedido completo" %}
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+
+<!-- Real-time updates script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deliveryNumber = '{{ delivery.delivery_number }}';
+    const statusElement = document.querySelector('h2');
+    let map = null;
+    let driverMarker = null;
+
+    // Poll for updates every 30 seconds
+    function pollStatus() {
+        fetch(`/api/delivery/track/${deliveryNumber}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Update status display
+                if (data.status_display && statusElement) {
+                    statusElement.textContent = data.status_display;
+                }
+
+                // Update driver location on map if available
+                if (data.driver_location && map) {
+                    const { latitude, longitude } = data.driver_location;
+                    if (driverMarker) {
+                        driverMarker.setLatLng([latitude, longitude]);
+                    }
+                }
+
+                // Reload page if status changed to delivered
+                if (data.status === 'delivered') {
+                    location.reload();
+                }
+            })
+            .catch(err => console.error('Error polling status:', err));
+    }
+
+    // Start polling if delivery is active
+    const currentStatus = '{{ delivery.status }}';
+    if (!['delivered', 'failed', 'returned'].includes(currentStatus)) {
+        setInterval(pollStatus, 30000);
+    }
+
+    // Initialize map if driver is en route
+    {% if delivery.status == 'out_for_delivery' or delivery.status == 'arrived' %}
+    // Check if Leaflet is available (would need to include the library)
+    if (typeof L !== 'undefined') {
+        const mapContainer = document.getElementById('delivery-map');
+        const loadingText = document.getElementById('map-loading');
+
+        // Fetch initial location
+        fetch(`/api/delivery/track/${deliveryNumber}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.driver_location) {
+                    loadingText.style.display = 'none';
+                    const { latitude, longitude } = data.driver_location;
+
+                    map = L.map('delivery-map').setView([latitude, longitude], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    driverMarker = L.marker([latitude, longitude]).addTo(map);
+                    driverMarker.bindPopup('{% trans "Conductor" %}').openPopup();
+                } else {
+                    loadingText.textContent = '{% trans "Ubicación no disponible" %}';
+                }
+            })
+            .catch(() => {
+                loadingText.textContent = '{% trans "Error cargando ubicación" %}';
+            });
+    } else {
+        document.getElementById('map-loading').textContent = '{% trans "Mapa no disponible" %}';
+    }
+    {% endif %}
+});
+
+// Rating form component (Alpine.js)
+function ratingForm() {
+    return {
+        rating: 0,
+        hoverRating: 0,
+        comment: '',
+        existingRating: null,
+        existingComment: '',
+        loading: false,
+        submitted: false,
+        error: '',
+
+        init() {
+            // Check for existing rating
+            fetch(`/api/delivery/rate/{{ delivery.delivery_number }}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.rating) {
+                        this.existingRating = data.rating;
+                        this.existingComment = data.comment;
+                    }
+                })
+                .catch(err => console.error('Error checking rating:', err));
+        },
+
+        async submitRating() {
+            if (this.rating === 0) {
+                this.error = 'Por favor selecciona una calificación';
+                return;
+            }
+
+            this.loading = true;
+            this.error = '';
+
+            try {
+                const response = await fetch(`/api/delivery/rate/{{ delivery.delivery_number }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        rating: this.rating,
+                        comment: this.comment
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    this.submitted = true;
+                    this.existingRating = this.rating;
+                    this.existingComment = this.comment;
+                } else {
+                    this.error = data.error || 'Error al enviar calificación';
+                }
+            } catch (err) {
+                this.error = 'Error de conexión';
+            } finally {
+                this.loading = false;
+            }
+        }
+    };
+}
+</script>
+{% endblock %}

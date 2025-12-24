@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Reportes de Entregas" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Reportes de Entregas" %}</h1>
+            <p class="text-gray-600">{% trans "Estadisticas y rendimiento" %}</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="/delivery/admin/dashboard/" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                {% trans "Dashboard" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <form id="date-filter-form" class="flex flex-wrap items-end gap-4">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-700">{% trans "Fecha Inicio" %}</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
+                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-700">{% trans "Fecha Fin" %}</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
+                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {% trans "Filtrar" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="stats-cards">
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">{% trans "Total Entregas" %}</p>
+            <p class="text-2xl font-bold" id="stat-total">-</p>
+        </div>
+        <div class="bg-green-50 rounded-lg shadow p-4">
+            <p class="text-sm text-green-700">{% trans "Entregados" %}</p>
+            <p class="text-2xl font-bold text-green-700" id="stat-delivered">-</p>
+        </div>
+        <div class="bg-blue-50 rounded-lg shadow p-4">
+            <p class="text-sm text-blue-700">{% trans "Tasa a Tiempo" %}</p>
+            <p class="text-2xl font-bold text-blue-700" id="stat-ontime">-</p>
+        </div>
+        <div class="bg-yellow-50 rounded-lg shadow p-4">
+            <p class="text-sm text-yellow-700">{% trans "Calificacion Promedio" %}</p>
+            <p class="text-2xl font-bold text-yellow-700" id="stat-rating">-</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Driver Performance -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">{% trans "Rendimiento por Conductor" %}</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Conductor" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Total" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Exito" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Rating" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="driver-performance-tbody">
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">{% trans "Cargando..." %}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Zone Stats -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">{% trans "Estadisticas por Zona" %}</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Zona" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Total" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Entregados" %}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Tasa" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="zone-stats-tbody">
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">{% trans "Cargando..." %}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadReports();
+
+    document.getElementById('date-filter-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadReports();
+    });
+});
+
+async function loadReports() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    try {
+        const response = await fetch(`/api/delivery/admin/reports/?start_date=${startDate}&end_date=${endDate}`);
+        const data = await response.json();
+
+        // Update stats
+        document.getElementById('stat-total').textContent = data.stats.total;
+        document.getElementById('stat-delivered').textContent = data.stats.delivered;
+        document.getElementById('stat-ontime').textContent = data.stats.on_time_rate + '%';
+        document.getElementById('stat-rating').textContent = data.stats.average_rating ? data.stats.average_rating.toFixed(1) + ' / 5' : '-';
+
+        // Update driver performance table
+        const driverTbody = document.getElementById('driver-performance-tbody');
+        if (data.driver_performance.length === 0) {
+            driverTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-gray-500">Sin datos</td></tr>';
+        } else {
+            driverTbody.innerHTML = data.driver_performance.map(driver => `
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <a href="#" onclick="showDriverDetail(${driver.id})" class="text-blue-600 hover:text-blue-800">
+                            ${driver.name}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">${driver.total_deliveries}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${driver.success_rate >= 90 ? 'bg-green-100 text-green-800' : driver.success_rate >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${driver.success_rate}%
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">${driver.average_rating ? driver.average_rating.toFixed(1) : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update zone stats table
+        const zoneTbody = document.getElementById('zone-stats-tbody');
+        if (data.zone_stats.length === 0) {
+            zoneTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-gray-500">Sin datos</td></tr>';
+        } else {
+            zoneTbody.innerHTML = data.zone_stats.map(zone => `
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="font-medium">${zone.code}</span>
+                        <span class="text-gray-500 text-sm ml-2">${zone.name}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">${zone.total}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${zone.delivered}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${zone.delivery_rate >= 90 ? 'bg-green-100 text-green-800' : zone.delivery_rate >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${zone.delivery_rate}%
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+    } catch (err) {
+        console.error('Error loading reports:', err);
+    }
+}
+
+function showDriverDetail(driverId) {
+    // Could open a modal or navigate to driver detail page
+    alert('Ver detalle del conductor ID: ' + driverId);
+}
+</script>
+{% endblock %}

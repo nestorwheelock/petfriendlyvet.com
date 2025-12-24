@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Panel de Entregas" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Panel de Entregas" %}</h1>
+            <p class="text-gray-600">{{ today|date:"l, j F Y" }}</p>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {% trans "Actualizar" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">{% trans "Total" %}</p>
+            <p class="text-2xl font-bold">{{ stats.total }}</p>
+        </div>
+        <div class="bg-yellow-50 rounded-lg shadow p-4">
+            <p class="text-sm text-yellow-700">{% trans "Pendientes" %}</p>
+            <p class="text-2xl font-bold text-yellow-700">{{ stats.pending }}</p>
+        </div>
+        <div class="bg-blue-50 rounded-lg shadow p-4">
+            <p class="text-sm text-blue-700">{% trans "Asignados" %}</p>
+            <p class="text-2xl font-bold text-blue-700">{{ stats.assigned }}</p>
+        </div>
+        <div class="bg-purple-50 rounded-lg shadow p-4">
+            <p class="text-sm text-purple-700">{% trans "En progreso" %}</p>
+            <p class="text-2xl font-bold text-purple-700">{{ stats.in_progress }}</p>
+        </div>
+        <div class="bg-green-50 rounded-lg shadow p-4">
+            <p class="text-sm text-green-700">{% trans "Entregados" %}</p>
+            <p class="text-2xl font-bold text-green-700">{{ stats.delivered }}</p>
+        </div>
+        <div class="bg-red-50 rounded-lg shadow p-4">
+            <p class="text-sm text-red-700">{% trans "Fallidos" %}</p>
+            <p class="text-2xl font-bold text-red-700">{{ stats.failed }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Map Section -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">{% trans "Mapa en vivo" %}</h2>
+            </div>
+            <div id="admin-map" class="h-96 bg-gray-100 flex items-center justify-center">
+                <p class="text-gray-500" id="map-loading">{% trans "Cargando mapa..." %}</p>
+            </div>
+        </div>
+
+        <!-- Drivers Panel -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">{% trans "Conductores" %}</h2>
+            </div>
+            <div class="p-4 max-h-96 overflow-y-auto">
+                {% for driver in drivers %}
+                <div class="flex items-center justify-between py-3 border-b last:border-0">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                            <span class="text-lg font-medium text-gray-600">
+                                {{ driver.user.first_name|slice:":1" }}{{ driver.user.last_name|slice:":1" }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="font-medium">{{ driver.user.get_full_name|default:driver.user.username }}</p>
+                            <p class="text-sm text-gray-500">
+                                {% if driver.is_available %}
+                                <span class="text-green-600">{% trans "Disponible" %}</span>
+                                {% else %}
+                                <span class="text-gray-500">{% trans "No disponible" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            {% if driver.is_available %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ driver.deliveries.count }} entregas
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">{% trans "No hay conductores registrados" %}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Deliveries Table -->
+    <div class="mt-6 bg-white rounded-lg shadow">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="text-lg font-semibold">{% trans "Entregas de hoy" %}</h2>
+            <div class="flex space-x-2">
+                <select id="status-filter" class="border-gray-300 rounded-md text-sm" onchange="filterDeliveries()">
+                    <option value="">{% trans "Todos los estados" %}</option>
+                    <option value="pending">{% trans "Pendientes" %}</option>
+                    <option value="assigned">{% trans "Asignados" %}</option>
+                    <option value="out_for_delivery">{% trans "En camino" %}</option>
+                    <option value="delivered">{% trans "Entregados" %}</option>
+                </select>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Entrega" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Estado" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Dirección" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Horario" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Conductor" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Acciones" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="deliveries-tbody">
+                    {% for delivery in deliveries %}
+                    <tr data-status="{{ delivery.status }}">
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <a href="{% url 'delivery:tracking' delivery.delivery_number %}" class="text-blue-600 hover:text-blue-800">
+                                {{ delivery.delivery_number }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                {% if delivery.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif delivery.status == 'assigned' %}bg-blue-100 text-blue-800
+                                {% elif delivery.status == 'out_for_delivery' %}bg-purple-100 text-purple-800
+                                {% elif delivery.status == 'delivered' %}bg-green-100 text-green-800
+                                {% elif delivery.status == 'failed' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ delivery.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <p class="text-sm text-gray-900 truncate max-w-xs">{{ delivery.address }}</p>
+                            {% if delivery.zone %}
+                            <p class="text-xs text-gray-500">{{ delivery.zone.name }}</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {% if delivery.scheduled_time_start and delivery.scheduled_time_end %}
+                            {{ delivery.scheduled_time_start|time:"H:i" }} - {{ delivery.scheduled_time_end|time:"H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            {% if delivery.driver %}
+                            <span class="text-sm text-gray-900">{{ delivery.driver.user.get_full_name|default:delivery.driver.user.username }}</span>
+                            {% else %}
+                            <span class="text-sm text-gray-400">{% trans "Sin asignar" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            {% if delivery.status == 'pending' %}
+                            <button onclick="showAssignModal({{ delivery.id }}, '{{ delivery.delivery_number }}')"
+                                    class="text-sm text-blue-600 hover:text-blue-800">
+                                {% trans "Asignar" %}
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            {% trans "No hay entregas programadas para hoy" %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Driver Modal -->
+<div id="assign-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-4 border-b">
+            <h3 class="text-lg font-semibold">{% trans "Asignar conductor" %}</h3>
+            <p class="text-sm text-gray-500" id="assign-delivery-number"></p>
+        </div>
+        <div class="p-4">
+            <select id="driver-select" class="w-full border-gray-300 rounded-md">
+                <option value="">{% trans "Seleccionar conductor" %}</option>
+                {% for driver in drivers %}
+                {% if driver.is_available %}
+                <option value="{{ driver.id }}">{{ driver.user.get_full_name|default:driver.user.username }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="p-4 border-t flex justify-end space-x-2">
+            <button onclick="hideAssignModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                {% trans "Cancelar" %}
+            </button>
+            <button onclick="assignDriver()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {% trans "Asignar" %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedDeliveryId = null;
+
+function refreshData() {
+    location.reload();
+}
+
+function filterDeliveries() {
+    const status = document.getElementById('status-filter').value;
+    const rows = document.querySelectorAll('#deliveries-tbody tr');
+
+    rows.forEach(row => {
+        if (!status || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function showAssignModal(deliveryId, deliveryNumber) {
+    selectedDeliveryId = deliveryId;
+    document.getElementById('assign-delivery-number').textContent = deliveryNumber;
+    document.getElementById('assign-modal').classList.remove('hidden');
+}
+
+function hideAssignModal() {
+    selectedDeliveryId = null;
+    document.getElementById('assign-modal').classList.add('hidden');
+    document.getElementById('driver-select').value = '';
+}
+
+async function assignDriver() {
+    const driverId = document.getElementById('driver-select').value;
+    if (!driverId || !selectedDeliveryId) {
+        alert('{% trans "Por favor selecciona un conductor" %}');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/delivery/admin/assign/${selectedDeliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ driver_id: parseInt(driverId) })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            hideAssignModal();
+            location.reload();
+        } else {
+            alert(data.error || '{% trans "Error al asignar conductor" %}');
+        }
+    } catch (err) {
+        alert('{% trans "Error de conexión" %}');
+    }
+}
+
+// Initialize map if Leaflet is available
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof L !== 'undefined') {
+        const mapContainer = document.getElementById('admin-map');
+        const loadingText = document.getElementById('map-loading');
+        loadingText.style.display = 'none';
+
+        // Default to Mexico City
+        const map = L.map('admin-map').setView([19.4326, -99.1332], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fetch and display deliveries
+        fetch('/api/delivery/admin/deliveries/')
+            .then(response => response.json())
+            .then(data => {
+                data.deliveries.forEach(delivery => {
+                    if (delivery.latitude && delivery.longitude) {
+                        const color = getStatusColor(delivery.status);
+                        const marker = L.circleMarker([delivery.latitude, delivery.longitude], {
+                            radius: 8,
+                            fillColor: color,
+                            color: '#fff',
+                            weight: 2,
+                            fillOpacity: 0.8
+                        }).addTo(map);
+                        marker.bindPopup(`<b>${delivery.delivery_number}</b><br>${delivery.address}`);
+                    }
+                });
+            });
+
+        // Fetch and display drivers
+        fetch('/api/delivery/admin/drivers/')
+            .then(response => response.json())
+            .then(data => {
+                data.drivers.forEach(driver => {
+                    if (driver.latitude && driver.longitude) {
+                        const marker = L.marker([driver.latitude, driver.longitude], {
+                            icon: L.divIcon({
+                                className: 'driver-marker',
+                                html: `<div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow">${driver.name.charAt(0)}</div>`,
+                                iconSize: [32, 32]
+                            })
+                        }).addTo(map);
+                        marker.bindPopup(`<b>${driver.name}</b><br>${driver.active_deliveries} entregas activas`);
+                    }
+                });
+            });
+    }
+});
+
+function getStatusColor(status) {
+    const colors = {
+        'pending': '#f59e0b',
+        'assigned': '#3b82f6',
+        'picked_up': '#8b5cf6',
+        'out_for_delivery': '#8b5cf6',
+        'arrived': '#10b981',
+        'delivered': '#10b981',
+        'failed': '#ef4444'
+    };
+    return colors[status] || '#6b7280';
+}
+</script>
+{% endblock %}

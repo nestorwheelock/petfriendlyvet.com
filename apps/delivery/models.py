@@ -152,6 +152,19 @@ class DeliveryDriver(models.Model):
         null=True,
         blank=True
     )
+    onboarding_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('documents_submitted', 'Documents Submitted'),
+            ('under_review', 'Under Review'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ],
+        default='pending',
+        help_text="Contractor onboarding status"
+    )
+    onboarding_notes = models.TextField(blank=True, help_text="Admin notes about onboarding")
 
     # Vehicle info
     vehicle_type = models.CharField(
@@ -186,6 +199,12 @@ class DeliveryDriver(models.Model):
         blank=True
     )
     location_updated_at = models.DateTimeField(null=True, blank=True)
+
+    # Capacity limits
+    max_deliveries_per_day = models.PositiveIntegerField(
+        default=10,
+        help_text="Maximum deliveries this driver can handle per day"
+    )
 
     # Performance metrics
     total_deliveries = models.PositiveIntegerField(default=0)
@@ -312,6 +331,15 @@ class Delivery(models.Model):
 
     # Failure info
     failure_reason = models.TextField(blank=True)
+
+    # Distance tracking for contractor payment
+    delivered_distance_km = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Actual distance traveled in kilometers"
+    )
 
     # Notes
     notes = models.TextField(blank=True)

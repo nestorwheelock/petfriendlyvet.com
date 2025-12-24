@@ -86,6 +86,56 @@
                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
                                        placeholder="+52 998 123 4567">
                             </div>
+
+                            <!-- Delivery Slot Selection -->
+                            <div class="border-t pt-4 mt-4" x-data="slotSelector()">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {% trans "Fecha y hora de entrega" %}
+                                </label>
+
+                                <!-- Date Selection -->
+                                <div class="mb-3">
+                                    <label for="delivery_date" class="block text-xs text-gray-500 mb-1">{% trans "Fecha" %}</label>
+                                    <select name="delivery_date" id="delivery_date"
+                                            x-model="selectedDate"
+                                            @change="loadSlots()"
+                                            class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                        <option value="">{% trans "Selecciona una fecha" %}</option>
+                                        <template x-for="date in availableDates" :key="date">
+                                            <option :value="date" x-text="formatDate(date)"></option>
+                                        </template>
+                                    </select>
+                                </div>
+
+                                <!-- Time Slot Selection -->
+                                <div x-show="selectedDate" x-transition>
+                                    <label class="block text-xs text-gray-500 mb-1">{% trans "Horario" %}</label>
+                                    <div class="space-y-2" x-show="slots.length > 0">
+                                        <template x-for="slot in slots" :key="slot.id">
+                                            <label class="relative flex cursor-pointer rounded-lg border p-3 shadow-sm focus:outline-none"
+                                                   :class="selectedSlot == slot.id ? 'border-primary-500 ring-2 ring-primary-500 bg-primary-50' : 'border-gray-300 bg-white hover:border-gray-400'">
+                                                <input type="radio" name="delivery_slot" :value="slot.id"
+                                                       x-model="selectedSlot" class="sr-only">
+                                                <span class="flex flex-1 items-center justify-between">
+                                                    <span class="flex flex-col">
+                                                        <span class="block text-sm font-medium text-gray-900" x-text="slot.time_display"></span>
+                                                        <span class="block text-xs text-gray-500" x-text="slot.zone_name"></span>
+                                                    </span>
+                                                    <svg class="h-5 w-5 text-primary-600" x-show="selectedSlot == slot.id" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                    <p x-show="slots.length === 0 && !loading" class="text-sm text-gray-500 italic">
+                                        {% trans "No hay horarios disponibles para esta fecha." %}
+                                    </p>
+                                    <p x-show="loading" class="text-sm text-gray-500">
+                                        {% trans "Cargando horarios..." %}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -311,6 +361,62 @@ function checkoutForm(subtotal) {
 
             document.getElementById('tax-amount').textContent = '$' + this.tax.toFixed(2);
             document.getElementById('total-amount').textContent = '$' + this.total.toFixed(2);
+        }
+    }
+}
+
+function slotSelector() {
+    return {
+        availableDates: [],
+        slots: [],
+        selectedDate: '',
+        selectedSlot: null,
+        loading: false,
+
+        init() {
+            this.loadDates();
+        },
+
+        async loadDates() {
+            try {
+                const response = await fetch('/api/delivery/slots/dates/');
+                const data = await response.json();
+                this.availableDates = data.dates || [];
+            } catch (error) {
+                console.error('Error loading dates:', error);
+            }
+        },
+
+        async loadSlots() {
+            if (!this.selectedDate) {
+                this.slots = [];
+                return;
+            }
+
+            this.loading = true;
+            this.selectedSlot = null;
+
+            try {
+                const response = await fetch(`/api/delivery/slots/?date=${this.selectedDate}`);
+                const data = await response.json();
+                this.slots = data.slots || [];
+
+                // Auto-select first slot if available
+                if (this.slots.length > 0) {
+                    this.selectedSlot = this.slots[0].id;
+                }
+            } catch (error) {
+                console.error('Error loading slots:', error);
+                this.slots = [];
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('es-MX', options);
         }
     }
 }

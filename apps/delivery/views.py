@@ -1,8 +1,8 @@
 """Views for the delivery app."""
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, Http404
 
 from .models import Delivery, DeliveryDriver
 
@@ -42,3 +42,54 @@ class DriverDashboardView(DriverRequiredMixin, View):
             'deliveries': deliveries,
         }
         return render(request, 'delivery/driver/dashboard.html', context)
+
+
+class DeliveryTrackingView(LoginRequiredMixin, View):
+    """Customer-facing delivery tracking page."""
+
+    def get(self, request, delivery_number):
+        """Display delivery tracking page."""
+        delivery = get_object_or_404(
+            Delivery.objects.select_related(
+                'order', 'driver', 'zone', 'slot'
+            ),
+            delivery_number=delivery_number
+        )
+
+        # Ensure user owns this delivery
+        if delivery.order.user != request.user:
+            raise Http404("Delivery not found")
+
+        # Get status history
+        status_history = delivery.status_history.all().order_by('-created_at')
+
+        # Define status steps for timeline
+        status_steps = [
+            ('pending', 'Pendiente', 'Pedido recibido'),
+            ('assigned', 'Asignado', 'Conductor asignado'),
+            ('picked_up', 'Recogido', 'Pedido recogido'),
+            ('out_for_delivery', 'En camino', 'En ruta de entrega'),
+            ('arrived', 'Llegó', 'Conductor llegó'),
+            ('delivered', 'Entregado', 'Entrega completada'),
+        ]
+
+        # Determine which steps are complete
+        status_order = [s[0] for s in status_steps]
+        current_index = status_order.index(delivery.status) if delivery.status in status_order else -1
+
+        timeline = []
+        for i, (status, label, description) in enumerate(status_steps):
+            timeline.append({
+                'status': status,
+                'label': label,
+                'description': description,
+                'is_complete': i <= current_index,
+                'is_current': i == current_index,
+            })
+
+        context = {
+            'delivery': delivery,
+            'status_history': status_history,
+            'timeline': timeline,
+        }
+        return render(request, 'delivery/tracking.html', context)
