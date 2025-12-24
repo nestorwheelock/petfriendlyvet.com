@@ -263,3 +263,34 @@ class DriverProofSubmitView(DriverRequiredMixin, View):
             'proof_type': proof.proof_type,
             'created_at': proof.created_at.isoformat(),
         }, status=201)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DriverAvailabilityView(DriverRequiredMixin, View):
+    """Toggle or get driver availability status."""
+
+    def get(self, request):
+        """Get current availability status."""
+        return JsonResponse({
+            'is_available': self.driver.is_available,
+            'is_active': self.driver.is_active,
+        })
+
+    def post(self, request):
+        """Toggle availability status."""
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        is_available = data.get('is_available')
+        if is_available is None:
+            return JsonResponse({'error': 'is_available is required'}, status=400)
+
+        self.driver.is_available = bool(is_available)
+        self.driver.save(update_fields=['is_available'])
+
+        return JsonResponse({
+            'success': True,
+            'is_available': self.driver.is_available,
+        })

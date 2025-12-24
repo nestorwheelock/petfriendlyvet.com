@@ -1089,3 +1089,78 @@ class ProofOfDeliveryAPITests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
+
+
+class DriverAvailabilityAPITests(TestCase):
+    """Tests for Driver availability toggle API."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            is_active=True,
+            is_available=False
+        )
+
+    def test_availability_toggle_requires_auth(self):
+        """Availability toggle requires authentication."""
+        response = self.client.post(
+            '/api/driver/availability/',
+            data={'is_available': True},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_availability_toggle_on(self):
+        """Driver can toggle availability on."""
+        self.client.force_login(self.driver_user)
+        self.assertFalse(self.driver.is_available)
+
+        response = self.client.post(
+            '/api/driver/availability/',
+            data={'is_available': True},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.driver.refresh_from_db()
+        self.assertTrue(self.driver.is_available)
+
+    def test_availability_toggle_off(self):
+        """Driver can toggle availability off."""
+        self.driver.is_available = True
+        self.driver.save()
+        self.client.force_login(self.driver_user)
+
+        response = self.client.post(
+            '/api/driver/availability/',
+            data={'is_available': False},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.driver.refresh_from_db()
+        self.assertFalse(self.driver.is_available)
+
+    def test_get_current_availability(self):
+        """Driver can get their current availability."""
+        self.client.force_login(self.driver_user)
+
+        response = self.client.get('/api/driver/availability/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertFalse(data['is_available'])
+
+    def test_non_driver_cannot_toggle(self):
+        """Non-driver user cannot toggle availability."""
+        user = User.objects.create_user('notdriver', 'not@test.com', 'pass')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/api/driver/availability/',
+            data={'is_available': True},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)

@@ -18,9 +18,11 @@
                     <span id="locationDot" class="w-2 h-2 rounded-full bg-gray-400 mr-1"></span>
                     <span id="locationText" class="text-xs text-primary-100">GPS</span>
                 </div>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if driver.is_available %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                    {% if driver.is_available %}{% trans "Available" %}{% else %}{% trans "Offline" %}{% endif %}
-                </span>
+                <!-- Availability Toggle -->
+                <button onclick="toggleAvailability()" id="availabilityBtn"
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if driver.is_available %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                    <span id="availabilityText">{% if driver.is_available %}{% trans "Available" %}{% else %}{% trans "Offline" %}{% endif %}</span>
+                </button>
             </div>
         </div>
     </div>
@@ -358,6 +360,40 @@ function stopLocationTracking() {
         watchId = null;
     }
     updateLocationUI('off');
+}
+
+// Availability toggle
+let isAvailable = {{ driver.is_available|yesno:"true,false" }};
+
+async function toggleAvailability() {
+    const btn = document.getElementById('availabilityBtn');
+    const text = document.getElementById('availabilityText');
+
+    try {
+        const response = await fetch('/api/driver/availability/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ is_available: !isAvailable })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            isAvailable = data.is_available;
+
+            if (isAvailable) {
+                btn.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                text.textContent = '{% trans "Available" %}';
+            } else {
+                btn.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+                text.textContent = '{% trans "Offline" %}';
+            }
+        }
+    } catch (error) {
+        console.error('Availability toggle error:', error);
+    }
 }
 
 // Start tracking when page loads
