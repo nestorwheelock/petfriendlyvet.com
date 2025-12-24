@@ -1,9 +1,17 @@
 """Playwright browser test fixtures.
 
 Provides fixtures for browser-based E2E testing with Django live server.
+
+Note: We set DJANGO_ALLOW_ASYNC_UNSAFE=true to allow Django's synchronous
+database operations within pytest-playwright's async context. This is safe
+for testing but should not be used in production.
 """
+import os
 import pytest
 from decimal import Decimal
+
+# Allow Django to run synchronous DB operations in async context (for Playwright)
+os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
 from django.contrib.auth import get_user_model
 

@@ -1,13 +1,17 @@
 """Browser tests for checkout flow.
 
 Tests JavaScript interactions and form behaviors.
+
+Note: Browser tests use live_server fixture which handles DB transactions.
+Do not use @pytest.mark.django_db(transaction=True) as it conflicts with
+pytest-playwright's async context.
 """
+import re
 import pytest
 from playwright.sync_api import expect
 
 
 @pytest.mark.browser
-@pytest.mark.django_db(transaction=True)
 class TestStoreBrowsing:
     """Test store browsing and product viewing."""
 
@@ -16,7 +20,7 @@ class TestStoreBrowsing:
         page.goto(f'{live_server.url}/store/')
 
         # Page should load without errors
-        expect(page).to_have_title(pytest.mark.regex('.*[Ss]tore|[Tt]ienda.*'))
+        expect(page).to_have_title(re.compile(r'.*[Ss]tore|[Tt]ienda.*'))
 
     def test_product_detail_page(self, page, live_server, store_with_products):
         """Product detail page shows correct information."""
@@ -30,7 +34,6 @@ class TestStoreBrowsing:
 
 
 @pytest.mark.browser
-@pytest.mark.django_db(transaction=True)
 class TestCartInteractions:
     """Test shopping cart JavaScript interactions."""
 
@@ -84,7 +87,6 @@ class TestCartInteractions:
 
 
 @pytest.mark.browser
-@pytest.mark.django_db(transaction=True)
 class TestCheckoutProcess:
     """Test checkout form and validation."""
 
@@ -150,7 +152,6 @@ class TestCheckoutProcess:
 
 
 @pytest.mark.browser
-@pytest.mark.django_db(transaction=True)
 class TestDeliverySlotSelection:
     """Test delivery slot selection interface."""
 
@@ -182,7 +183,6 @@ class TestDeliverySlotSelection:
 
 
 @pytest.mark.browser
-@pytest.mark.django_db(transaction=True)
 class TestMobileCheckout:
     """Test checkout on mobile viewport."""
 
