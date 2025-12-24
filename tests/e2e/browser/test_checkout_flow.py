@@ -108,10 +108,11 @@ class TestCheckoutProcess:
         # Go to checkout
         page.goto(f'{live_server.url}/store/checkout/')
 
-        # Try submitting empty form
-        submit_button = page.locator('button[type="submit"], input[type="submit"]')
-        if submit_button.count() > 0:
-            submit_button.first.click()
+        # Try submitting empty form - use more specific selector for checkout form
+        # Avoid matching AI chat widget submit button
+        submit_button = page.locator('form#checkout-form button[type="submit"], form.checkout-form button[type="submit"], main button[type="submit"]').first
+        if submit_button.count() > 0 and submit_button.is_enabled():
+            submit_button.click()
 
             # Should show validation errors
             # Adjust selector based on your error display

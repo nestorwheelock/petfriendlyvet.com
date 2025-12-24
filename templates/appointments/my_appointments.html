@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Mis Citas" %}{% endblock %}
+
+{% block content %}
+<section class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Mis Citas" %}</h1>
+            <a href="{% url 'appointments:services' %}" class="btn-primary">
+                {% trans "+ Nueva Cita" %}
+            </a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-50 text-green-700{% else %}bg-blue-50 text-blue-700{% endif %} p-4 rounded-lg mb-6" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if upcoming %}
+        <div class="mb-12">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">{% trans "Próximas Citas" %}</h2>
+            <div class="space-y-4">
+                {% for appointment in upcoming %}
+                <div class="bg-white rounded-xl shadow p-6 border-l-4 border-primary-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ appointment.service.name }}</h3>
+                            <p class="text-gray-600">
+                                <strong>{{ appointment.pet.name }}</strong> -
+                                {{ appointment.scheduled_start|date:"l, d M Y" }} {% trans "a las" %} {{ appointment.scheduled_start|time:"H:i" }}
+                            </p>
+                            {% if appointment.veterinarian %}
+                            <p class="text-sm text-gray-500 mt-1">
+                                {% trans "Con" %}: Dr. {{ appointment.veterinarian.get_full_name }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{% url 'appointments:detail' appointment.pk %}" class="btn-secondary text-sm px-3 py-1">
+                                {% trans "Ver" %}
+                            </a>
+                            {% if appointment.status == 'scheduled' %}
+                            <a href="{% url 'appointments:cancel' appointment.pk %}" class="btn-outline text-red-600 border-red-600 text-sm px-3 py-1">
+                                {% trans "Cancelar" %}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="inline-block px-2 py-1 text-xs rounded-full
+                            {% if appointment.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif appointment.status == 'scheduled' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if past %}
+        <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">{% trans "Citas Anteriores" %}</h2>
+            <div class="space-y-4">
+                {% for appointment in past %}
+                <div class="bg-white rounded-xl shadow p-6 opacity-75">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700">{{ appointment.service.name }}</h3>
+                            <p class="text-gray-500">
+                                <strong>{{ appointment.pet.name }}</strong> -
+                                {{ appointment.scheduled_start|date:"d M Y" }}
+                            </p>
+                        </div>
+                        <span class="inline-block px-2 py-1 text-xs rounded-full
+                            {% if appointment.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% elif appointment.status == 'no_show' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not upcoming and not past %}
+        <div class="text-center py-12 bg-white rounded-xl shadow">
+            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{% trans "No tienes citas" %}</h3>
+            <p class="text-gray-600 mb-4">{% trans "Agenda tu primera cita con nosotros" %}</p>
+            <a href="{% url 'appointments:services' %}" class="btn-primary">
+                {% trans "Agendar Cita" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

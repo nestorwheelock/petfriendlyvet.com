@@ -44,8 +44,8 @@ def authenticated_page(page, live_server, owner_user):
     # Login the user
     page.goto(f'{live_server.url}/accounts/login/')
 
-    # Fill login form (adjust selectors for your templates)
-    page.fill('input[name="username"]', owner_user.username)
+    # Fill login form - use email since the form expects email format
+    page.fill('input[name="username"]', owner_user.email)
     page.fill('input[name="password"]', 'owner123')
     page.click('button[type="submit"]')
 
@@ -60,7 +60,8 @@ def staff_page(page, live_server, staff_user):
     """Page with authenticated staff user session."""
     page.goto(f'{live_server.url}/accounts/login/')
 
-    page.fill('input[name="username"]', staff_user.username)
+    # Use email since the form expects email format
+    page.fill('input[name="username"]', staff_user.email)
     page.fill('input[name="password"]', 'staff123')
     page.click('button[type="submit"]')
 
@@ -74,7 +75,8 @@ def driver_page(page, live_server, driver_user):
     """Page with authenticated driver user session."""
     page.goto(f'{live_server.url}/accounts/login/')
 
-    page.fill('input[name="username"]', driver_user.username)
+    # Use email since the form expects email format
+    page.fill('input[name="username"]', driver_user.email)
     page.fill('input[name="password"]', 'driver123')
     page.click('button[type="submit"]')
 

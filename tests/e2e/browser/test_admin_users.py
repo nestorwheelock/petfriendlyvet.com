@@ -43,8 +43,8 @@ class TestAdminUserList:
         page.goto(f'{live_server.url}/admin/accounts/user/')
         page.wait_for_load_state('networkidle')
 
-        # Should see user list
-        expect(page.locator('#changelist, .module')).to_be_visible()
+        # Should see user list - use #changelist which is specific to list pages
+        expect(page.locator('#changelist')).to_be_visible()
 
     def test_admin_user_list_shows_users(self, admin_page, live_server, owner_user):
         """User list shows registered users."""
@@ -65,7 +65,8 @@ class TestAdminUserList:
         # Search for user
         search_input = page.locator('input[name="q"]')
         search_input.fill(owner_user.email)
-        page.click('input[type="submit"][value="Search"]')
+        # Click search button - may be in Spanish "Buscar"
+        page.locator('#changelist-search input[type="submit"]').click()
         page.wait_for_load_state('networkidle')
 
         # Should show search results
@@ -96,7 +97,7 @@ class TestAdminCreateUser:
         page.goto(f'{live_server.url}/admin/accounts/user/add/')
         page.wait_for_load_state('networkidle')
 
-        expect(page.locator('form#user_form, form')).to_be_visible()
+        expect(page.locator('form#user_form')).to_be_visible()
 
     def test_admin_can_create_user(self, admin_page, live_server):
         """Admin can create a new user."""
@@ -151,7 +152,7 @@ class TestAdminEditUser:
         page.goto(f'{live_server.url}/admin/accounts/user/{owner_user.pk}/change/')
         page.wait_for_load_state('networkidle')
 
-        expect(page.locator('form#user_form, form')).to_be_visible()
+        expect(page.locator('form#user_form')).to_be_visible()
 
     def test_admin_can_edit_user_name(self, admin_page, live_server, owner_user):
         """Admin can edit user's name."""
@@ -275,17 +276,23 @@ class TestAdminUserPermissions:
 
         page.goto(f'{live_server.url}/admin/accounts/user/{owner_user.pk}/change/')
 
-        # Look for groups selector
-        groups_select = page.locator('select[name="groups"]')
-        if groups_select.count() > 0:
-            # Select the group (multi-select widget varies by Django version)
-            groups_select.select_option(str(group.pk))
+        # Django admin uses a filter horizontal widget for groups
+        # The available groups are in select#id_groups_from, chosen are in select#id_groups_to
+        groups_from = page.locator('select#id_groups_from')
+        if groups_from.count() > 0:
+            # Select the group in the "available" list
+            groups_from.select_option(str(group.pk))
+            # Click "choose all" or "add" button to move it to chosen
+            # Try various selectors that Django admin uses
+            add_link = page.locator('#id_groups_add_all_link, #id_groups_add_link, a.selector-chooseall, a.selector-add')
+            if add_link.count() > 0:
+                add_link.first.click()
 
-            page.click('input[name="_save"], button[name="_save"]')
-            page.wait_for_load_state('networkidle')
+                page.click('input[name="_save"], button[name="_save"]')
+                page.wait_for_load_state('networkidle')
 
-            owner_user.refresh_from_db()
-            assert group in owner_user.groups.all()
+                owner_user.refresh_from_db()
+                assert group in owner_user.groups.all()
 
 
 @pytest.mark.browser
@@ -299,8 +306,9 @@ class TestAdminResetUserPassword:
         # Navigate to user edit page first
         page.goto(f'{live_server.url}/admin/accounts/user/{owner_user.pk}/change/')
 
-        # Look for password change link
-        password_link = page.locator('a[href*="password"]')
+        # Look for password change link - use more specific selector
+        # The link is typically "Restablecer contraseña" or similar in Spanish
+        password_link = page.locator('a.button[href*="password"], a[href$="/password/"]').first
         if password_link.count() > 0:
             password_link.click()
             page.wait_for_load_state('networkidle')

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Nuestros Servicios" %}{% endblock %}
+
+{% block content %}
+<section class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">{% trans "Nuestros Servicios" %}</h1>
+            <p class="text-lg text-gray-600">{% trans "Cuidamos a tu mascota con los mejores servicios veterinarios" %}</p>
+        </div>
+
+        {% for category, category_services in services_by_category.items %}
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b-2 border-primary-500 pb-2">
+                {{ category }}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for service in category_services %}
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ service.name }}</h3>
+                    <p class="text-gray-600 mb-4">{{ service.description|truncatewords:20 }}</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm text-gray-500">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ service.duration_minutes }} {% trans "min" %}
+                        </span>
+                        <span class="text-lg font-bold text-primary-600">${{ service.price }}</span>
+                    </div>
+                    <a href="{% url 'appointments:book' %}?service={{ service.pk }}"
+                       class="block w-full btn-primary text-center py-2">
+                        {% trans "Agendar Cita" %}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12">
+            <p class="text-gray-600">{% trans "No hay servicios disponibles en este momento." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

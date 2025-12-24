@@ -19,8 +19,8 @@ class TestUserRegistration:
         """Registration page loads with form."""
         page.goto(f'{live_server.url}/accounts/register/')
 
-        expect(page).to_have_title(re.compile(r'.*[Cc]rear|[Rr]egist.*'))
-        expect(page.locator('form#registration-form, form')).to_be_visible()
+        expect(page).to_have_title(re.compile(r'.*(Crear|Cuenta|Register).*', re.IGNORECASE))
+        expect(page.locator('form#registration-form')).to_be_visible()
 
     def test_registration_form_has_required_fields(self, page, live_server):
         """Registration form has all required fields."""
@@ -102,8 +102,9 @@ class TestUserLogin:
         """Login page loads with form."""
         page.goto(f'{live_server.url}/accounts/login/')
 
-        expect(page).to_have_title(re.compile(r'.*[Ii]ngres|[Ll]ogin.*'))
-        expect(page.locator('form')).to_be_visible()
+        expect(page).to_have_title(re.compile(r'.*(Ingresar|Login).*', re.IGNORECASE))
+        # Look for the visible form with login inputs
+        expect(page.locator('input[name="username"]')).to_be_visible()
 
     def test_successful_login(self, page, live_server, owner_user):
         """User can login with valid credentials."""
@@ -165,8 +166,23 @@ class TestUserLogout:
         page.goto(f'{live_server.url}/accounts/profile/')
         expect(page).to_have_url(re.compile(r'.*/accounts/profile.*'))
 
-        # Logout
-        page.goto(f'{live_server.url}/accounts/logout/')
+        # Logout via POST (Django's LogoutView requires POST by default)
+        # Use a form submission or click the logout button/link if available
+        page.evaluate('''() => {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/accounts/logout/';
+            const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrf) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrfmiddlewaretoken';
+                input.value = csrf.value;
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }''')
         page.wait_for_load_state('networkidle')
 
         # Try to access profile again - should redirect to login
@@ -184,7 +200,7 @@ class TestPasswordReset:
         """Password reset page loads."""
         page.goto(f'{live_server.url}/accounts/password-reset/')
 
-        expect(page.locator('form#password-reset-form, form')).to_be_visible()
+        expect(page.locator('form#password-reset-form')).to_be_visible()
         expect(page.locator('input[name="email"]')).to_be_visible()
 
     def test_password_reset_request_submission(self, page, live_server, owner_user):
@@ -269,7 +285,7 @@ class TestProfileEdit:
 
         page.goto(f'{live_server.url}/accounts/profile/edit/')
 
-        expect(page.locator('form#profile-edit-form, form')).to_be_visible()
+        expect(page.locator('form#profile-edit-form')).to_be_visible()
 
     def test_profile_edit_prefills_data(self, authenticated_page, live_server, owner_user):
         """Profile edit form prefills with current data."""
@@ -310,7 +326,7 @@ class TestChangePassword:
 
         page.goto(f'{live_server.url}/accounts/profile/change-password/')
 
-        expect(page.locator('form#change-password-form, form')).to_be_visible()
+        expect(page.locator('form#change-password-form')).to_be_visible()
         expect(page.locator('input[name="old_password"]')).to_be_visible()
         expect(page.locator('input[name="new_password1"]')).to_be_visible()
         expect(page.locator('input[name="new_password2"]')).to_be_visible()
@@ -363,7 +379,7 @@ class TestDeleteAccount:
 
         page.goto(f'{live_server.url}/accounts/profile/delete/')
 
-        expect(page.locator('form#delete-account-form, form')).to_be_visible()
+        expect(page.locator('form#delete-account-form')).to_be_visible()
 
     def test_delete_account_deactivates_user(self, page, live_server, db):
         """Deleting account deactivates user (soft delete)."""
@@ -402,8 +418,8 @@ class TestDeleteAccount:
 
         page.goto(f'{live_server.url}/accounts/profile/delete/')
 
-        # Click cancel
-        cancel_link = page.locator('a[href*="profile"]')
+        # Click cancel - look for any link that's not the submit button
+        cancel_link = page.locator('a:has-text("Cancelar"), a:has-text("Volver"), a.btn-secondary').first
         cancel_link.click()
         page.wait_for_load_state('networkidle')
 
@@ -425,7 +441,7 @@ class TestMobileAuthentication:
         # Form should be visible and usable
         expect(page.locator('input[name="username"]')).to_be_visible()
         expect(page.locator('input[name="password"]')).to_be_visible()
-        expect(page.locator('button[type="submit"]')).to_be_visible()
+        expect(page.locator('button[type="submit"]').first).to_be_visible()
 
     def test_mobile_registration_form(self, mobile_page, live_server):
         """Registration form works on mobile viewport."""

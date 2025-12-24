@@ -22,9 +22,10 @@ User = get_user_model()
 @pytest.fixture
 def owner_user(db):
     """Create a pet owner user."""
+    email = 'owner@test.petfriendlyvet.com'
     user = User.objects.create_user(
-        username='test_owner',
-        email='owner@test.petfriendlyvet.com',
+        username=email,  # Username must match email for login
+        email=email,
         password='owner123',
         first_name='Juan',
         last_name='Pérez',
@@ -37,9 +38,10 @@ def owner_user(db):
 @pytest.fixture
 def staff_user(db):
     """Create a staff user."""
+    email = 'staff@test.petfriendlyvet.com'
     user = User.objects.create_user(
-        username='test_staff',
-        email='staff@test.petfriendlyvet.com',
+        username=email,  # Username must match email for login
+        email=email,
         password='staff123',
         first_name='María',
         last_name='López',
@@ -53,9 +55,10 @@ def staff_user(db):
 @pytest.fixture
 def vet_user(db):
     """Create a veterinarian user."""
+    email = 'vet@test.petfriendlyvet.com'
     user = User.objects.create_user(
-        username='test_vet',
-        email='vet@test.petfriendlyvet.com',
+        username=email,  # Username must match email for login
+        email=email,
         password='vet123',
         first_name='Dr. Carlos',
         last_name='Rodríguez',
@@ -69,9 +72,10 @@ def vet_user(db):
 @pytest.fixture
 def driver_user(db):
     """Create a delivery driver user."""
+    email = 'driver@test.petfriendlyvet.com'
     user = User.objects.create_user(
-        username='test_driver',
-        email='driver@test.petfriendlyvet.com',
+        username=email,  # Username must match email for login
+        email=email,
         password='driver123',
         first_name='Pedro',
         last_name='García',
