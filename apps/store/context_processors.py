@@ -1,5 +1,5 @@
 """Context processors for the store app."""
-from .models import Cart
+from .models import Cart, StoreSettings
 
 
 def cart(request):
@@ -25,4 +25,16 @@ def cart(request):
     return {
         'cart': cart_obj,
         'cart_count': cart_count,
+    }
+
+
+def store_settings(request):
+    """Add store settings to template context for all pages."""
+    try:
+        settings_obj = StoreSettings.get_instance()
+    except Exception:
+        settings_obj = None
+
+    return {
+        'store_settings': settings_obj,
     }

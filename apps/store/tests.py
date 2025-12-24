@@ -599,3 +599,84 @@ class StoreSettingsTests(TestCase):
         """String representation should be 'Store Settings'."""
         settings = StoreSettings.get_instance()
         self.assertEqual(str(settings), 'Store Settings')
+
+
+class StoreSettingsContextProcessorTests(TestCase):
+    """Tests for store_settings context processor."""
+
+    def setUp(self):
+        """Clear any existing settings for each test."""
+        StoreSettings.objects.all().delete()
+        self.client = Client()
+
+    def test_store_settings_in_context(self):
+        """store_settings should be available in template context."""
+        from .context_processors import store_settings
+        from django.test import RequestFactory
+
+        factory = RequestFactory()
+        request = factory.get('/')
+        context = store_settings(request)
+
+        self.assertIn('store_settings', context)
+        self.assertIsInstance(context['store_settings'], StoreSettings)
+
+    def test_checkout_page_uses_dynamic_shipping_cost(self):
+        """Checkout page should display shipping cost from StoreSettings."""
+        user = User.objects.create_user('testuser', 'test@test.com', 'testpass')
+        self.client.force_login(user)
+
+        settings = StoreSettings.get_instance()
+        settings.default_shipping_cost = Decimal('75.00')
+        settings.save()
+
+        category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        cart = Cart.objects.create(user=user)
+        cart.add_item(product, 1)
+
+        response = self.client.get(reverse('store:checkout'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Check shipping cost appears in the JavaScript
+        self.assertIn('shippingCost: 75', content)
+
+    def test_checkout_page_shows_tax_rate_from_settings(self):
+        """Checkout page should use tax rate from StoreSettings."""
+        user = User.objects.create_user('testuser', 'test@test.com', 'testpass')
+        self.client.force_login(user)
+
+        settings = StoreSettings.get_instance()
+        settings.tax_rate = Decimal('0.16')
+        settings.save()
+
+        category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        cart = Cart.objects.create(user=user)
+        cart.add_item(product, 1)
+
+        response = self.client.get(reverse('store:checkout'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Check tax rate appears in the JavaScript
+        self.assertIn('taxRate: 0.16', content)

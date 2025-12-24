@@ -51,7 +51,7 @@
                                         {% trans "Entrega a domicilio" %}
                                     </span>
                                     <span class="mt-1 flex items-center text-sm text-gray-500">
-                                        {% trans "$50.00 MXN - Entrega en Puerto Morelos" %}
+                                        {% if store_settings %}${{ store_settings.default_shipping_cost }} MXN{% else %}$50.00 MXN{% endif %} - {% trans "Entrega en Puerto Morelos" %}
                                     </span>
                                 </span>
                             </span>
@@ -251,7 +251,7 @@
                         </div>
                         <div class="flex items-center justify-between" x-show="method === 'delivery'" x-transition>
                             <dt class="text-sm text-gray-600">{% trans "Envío" %}</dt>
-                            <dd class="text-sm font-medium text-gray-900">$50.00</dd>
+                            <dd class="text-sm font-medium text-gray-900">${% if store_settings %}{{ store_settings.default_shipping_cost }}{% else %}50.00{% endif %}</dd>
                         </div>
                         <div class="flex items-center justify-between border-t border-gray-200 pt-4">
                             <dt class="text-base font-medium text-gray-900">{% trans "Total" %}</dt>
@@ -299,8 +299,8 @@ function checkoutForm(subtotal) {
         method: 'pickup',
         payment: 'cash',
         subtotal: subtotal,
-        taxRate: 0.16,
-        shippingCost: 50.00,
+        taxRate: {% if store_settings %}{{ store_settings.tax_rate|stringformat:"f" }}{% else %}0.16{% endif %},
+        shippingCost: {% if store_settings %}{{ store_settings.default_shipping_cost|stringformat:"f" }}{% else %}50.00{% endif %},
         tax: 0,
         total: 0,
 

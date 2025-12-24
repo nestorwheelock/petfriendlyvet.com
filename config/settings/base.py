@@ -107,6 +107,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'apps.store.context_processors.cart',
+                'apps.store.context_processors.store_settings',
             ],
         },
     },
