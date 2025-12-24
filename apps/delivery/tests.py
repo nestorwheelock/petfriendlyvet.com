@@ -9,7 +9,11 @@ from django.apps import apps
 from django.utils import timezone
 from django.db import IntegrityError
 
-from .models import DeliveryZone, DeliverySlot, DeliveryDriver
+from .models import (
+    DeliveryZone, DeliverySlot, DeliveryDriver,
+    Delivery, DeliveryStatusHistory
+)
+from apps.store.models import Category, Product, Cart, Order
 
 User = get_user_model()
 
@@ -224,3 +228,126 @@ class DeliveryDriverTests(TestCase):
         )
         driver = DeliveryDriver.objects.create(user=user, driver_type='employee')
         self.assertIn('Juan Garcia', str(driver))
+
+
+class DeliveryTests(TestCase):
+    """Tests for Delivery model and status workflow."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+
+    def test_create_delivery_from_order(self):
+        """Can create delivery from order."""
+        delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+        self.assertEqual(delivery.status, 'pending')
+        self.assertIsNotNone(delivery.delivery_number)
+
+    def test_delivery_number_generation(self):
+        """Delivery number is generated automatically."""
+        delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone
+        )
+        self.assertTrue(delivery.delivery_number.startswith('DEL-'))
+
+    def test_status_transition_assign(self):
+        """Can transition from pending to assigned."""
+        driver_user = User.objects.create_user('driver', 'd@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user)
+
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        delivery.assign_driver(driver)
+
+        self.assertEqual(delivery.status, 'assigned')
+        self.assertEqual(delivery.driver, driver)
+
+    def test_status_transition_pickup(self):
+        """Can transition from assigned to picked_up."""
+        driver_user = User.objects.create_user('driver', 'd@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user)
+
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        delivery.assign_driver(driver)
+        delivery.mark_picked_up()
+
+        self.assertEqual(delivery.status, 'picked_up')
+        self.assertIsNotNone(delivery.picked_up_at)
+
+    def test_status_transition_out_for_delivery(self):
+        """Can transition to out_for_delivery."""
+        driver_user = User.objects.create_user('driver', 'd@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user)
+
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        delivery.assign_driver(driver)
+        delivery.mark_picked_up()
+        delivery.mark_out_for_delivery()
+
+        self.assertEqual(delivery.status, 'out_for_delivery')
+        self.assertIsNotNone(delivery.out_for_delivery_at)
+
+    def test_status_transition_delivered(self):
+        """Can transition to delivered."""
+        driver_user = User.objects.create_user('driver', 'd@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user)
+
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        delivery.assign_driver(driver)
+        delivery.mark_picked_up()
+        delivery.mark_out_for_delivery()
+        delivery.mark_arrived()
+        delivery.mark_delivered()
+
+        self.assertEqual(delivery.status, 'delivered')
+        self.assertIsNotNone(delivery.delivered_at)
+
+    def test_invalid_transition_raises_error(self):
+        """Invalid status transition raises error."""
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+
+        with self.assertRaises(ValueError):
+            delivery.mark_picked_up()  # Can't pickup without assignment
+
+    def test_status_history_created(self):
+        """Status changes create history records."""
+        driver_user = User.objects.create_user('driver', 'd@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user)
+
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        delivery.assign_driver(driver)
+
+        self.assertEqual(delivery.status_history.count(), 1)
+        history = delivery.status_history.first()
+        self.assertEqual(history.from_status, 'pending')
+        self.assertEqual(history.to_status, 'assigned')
+
+    def test_delivery_str(self):
+        """Delivery string representation."""
+        delivery = Delivery.objects.create(order=self.order, zone=self.zone)
+        self.assertEqual(str(delivery), delivery.delivery_number)
