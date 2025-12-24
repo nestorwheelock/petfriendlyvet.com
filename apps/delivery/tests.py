@@ -9,7 +9,7 @@ from django.apps import apps
 from django.utils import timezone
 from django.db import IntegrityError
 
-from .models import DeliveryZone, DeliverySlot
+from .models import DeliveryZone, DeliverySlot, DeliveryDriver
 
 User = get_user_model()
 
@@ -131,3 +131,96 @@ class DeliverySlotTests(TestCase):
             is_active=False
         )
         self.assertFalse(slot.is_available)
+
+
+class DeliveryDriverTests(TestCase):
+    """Tests for DeliveryDriver model."""
+
+    def test_create_employee_driver(self):
+        """Can create an employee driver."""
+        user = User.objects.create_user('driver1', 'driver1@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='employee',
+            phone='+525551234567'
+        )
+        self.assertEqual(driver.driver_type, 'employee')
+        self.assertTrue(driver.is_employee)
+        self.assertFalse(driver.is_contractor)
+
+    def test_create_contractor_driver(self):
+        """Can create a contractor driver with RFC/CURP."""
+        user = User.objects.create_user('driver2', 'driver2@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='contractor',
+            phone='+525551234567',
+            rfc='XAXX010101000',
+            curp='XEXX010101HNEXXXA4',
+            rate_per_delivery=Decimal('35.00')
+        )
+        self.assertEqual(driver.driver_type, 'contractor')
+        self.assertTrue(driver.is_contractor)
+        self.assertFalse(driver.is_employee)
+        self.assertEqual(driver.rfc, 'XAXX010101000')
+
+    def test_driver_zones_relationship(self):
+        """Driver can be assigned to multiple zones."""
+        user = User.objects.create_user('driver3', 'driver3@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=user, driver_type='employee')
+
+        zone1 = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        zone2 = DeliveryZone.objects.create(code='NORTE', name='Norte')
+
+        driver.zones.add(zone1, zone2)
+        self.assertEqual(driver.zones.count(), 2)
+
+    def test_driver_availability(self):
+        """Driver availability status."""
+        user = User.objects.create_user('driver4', 'driver4@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='employee',
+            is_active=True,
+            is_available=True
+        )
+        self.assertTrue(driver.is_active)
+        self.assertTrue(driver.is_available)
+
+    def test_contractor_payment_info_incomplete(self):
+        """Contractor without payment info reports incomplete."""
+        user = User.objects.create_user('driver5', 'driver5@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='contractor'
+        )
+        self.assertFalse(driver.has_complete_payment_info)
+
+    def test_contractor_payment_info_complete(self):
+        """Contractor with payment info reports complete."""
+        user = User.objects.create_user('driver6', 'driver6@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='contractor',
+            rfc='XAXX010101000',
+            rate_per_delivery=Decimal('35.00')
+        )
+        self.assertTrue(driver.has_complete_payment_info)
+
+    def test_employee_always_has_complete_payment_info(self):
+        """Employee always reports complete payment info."""
+        user = User.objects.create_user('driver7', 'driver7@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=user,
+            driver_type='employee'
+        )
+        self.assertTrue(driver.has_complete_payment_info)
+
+    def test_driver_str(self):
+        """Driver string representation."""
+        user = User.objects.create_user(
+            'driver8', 'driver8@test.com', 'pass',
+            first_name='Juan', last_name='Garcia'
+        )
+        driver = DeliveryDriver.objects.create(user=user, driver_type='employee')
+        self.assertIn('Juan Garcia', str(driver))
