@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Delivery, DeliveryDriver
@@ -110,6 +111,35 @@ class DriverDeliveryDetailView(DriverRequiredMixin, View):
             ]
         }
         return JsonResponse(data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DriverLocationUpdateView(DriverRequiredMixin, View):
+    """Update driver's current location."""
+
+    def post(self, request):
+        """Update driver location with GPS coordinates."""
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+
+        if latitude is None or longitude is None:
+            return JsonResponse({'error': 'Coordinates required'}, status=400)
+
+        self.driver.current_latitude = Decimal(str(latitude))
+        self.driver.current_longitude = Decimal(str(longitude))
+        self.driver.location_updated_at = timezone.now()
+        self.driver.save(update_fields=['current_latitude', 'current_longitude', 'location_updated_at'])
+
+        return JsonResponse({
+            'success': True,
+            'latitude': str(self.driver.current_latitude),
+            'longitude': str(self.driver.current_longitude),
+        })
 
 
 @method_decorator(csrf_exempt, name='dispatch')

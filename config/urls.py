@@ -14,6 +14,8 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     # API endpoints (no i18n prefix)
     path('api/driver/', include('apps.delivery.api_urls')),
+    # Delivery driver dashboard (no i18n for mobile drivers)
+    path('delivery/', include('apps.delivery.urls')),
 ]
 
 # i18n URLs (language prefix)

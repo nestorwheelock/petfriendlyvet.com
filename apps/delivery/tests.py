@@ -812,3 +812,163 @@ class DriverAPITests(TestCase):
         data = response.json()
         self.assertEqual(data['delivery_number'], self.delivery.delivery_number)
         self.assertEqual(data['address'], self.delivery.address)
+
+
+class DriverDashboardTests(TestCase):
+    """Tests for Driver mobile dashboard view."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.user = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            is_active=True,
+            is_available=True
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.category = Category.objects.create(
+            name='Food', name_es='Comida', name_en='Food', slug='food'
+        )
+        self.product = Product.objects.create(
+            name='Pet Food', name_es='Comida', name_en='Pet Food',
+            slug='pet-food', category=self.category, price=Decimal('100.00'),
+            sku='FOOD-001'
+        )
+        self.cart = Cart.objects.create(user=self.user)
+        self.cart.add_item(self.product, 2)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.user,
+            fulfillment_method='delivery',
+            shipping_address='Av. Reforma 123, Centro'
+        )
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address,
+            scheduled_date=date.today()
+        )
+
+    def test_dashboard_requires_authentication(self):
+        """Dashboard requires user to be logged in."""
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 302)  # Redirect to login
+
+    def test_dashboard_requires_driver(self):
+        """Dashboard requires user to be a driver."""
+        non_driver = User.objects.create_user('notdriver', 'not@test.com', 'pass')
+        self.client.force_login(non_driver)
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_dashboard_shows_assigned_deliveries(self):
+        """Dashboard shows deliveries assigned to the driver."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.delivery.delivery_number)
+        self.assertContains(response, self.delivery.address)
+
+    def test_dashboard_excludes_completed_deliveries(self):
+        """Dashboard excludes delivered/returned deliveries."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+        self.delivery.mark_picked_up(changed_by=self.driver_user)
+        self.delivery.mark_out_for_delivery(changed_by=self.driver_user)
+        self.delivery.mark_arrived(changed_by=self.driver_user)
+        self.delivery.mark_delivered(changed_by=self.driver_user)
+
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, self.delivery.delivery_number)
+
+    def test_dashboard_shows_navigation_links(self):
+        """Dashboard shows navigation links to Google Maps."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+        self.delivery.latitude = Decimal('19.432608')
+        self.delivery.longitude = Decimal('-99.133209')
+        self.delivery.save()
+
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'maps.google.com')
+
+    def test_dashboard_uses_correct_template(self):
+        """Dashboard uses the driver dashboard template."""
+        self.client.force_login(self.driver_user)
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'delivery/driver/dashboard.html')
+
+    def test_inactive_driver_cannot_access(self):
+        """Inactive driver cannot access dashboard."""
+        self.driver.is_active = False
+        self.driver.save()
+        self.client.force_login(self.driver_user)
+        response = self.client.get('/delivery/driver/dashboard/')
+        self.assertEqual(response.status_code, 403)
+
+
+class DriverLocationAPITests(TestCase):
+    """Tests for Driver location tracking API."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            is_active=True,
+            is_available=True
+        )
+
+    def test_location_update_requires_auth(self):
+        """Location update requires authentication."""
+        response = self.client.post(
+            '/api/driver/location/',
+            data={'latitude': '19.432608', 'longitude': '-99.133209'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_location_update_success(self):
+        """Driver can update their location."""
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            '/api/driver/location/',
+            data={'latitude': '19.432608', 'longitude': '-99.133209'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.driver.refresh_from_db()
+        self.assertEqual(str(self.driver.current_latitude), '19.432608')
+        self.assertEqual(str(self.driver.current_longitude), '-99.133209')
+        self.assertIsNotNone(self.driver.location_updated_at)
+
+    def test_location_update_requires_coordinates(self):
+        """Location update requires both coordinates."""
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            '/api/driver/location/',
+            data={'latitude': '19.432608'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('required', response.json()['error'].lower())
+
+    def test_non_driver_cannot_update_location(self):
+        """Non-driver user cannot update location."""
+        user = User.objects.create_user('notdriver', 'not@test.com', 'pass')
+        self.client.force_login(user)
+        response = self.client.post(
+            '/api/driver/location/',
+            data={'latitude': '19.432608', 'longitude': '-99.133209'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)

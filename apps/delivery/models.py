@@ -172,6 +172,21 @@ class DeliveryDriver(models.Model):
     is_active = models.BooleanField(default=True)
     is_available = models.BooleanField(default=False)
 
+    # Current location (real-time tracking)
+    current_latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    current_longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    location_updated_at = models.DateTimeField(null=True, blank=True)
+
     # Performance metrics
     total_deliveries = models.PositiveIntegerField(default=0)
     successful_deliveries = models.PositiveIntegerField(default=0)

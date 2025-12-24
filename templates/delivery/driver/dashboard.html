@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Driver Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <!-- Header -->
+    <div class="bg-primary-600 text-white py-4 px-4 shadow-lg">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold">{% trans "My Deliveries" %}</h1>
+                <p class="text-sm text-primary-100">{{ driver.user.get_full_name|default:driver.user.username }}</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Location Tracking Indicator -->
+                <div id="locationIndicator" class="flex items-center">
+                    <span id="locationDot" class="w-2 h-2 rounded-full bg-gray-400 mr-1"></span>
+                    <span id="locationText" class="text-xs text-primary-100">GPS</span>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if driver.is_available %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {% if driver.is_available %}{% trans "Available" %}{% else %}{% trans "Offline" %}{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deliveries List -->
+    <div class="p-4 space-y-4">
+        {% if deliveries %}
+            {% for delivery in deliveries %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden" data-delivery-id="{{ delivery.id }}">
+                <!-- Status Bar -->
+                <div class="px-4 py-2 {% if delivery.status == 'assigned' %}bg-blue-500{% elif delivery.status == 'picked_up' %}bg-yellow-500{% elif delivery.status == 'out_for_delivery' %}bg-orange-500{% elif delivery.status == 'arrived' %}bg-purple-500{% else %}bg-gray-500{% endif %} text-white text-sm font-medium flex justify-between items-center">
+                    <span>{{ delivery.get_status_display }}</span>
+                    <span class="text-xs">{{ delivery.delivery_number }}</span>
+                </div>
+
+                <!-- Delivery Info -->
+                <div class="p-4">
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-800 font-medium">{{ delivery.address }}</p>
+                                {% if delivery.zone %}
+                                <p class="text-sm text-gray-500">{{ delivery.zone.name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule -->
+                    {% if delivery.scheduled_date %}
+                    <div class="mb-3 flex items-center text-sm text-gray-600">
+                        <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ delivery.scheduled_date }}
+                        {% if delivery.scheduled_time_start %}
+                            {{ delivery.scheduled_time_start|time:"H:i" }} - {{ delivery.scheduled_time_end|time:"H:i" }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Order Info -->
+                    <div class="mb-3 text-sm text-gray-600">
+                        <span class="font-medium">{% trans "Order" %}:</span> {{ delivery.order.order_number }}
+                    </div>
+
+                    <!-- Notes -->
+                    {% if delivery.notes %}
+                    <div class="mb-3 p-2 bg-yellow-50 rounded text-sm text-yellow-800">
+                        <span class="font-medium">{% trans "Notes" %}:</span> {{ delivery.notes }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex space-x-2 mb-4">
+                        {% if delivery.latitude and delivery.longitude %}
+                        <a href="https://maps.google.com/?q={{ delivery.latitude }},{{ delivery.longitude }}"
+                           target="_blank"
+                           class="flex-1 flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            Google Maps
+                        </a>
+                        <a href="https://waze.com/ul?ll={{ delivery.latitude }},{{ delivery.longitude }}&navigate=yes"
+                           target="_blank"
+                           class="flex-1 flex items-center justify-center px-3 py-2 bg-cyan-50 text-cyan-700 rounded-lg text-sm font-medium hover:bg-cyan-100 transition">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            Waze
+                        </a>
+                        {% else %}
+                        <a href="https://maps.google.com/?q={{ delivery.address|urlencode }}"
+                           target="_blank"
+                           class="flex-1 flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            {% trans "Navigate" %}
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Status Update Buttons -->
+                    <div class="border-t pt-3">
+                        <p class="text-xs text-gray-500 mb-2 uppercase font-medium">{% trans "Update Status" %}</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% if delivery.status == 'assigned' %}
+                            <button onclick="updateStatus({{ delivery.id }}, 'picked_up')"
+                                    class="flex-1 px-3 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition">
+                                {% trans "Picked Up" %}
+                            </button>
+                            {% elif delivery.status == 'picked_up' %}
+                            <button onclick="updateStatus({{ delivery.id }}, 'out_for_delivery')"
+                                    class="flex-1 px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition">
+                                {% trans "On My Way" %}
+                            </button>
+                            {% elif delivery.status == 'out_for_delivery' %}
+                            <button onclick="updateStatus({{ delivery.id }}, 'arrived')"
+                                    class="flex-1 px-3 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition">
+                                {% trans "Arrived" %}
+                            </button>
+                            {% elif delivery.status == 'arrived' %}
+                            <button onclick="updateStatus({{ delivery.id }}, 'delivered')"
+                                    class="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
+                                {% trans "Delivered" %}
+                            </button>
+                            {% endif %}
+
+                            {% if delivery.status != 'delivered' and delivery.status != 'failed' %}
+                            <button onclick="showFailedModal({{ delivery.id }})"
+                                    class="px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition">
+                                {% trans "Failed" %}
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">{% trans "No active deliveries" %}</h3>
+                <p class="text-gray-500">{% trans "You don't have any assigned deliveries at the moment." %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Failed Delivery Modal -->
+<div id="failedModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="p-4 border-b">
+            <h3 class="text-lg font-medium text-gray-900">{% trans "Report Failed Delivery" %}</h3>
+        </div>
+        <form id="failedForm" class="p-4">
+            <input type="hidden" id="failedDeliveryId" name="delivery_id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Reason" %}</label>
+                <select name="reason" id="failedReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                    <option value="no_answer">{% trans "No one answered" %}</option>
+                    <option value="wrong_address">{% trans "Wrong address" %}</option>
+                    <option value="customer_refused">{% trans "Customer refused" %}</option>
+                    <option value="inaccessible">{% trans "Location inaccessible" %}</option>
+                    <option value="other">{% trans "Other" %}</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Additional Notes" %}</label>
+                <textarea name="notes" id="failedNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="{% trans 'Optional details...' %}"></textarea>
+            </div>
+            <div class="flex space-x-3">
+                <button type="button" onclick="hideFailedModal()" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
+                    {% trans "Cancel" %}
+                </button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700">
+                    {% trans "Report Failed" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = '{{ csrf_token }}';
+let watchId = null;
+let lastLocationUpdate = 0;
+const LOCATION_UPDATE_INTERVAL = 30000; // Send update every 30 seconds max
+
+// Location tracking UI elements
+const locationDot = document.getElementById('locationDot');
+const locationText = document.getElementById('locationText');
+
+function updateLocationUI(status) {
+    if (status === 'tracking') {
+        locationDot.className = 'w-2 h-2 rounded-full bg-green-400 mr-1 animate-pulse';
+        locationText.textContent = 'GPS';
+    } else if (status === 'error') {
+        locationDot.className = 'w-2 h-2 rounded-full bg-red-400 mr-1';
+        locationText.textContent = 'GPS!';
+    } else {
+        locationDot.className = 'w-2 h-2 rounded-full bg-gray-400 mr-1';
+        locationText.textContent = 'GPS';
+    }
+}
+
+async function sendLocationToServer(latitude, longitude) {
+    try {
+        const response = await fetch('/api/driver/location/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ latitude, longitude })
+        });
+
+        if (response.ok) {
+            updateLocationUI('tracking');
+        }
+    } catch (error) {
+        console.error('Location update error:', error);
+    }
+}
+
+function startLocationTracking() {
+    if (!navigator.geolocation) {
+        console.warn('Geolocation not supported');
+        updateLocationUI('error');
+        return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const now = Date.now();
+            // Only send update if enough time has passed
+            if (now - lastLocationUpdate >= LOCATION_UPDATE_INTERVAL) {
+                lastLocationUpdate = now;
+                sendLocationToServer(
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+            }
+            updateLocationUI('tracking');
+        },
+        (error) => {
+            console.warn('Location error:', error);
+            updateLocationUI('error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 30000,
+            maximumAge: 60000
+        }
+    );
+}
+
+function stopLocationTracking() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    updateLocationUI('off');
+}
+
+// Start tracking when page loads
+document.addEventListener('DOMContentLoaded', startLocationTracking);
+
+// Stop tracking when page is hidden (battery saving)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopLocationTracking();
+    } else {
+        startLocationTracking();
+    }
+});
+
+function getLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            resolve({ latitude: null, longitude: null });
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
+            (error) => {
+                console.warn('Geolocation error:', error);
+                resolve({ latitude: null, longitude: null });
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    });
+}
+
+async function updateStatus(deliveryId, status, reason = '') {
+    const location = await getLocation();
+
+    const data = {
+        status: status,
+        latitude: location.latitude,
+        longitude: location.longitude
+    };
+
+    if (reason) {
+        data.reason = reason;
+    }
+
+    try {
+        const response = await fetch(`/api/driver/deliveries/${deliveryId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Reload page to show updated status
+            window.location.reload();
+        } else {
+            alert(result.error || '{% trans "Error updating status" %}');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('{% trans "Network error. Please try again." %}');
+    }
+}
+
+function showFailedModal(deliveryId) {
+    document.getElementById('failedDeliveryId').value = deliveryId;
+    document.getElementById('failedModal').classList.remove('hidden');
+    document.getElementById('failedModal').classList.add('flex');
+}
+
+function hideFailedModal() {
+    document.getElementById('failedModal').classList.add('hidden');
+    document.getElementById('failedModal').classList.remove('flex');
+    document.getElementById('failedForm').reset();
+}
+
+document.getElementById('failedForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const deliveryId = document.getElementById('failedDeliveryId').value;
+    const reason = document.getElementById('failedReason').value;
+    const notes = document.getElementById('failedNotes').value;
+
+    await updateStatus(deliveryId, 'failed', `${reason}: ${notes}`);
+    hideFailedModal();
+});
+</script>
+{% endblock %}
