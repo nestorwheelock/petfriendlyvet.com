@@ -11,3 +11,7 @@ faker>=22.0
 # Mocking
 responses>=0.24
 freezegun>=1.2
+
+# Browser Testing
+pytest-playwright>=0.4.4
+playwright>=1.40.0
