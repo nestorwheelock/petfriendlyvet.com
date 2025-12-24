@@ -1,17 +1,71 @@
 """Store models for e-commerce functionality.
 
 Provides:
+- StoreSettings: Store-wide configuration (singleton)
 - Category: Product categories with hierarchy
 - Product: Products with bilingual content and inventory
 - ProductImage: Multiple images per product
 - Cart/CartItem: Shopping cart functionality
 - Order/OrderItem: Order management
 """
+from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+class StoreSettings(models.Model):
+    """Store-wide configuration (singleton)."""
+
+    default_shipping_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('50.00'),
+        help_text="Default shipping cost for delivery orders"
+    )
+    free_shipping_threshold = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Order subtotal for free shipping. Leave blank to disable."
+    )
+    tax_rate = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=Decimal('0.16'),
+        help_text="Tax rate as decimal (e.g., 0.16 for 16%)"
+    )
+    default_max_order_quantity = models.PositiveIntegerField(
+        default=99,
+        help_text="Default max items per product per order"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Store Settings"
+        verbose_name_plural = "Store Settings"
+
+    def __str__(self):
+        return "Store Settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Enforce singleton
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_instance(cls):
+        """Get or create the singleton settings instance."""
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def get_shipping_cost(self, subtotal):
+        """Calculate shipping cost based on subtotal and threshold."""
+        if self.free_shipping_threshold and subtotal >= self.free_shipping_threshold:
+            return Decimal('0')
+        return self.default_shipping_cost
 
 
 class Category(models.Model):

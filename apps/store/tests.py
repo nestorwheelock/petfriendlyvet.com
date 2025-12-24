@@ -4,7 +4,7 @@ from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from .models import Category, Product, Cart, CartItem, Order
+from .models import Category, Product, Cart, CartItem, Order, StoreSettings
 
 User = get_user_model()
 
@@ -534,3 +534,68 @@ class OrderCreationTests(TestCase):
         self.assertEqual(order.shipping_name, 'John Doe')
         self.assertEqual(order.shipping_address, '456 Main St, Puerto Morelos')
         self.assertEqual(order.shipping_phone, '+52 998 123 4567')
+
+
+class StoreSettingsTests(TestCase):
+    """Tests for StoreSettings singleton model."""
+
+    def setUp(self):
+        """Clear any existing settings for each test."""
+        StoreSettings.objects.all().delete()
+
+    def test_get_instance_creates_singleton(self):
+        """get_instance should create settings if not exists."""
+        settings = StoreSettings.get_instance()
+        self.assertEqual(settings.pk, 1)
+        self.assertEqual(StoreSettings.objects.count(), 1)
+
+    def test_get_instance_returns_existing(self):
+        """get_instance should return existing settings."""
+        StoreSettings.objects.create(pk=1, default_shipping_cost=Decimal('100.00'))
+        settings = StoreSettings.get_instance()
+        self.assertEqual(settings.default_shipping_cost, Decimal('100.00'))
+        self.assertEqual(StoreSettings.objects.count(), 1)
+
+    def test_save_enforces_singleton(self):
+        """Multiple saves should not create multiple records."""
+        settings1 = StoreSettings.get_instance()
+        settings1.default_shipping_cost = Decimal('75.00')
+        settings1.save()
+
+        settings2 = StoreSettings(default_shipping_cost=Decimal('80.00'))
+        settings2.save()
+
+        self.assertEqual(StoreSettings.objects.count(), 1)
+        settings = StoreSettings.get_instance()
+        self.assertEqual(settings.default_shipping_cost, Decimal('80.00'))
+
+    def test_default_values(self):
+        """Default values should be set correctly."""
+        settings = StoreSettings.get_instance()
+        self.assertEqual(settings.default_shipping_cost, Decimal('50.00'))
+        self.assertEqual(settings.tax_rate, Decimal('0.16'))
+        self.assertEqual(settings.default_max_order_quantity, 99)
+        self.assertIsNone(settings.free_shipping_threshold)
+
+    def test_free_shipping_applies_when_threshold_met(self):
+        """Orders above threshold should get free shipping."""
+        settings = StoreSettings.get_instance()
+        settings.free_shipping_threshold = Decimal('500.00')
+        settings.save()
+
+        self.assertEqual(settings.get_shipping_cost(Decimal('400.00')), Decimal('50.00'))
+        self.assertEqual(settings.get_shipping_cost(Decimal('500.00')), Decimal('0'))
+        self.assertEqual(settings.get_shipping_cost(Decimal('600.00')), Decimal('0'))
+
+    def test_free_shipping_disabled_when_threshold_null(self):
+        """When threshold is null, always charge shipping."""
+        settings = StoreSettings.get_instance()
+        settings.free_shipping_threshold = None
+        settings.save()
+
+        self.assertEqual(settings.get_shipping_cost(Decimal('1000.00')), Decimal('50.00'))
+
+    def test_str_representation(self):
+        """String representation should be 'Store Settings'."""
+        settings = StoreSettings.get_instance()
+        self.assertEqual(str(settings), 'Store Settings')
