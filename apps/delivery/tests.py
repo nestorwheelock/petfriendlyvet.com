@@ -972,3 +972,120 @@ class DriverLocationAPITests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
+
+
+class ProofOfDeliveryAPITests(TestCase):
+    """Tests for Proof of Delivery API."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.customer = User.objects.create_user('customer', 'c@test.com', 'pass')
+        self.driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            is_active=True
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product', name_es='Producto', name_en='Product',
+            slug='test-product', category=self.category,
+            price=Decimal('100.00'), sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.customer)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.customer,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+        self.delivery.assign_driver(self.driver)
+        self.delivery.mark_picked_up(changed_by=self.driver_user)
+        self.delivery.mark_out_for_delivery(changed_by=self.driver_user)
+        self.delivery.mark_arrived(changed_by=self.driver_user)
+
+    def test_proof_submission_requires_auth(self):
+        """Proof submission requires authentication."""
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/proof/',
+            data={'proof_type': 'signature', 'recipient_name': 'John Doe'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_proof_signature_submission(self):
+        """Driver can submit signature proof."""
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/proof/',
+            data={
+                'proof_type': 'signature',
+                'signature_data': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...',
+                'recipient_name': 'Juan Garcia',
+                'latitude': '19.432608',
+                'longitude': '-99.133209'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        proof = DeliveryProof.objects.get(delivery=self.delivery)
+        self.assertEqual(proof.proof_type, 'signature')
+        self.assertEqual(proof.recipient_name, 'Juan Garcia')
+        self.assertEqual(str(proof.latitude), '19.432608')
+
+    def test_proof_photo_submission(self):
+        """Driver can submit photo proof with GPS."""
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/proof/',
+            data={
+                'proof_type': 'photo',
+                'photo_data': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...',
+                'latitude': '19.432608',
+                'longitude': '-99.133209',
+                'gps_accuracy': '10.5'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        proof = DeliveryProof.objects.get(delivery=self.delivery)
+        self.assertEqual(proof.proof_type, 'photo')
+        self.assertEqual(str(proof.gps_accuracy), '10.50')
+
+    def test_proof_requires_valid_type(self):
+        """Proof submission requires valid proof type."""
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/proof/',
+            data={'proof_type': 'invalid'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_driver_cannot_submit_proof_for_others(self):
+        """Driver cannot submit proof for another driver's delivery."""
+        other_driver_user = User.objects.create_user('other', 'other@test.com', 'pass')
+        other_driver = DeliveryDriver.objects.create(user=other_driver_user)
+
+        # Reassign to other driver
+        self.delivery.driver = other_driver
+        self.delivery.save()
+
+        self.client.force_login(self.driver_user)
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/proof/',
+            data={'proof_type': 'signature', 'recipient_name': 'John'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)

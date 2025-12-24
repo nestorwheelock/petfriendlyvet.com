@@ -130,7 +130,7 @@
                                 {% trans "Arrived" %}
                             </button>
                             {% elif delivery.status == 'arrived' %}
-                            <button onclick="updateStatus({{ delivery.id }}, 'delivered')"
+                            <button onclick="showProofModal({{ delivery.id }})"
                                     class="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
                                 {% trans "Delivered" %}
                             </button>
@@ -190,6 +190,89 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Proof of Delivery Modal -->
+<div id="proofModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900">{% trans "Proof of Delivery" %}</h3>
+            <button onclick="hideProofModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="p-4">
+            <input type="hidden" id="proofDeliveryId">
+
+            <!-- Proof Type Selection -->
+            <div class="flex space-x-2 mb-4">
+                <button type="button" onclick="setProofType('signature')" id="btnSignature"
+                        class="flex-1 py-3 px-4 border-2 border-primary-500 bg-primary-50 text-primary-700 rounded-lg font-medium">
+                    {% trans "Signature" %}
+                </button>
+                <button type="button" onclick="setProofType('photo')" id="btnPhoto"
+                        class="flex-1 py-3 px-4 border-2 border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:border-gray-400">
+                    {% trans "Photo" %}
+                </button>
+            </div>
+
+            <!-- Signature Capture -->
+            <div id="signatureSection">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Recipient Name" %}</label>
+                    <input type="text" id="recipientName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="{% trans 'Who received the delivery?' %}">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Signature" %}</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg bg-white relative">
+                        <canvas id="signatureCanvas" class="w-full touch-none" style="height: 200px;"></canvas>
+                        <button type="button" onclick="clearSignature()"
+                                class="absolute top-2 right-2 p-1 bg-gray-100 rounded-full hover:bg-gray-200">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{% trans "Draw signature above" %}</p>
+                </div>
+            </div>
+
+            <!-- Photo Capture -->
+            <div id="photoSection" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Take Photo" %}</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoSelect(event)">
+                        <img id="photoPreview" class="hidden max-w-full max-h-48 mx-auto mb-2 rounded">
+                        <button type="button" onclick="document.getElementById('photoInput').click()"
+                                class="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600">
+                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            {% trans "Take Photo" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GPS Status -->
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <span id="proofGpsDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
+                    <span id="proofGpsText" class="text-sm text-gray-600">{% trans "Getting location..." %}</span>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="button" onclick="submitProof()" id="submitProofBtn"
+                    class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                {% trans "Confirm Delivery" %}
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -369,5 +452,222 @@ document.getElementById('failedForm').addEventListener('submit', async function(
     await updateStatus(deliveryId, 'failed', `${reason}: ${notes}`);
     hideFailedModal();
 });
+
+// ============= Proof of Delivery Modal =============
+let currentProofType = 'signature';
+let proofLocation = { latitude: null, longitude: null, accuracy: null };
+let signatureCtx = null;
+let isDrawing = false;
+let photoData = null;
+
+function showProofModal(deliveryId) {
+    document.getElementById('proofDeliveryId').value = deliveryId;
+    document.getElementById('proofModal').classList.remove('hidden');
+    document.getElementById('proofModal').classList.add('flex');
+
+    // Initialize signature canvas
+    initSignatureCanvas();
+
+    // Get GPS for proof
+    getProofLocation();
+}
+
+function hideProofModal() {
+    document.getElementById('proofModal').classList.add('hidden');
+    document.getElementById('proofModal').classList.remove('flex');
+    clearSignature();
+    document.getElementById('recipientName').value = '';
+    document.getElementById('photoPreview').classList.add('hidden');
+    document.getElementById('photoInput').value = '';
+    photoData = null;
+    setProofType('signature');
+}
+
+function setProofType(type) {
+    currentProofType = type;
+
+    // Update button styles
+    const btnSignature = document.getElementById('btnSignature');
+    const btnPhoto = document.getElementById('btnPhoto');
+    const signatureSection = document.getElementById('signatureSection');
+    const photoSection = document.getElementById('photoSection');
+
+    if (type === 'signature') {
+        btnSignature.className = 'flex-1 py-3 px-4 border-2 border-primary-500 bg-primary-50 text-primary-700 rounded-lg font-medium';
+        btnPhoto.className = 'flex-1 py-3 px-4 border-2 border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:border-gray-400';
+        signatureSection.classList.remove('hidden');
+        photoSection.classList.add('hidden');
+    } else {
+        btnPhoto.className = 'flex-1 py-3 px-4 border-2 border-primary-500 bg-primary-50 text-primary-700 rounded-lg font-medium';
+        btnSignature.className = 'flex-1 py-3 px-4 border-2 border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:border-gray-400';
+        signatureSection.classList.add('hidden');
+        photoSection.classList.remove('hidden');
+    }
+}
+
+function initSignatureCanvas() {
+    const canvas = document.getElementById('signatureCanvas');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width - 4;  // Account for border
+    canvas.height = 200;
+
+    signatureCtx = canvas.getContext('2d');
+    signatureCtx.strokeStyle = '#000';
+    signatureCtx.lineWidth = 2;
+    signatureCtx.lineCap = 'round';
+
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    // Mouse events for desktop
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+}
+
+function getPos(e) {
+    const canvas = document.getElementById('signatureCanvas');
+    const rect = canvas.getBoundingClientRect();
+
+    if (e.touches) {
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startDrawing(e) {
+    e.preventDefault();
+    isDrawing = true;
+    const pos = getPos(e);
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    signatureCtx.lineTo(pos.x, pos.y);
+    signatureCtx.stroke();
+}
+
+function stopDrawing(e) {
+    isDrawing = false;
+}
+
+function clearSignature() {
+    const canvas = document.getElementById('signatureCanvas');
+    if (signatureCtx) {
+        signatureCtx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+function getSignatureData() {
+    const canvas = document.getElementById('signatureCanvas');
+    return canvas.toDataURL('image/png');
+}
+
+function handlePhotoSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        photoData = e.target.result;
+        const preview = document.getElementById('photoPreview');
+        preview.src = photoData;
+        preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+function getProofLocation() {
+    const dot = document.getElementById('proofGpsDot');
+    const text = document.getElementById('proofGpsText');
+
+    if (!navigator.geolocation) {
+        dot.className = 'w-2 h-2 rounded-full bg-red-400 mr-2';
+        text.textContent = '{% trans "GPS not available" %}';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            proofLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            dot.className = 'w-2 h-2 rounded-full bg-green-400 mr-2';
+            text.textContent = `{% trans "Location captured" %} (${Math.round(position.coords.accuracy)}m)`;
+        },
+        (error) => {
+            dot.className = 'w-2 h-2 rounded-full bg-yellow-400 mr-2';
+            text.textContent = '{% trans "Location unavailable" %}';
+            console.warn('GPS error:', error);
+        },
+        { enableHighAccuracy: true, timeout: 15000 }
+    );
+}
+
+async function submitProof() {
+    const deliveryId = document.getElementById('proofDeliveryId').value;
+    const submitBtn = document.getElementById('submitProofBtn');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '{% trans "Submitting..." %}';
+
+    const data = {
+        proof_type: currentProofType,
+        latitude: proofLocation.latitude,
+        longitude: proofLocation.longitude,
+        gps_accuracy: proofLocation.accuracy
+    };
+
+    if (currentProofType === 'signature') {
+        data.signature_data = getSignatureData();
+        data.recipient_name = document.getElementById('recipientName').value;
+    } else {
+        data.photo_data = photoData;
+    }
+
+    try {
+        // Submit proof
+        const proofResponse = await fetch(`/api/driver/deliveries/${deliveryId}/proof/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!proofResponse.ok) {
+            const error = await proofResponse.json();
+            throw new Error(error.error || '{% trans "Failed to submit proof" %}');
+        }
+
+        // Mark as delivered
+        await updateStatus(deliveryId, 'delivered');
+
+        hideProofModal();
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert(error.message || '{% trans "Error submitting proof" %}');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '{% trans "Confirm Delivery" %}';
+    }
+}
 </script>
 {% endblock %}

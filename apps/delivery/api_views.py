@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Delivery, DeliveryDriver
+from .models import Delivery, DeliveryDriver, DeliveryProof, PROOF_TYPES
 
 
 class DriverRequiredMixin(LoginRequiredMixin):
@@ -220,3 +220,46 @@ class DriverUpdateStatusView(DriverRequiredMixin, View):
             'status': delivery.status,
             'status_display': delivery.get_status_display(),
         })
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DriverProofSubmitView(DriverRequiredMixin, View):
+    """Submit proof of delivery."""
+
+    def post(self, request, delivery_id):
+        """Submit proof of delivery with GPS coordinates."""
+        try:
+            delivery = Delivery.objects.get(id=delivery_id)
+        except Delivery.DoesNotExist:
+            return JsonResponse({'error': 'Delivery not found'}, status=404)
+
+        if delivery.driver != self.driver:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        proof_type = data.get('proof_type')
+        valid_types = [pt[0] for pt in PROOF_TYPES]
+        if proof_type not in valid_types:
+            return JsonResponse({'error': f'Invalid proof type. Must be one of: {valid_types}'}, status=400)
+
+        # Create proof record
+        proof = DeliveryProof.objects.create(
+            delivery=delivery,
+            proof_type=proof_type,
+            signature_data=data.get('signature_data', ''),
+            recipient_name=data.get('recipient_name', ''),
+            latitude=Decimal(str(data['latitude'])) if data.get('latitude') else None,
+            longitude=Decimal(str(data['longitude'])) if data.get('longitude') else None,
+            gps_accuracy=Decimal(str(data['gps_accuracy'])) if data.get('gps_accuracy') else None,
+        )
+
+        return JsonResponse({
+            'success': True,
+            'proof_id': proof.id,
+            'proof_type': proof.proof_type,
+            'created_at': proof.created_at.isoformat(),
+        }, status=201)
