@@ -61,6 +61,18 @@ class TestLanguageModel:
         assert 'fr' in codes
         assert 'it' in codes
 
+    def test_language_str(self):
+        """Language __str__ returns native name and code."""
+        from apps.multilingual.models import Language
+        lang = Language.objects.create(
+            code='pt',
+            name='Portuguese',
+            native_name='Português',
+            is_core=False,
+            is_active=True
+        )
+        assert str(lang) == 'Português (pt)'
+
 
 @pytest.mark.django_db
 class TestLanguageSwitcher:

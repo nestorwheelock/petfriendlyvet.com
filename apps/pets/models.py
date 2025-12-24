@@ -252,7 +252,7 @@ class Medication(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='prescriptions',
+        related_name='pet_medications_prescribed',
         verbose_name=_('prescribing veterinarian')
     )
     notes = models.TextField(_('notes'), blank=True)

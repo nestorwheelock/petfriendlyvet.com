@@ -403,3 +403,214 @@ class TestTravelTools:
 
         assert result['success']
         assert len(result['destinations']) >= 2
+
+    def test_list_destinations_with_search(self, destination_usa, destination_uk):
+        """Test list destinations with search filter."""
+        from apps.travel.tools import list_destinations
+
+        result = list_destinations(search='United')
+
+        assert result['success']
+        assert len(result['destinations']) >= 1
+        assert all('United' in d['country'] for d in result['destinations'])
+
+    def test_list_destinations_no_results(self, destination_usa):
+        """Test list destinations with no matching results."""
+        from apps.travel.tools import list_destinations
+
+        result = list_destinations(search='Nonexistent Country')
+
+        assert result['success']
+        assert result['total'] == 0
+
+    def test_check_requirements_invalid_destination(self, pet_with_vaccines):
+        """Test check requirements with invalid destination."""
+        from apps.travel.tools import check_travel_requirements
+
+        result = check_travel_requirements(
+            pet_id=pet_with_vaccines.pk,
+            destination_id=99999,
+            travel_date=(date.today() + timedelta(days=30)).isoformat()
+        )
+
+        assert not result['success']
+        assert 'Destination not found' in result['error']
+
+    def test_check_requirements_invalid_date_format(self, pet_with_vaccines, destination_usa):
+        """Test check requirements with invalid date format."""
+        from apps.travel.tools import check_travel_requirements
+
+        result = check_travel_requirements(
+            pet_id=pet_with_vaccines.pk,
+            destination_id=destination_usa.pk,
+            travel_date='invalid-date'
+        )
+
+        assert not result['success']
+        assert 'Invalid date format' in result['error']
+
+    def test_get_destination_requirements_not_found(self, db):
+        """Test get destination requirements with invalid ID."""
+        from apps.travel.tools import get_destination_requirements
+
+        result = get_destination_requirements(destination_id=99999)
+
+        assert not result['success']
+        assert 'Destination not found' in result['error']
+
+    def test_get_pet_certificates(self, pet_with_vaccines, destination_usa, staff_user):
+        """Test get pet certificates tool."""
+        from apps.travel.tools import get_pet_certificates
+
+        HealthCertificate.objects.create(
+            pet=pet_with_vaccines,
+            destination=destination_usa,
+            travel_date=date.today() + timedelta(days=7),
+            issued_by=staff_user,
+            status='issued',
+            certificate_number='CERT-001'
+        )
+
+        result = get_pet_certificates(pet_id=pet_with_vaccines.pk)
+
+        assert result['success']
+        assert result['pet']['name'] == 'Travel Buddy'
+        assert result['total'] == 1
+        assert result['certificates'][0]['certificate_number'] == 'CERT-001'
+
+    def test_get_pet_certificates_invalid_pet(self, db):
+        """Test get pet certificates with invalid pet."""
+        from apps.travel.tools import get_pet_certificates
+
+        result = get_pet_certificates(pet_id=99999)
+
+        assert not result['success']
+        assert 'Pet not found' in result['error']
+
+    def test_get_pet_certificates_no_certificates(self, pet_with_vaccines):
+        """Test get pet certificates when pet has none."""
+        from apps.travel.tools import get_pet_certificates
+
+        result = get_pet_certificates(pet_id=pet_with_vaccines.pk)
+
+        assert result['success']
+        assert result['total'] == 0
+        assert result['certificates'] == []
+
+    def test_check_requirements_pet_without_microchip(self, user, destination_usa):
+        """Test requirements check for pet without microchip."""
+        from apps.travel.tools import check_travel_requirements
+
+        pet_no_chip = Pet.objects.create(
+            name='No Chip',
+            species='dog',
+            breed='Beagle',
+            owner=user,
+        )
+
+        result = check_travel_requirements(
+            pet_id=pet_no_chip.pk,
+            destination_id=destination_usa.pk,
+            travel_date=(date.today() + timedelta(days=30)).isoformat()
+        )
+
+        assert result['success']
+        assert not result['requirements']['microchip']['met']
+        assert not result['ready_to_travel']
+
+    def test_check_requirements_expired_vaccine(self, user, destination_usa):
+        """Test requirements check for pet with expired vaccine."""
+        from apps.travel.tools import check_travel_requirements
+
+        pet = Pet.objects.create(
+            name='Expired Vax',
+            species='dog',
+            breed='Poodle',
+            owner=user,
+            microchip_id='111222333444555',
+        )
+
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=400),
+            next_due_date=date.today() - timedelta(days=35),  # Expired
+            batch_number='RAB2023001'
+        )
+
+        result = check_travel_requirements(
+            pet_id=pet.pk,
+            destination_id=destination_usa.pk,
+            travel_date=(date.today() + timedelta(days=30)).isoformat()
+        )
+
+        assert result['success']
+        assert not result['requirements']['rabies_vaccine']['met']
+
+
+class TestTravelForms:
+    """Test travel forms."""
+
+    def test_certificate_request_form_filters_active_destinations(self, db, destination_usa):
+        """Test form only shows active destinations."""
+        from apps.travel.forms import CertificateRequestForm
+        from apps.travel.models import TravelDestination
+
+        inactive = TravelDestination.objects.create(
+            country_code='XX',
+            country_name='Inactive Country',
+            is_active=False
+        )
+
+        form = CertificateRequestForm()
+
+        dest_ids = list(form.fields['destination'].queryset.values_list('pk', flat=True))
+        assert destination_usa.pk in dest_ids
+        assert inactive.pk not in dest_ids
+
+    def test_certificate_request_form_stores_pet(self, pet_with_vaccines):
+        """Test form stores pet reference."""
+        from apps.travel.forms import CertificateRequestForm
+
+        form = CertificateRequestForm(pet=pet_with_vaccines)
+
+        assert form.pet == pet_with_vaccines
+
+    def test_travel_plan_form_filters_user_pets(self, user, db):
+        """Test travel plan form only shows user's pets."""
+        from apps.travel.forms import TravelPlanForm
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username='otheruser',
+            email='other@example.com',
+            password='pass123'
+        )
+
+        user_pet = Pet.objects.create(
+            name='My Pet',
+            species='dog',
+            breed='Lab',
+            owner=user
+        )
+        other_pet = Pet.objects.create(
+            name='Other Pet',
+            species='cat',
+            breed='Siamese',
+            owner=other_user
+        )
+
+        form = TravelPlanForm(user=user)
+
+        pet_ids = list(form.fields['pet'].queryset.values_list('pk', flat=True))
+        assert user_pet.pk in pet_ids
+        assert other_pet.pk not in pet_ids
+
+    def test_travel_plan_form_without_user(self, db):
+        """Test travel plan form without user filter."""
+        from apps.travel.forms import TravelPlanForm
+
+        form = TravelPlanForm()
+
+        assert form.fields['pet'].queryset.count() >= 0

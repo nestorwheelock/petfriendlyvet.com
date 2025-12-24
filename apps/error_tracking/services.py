@@ -1,7 +1,5 @@
 """Services for bug creation and error tracking."""
 import logging
-import re
-import subprocess
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -100,7 +98,7 @@ class BugCreationService:
         bug_id: str,
         data: dict
     ) -> Tuple[Optional[int], str]:
-        """Create a GitHub issue using gh CLI.
+        """Create a GitHub issue using GitHub REST API.
 
         Args:
             bug_id: The bug ID (e.g., B-001)
@@ -109,6 +107,19 @@ class BugCreationService:
         Returns:
             Tuple of (issue_number, issue_url) or (None, '') on failure
         """
+        import httpx
+
+        # Get GitHub configuration from settings
+        github_token = getattr(settings, 'GITHUB_TOKEN', None)
+        github_repo = getattr(settings, 'GITHUB_REPO', None)
+
+        if not github_token or not github_repo:
+            logger.warning(
+                "GitHub token or repo not configured. "
+                "Set GITHUB_TOKEN and GITHUB_REPO in settings."
+            )
+            return None, ''
+
         title = f"{bug_id}: {data.get('title', 'Unknown Error')}"
         body = f"""## Description
 
@@ -129,42 +140,44 @@ class BugCreationService:
 *This issue was automatically created by the error tracking system.*
 """
 
+        # Map severity to labels
+        labels = ['bug']
+        severity = data.get('severity', 'medium')
+        if severity in ['critical', 'high', 'medium', 'low']:
+            labels.append(severity)
+
         try:
-            result = subprocess.run(
-                [
-                    'gh', 'issue', 'create',
-                    '--title', title,
-                    '--body', body,
-                    '--label', 'bug',
-                    '--label', data.get('severity', 'medium'),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-
-            if result.returncode != 0:
-                logger.error(
-                    "Failed to create GitHub issue: %s",
-                    result.stderr
+            with httpx.Client(timeout=30) as client:
+                response = client.post(
+                    f"https://api.github.com/repos/{github_repo}/issues",
+                    headers={
+                        "Authorization": f"Bearer {github_token}",
+                        "Accept": "application/vnd.github+json",
+                        "X-GitHub-Api-Version": "2022-11-28",
+                    },
+                    json={
+                        "title": title,
+                        "body": body,
+                        "labels": labels,
+                    },
                 )
-                return None, ''
 
-            # Parse issue URL from output
-            issue_url = result.stdout.strip()
-            # Extract issue number from URL
-            # URL format: https://github.com/owner/repo/issues/42
-            match = re.search(r'/issues/(\d+)', issue_url)
-            issue_number = int(match.group(1)) if match else None
+                if response.status_code != 201:
+                    logger.error(
+                        "Failed to create GitHub issue: %s %s",
+                        response.status_code, response.text
+                    )
+                    return None, ''
 
-            logger.info("Created GitHub issue #%s: %s", issue_number, issue_url)
-            return issue_number, issue_url
+                issue_data = response.json()
+                issue_number = issue_data.get('number')
+                issue_url = issue_data.get('html_url', '')
 
-        except subprocess.TimeoutExpired:
-            logger.error("GitHub CLI timed out")
-            return None, ''
-        except FileNotFoundError:
-            logger.error("GitHub CLI (gh) not found")
+                logger.info("Created GitHub issue #%s: %s", issue_number, issue_url)
+                return issue_number, issue_url
+
+        except httpx.TimeoutException:
+            logger.error("GitHub API request timed out")
             return None, ''
         except Exception as e:
             logger.exception("Failed to create GitHub issue: %s", e)
@@ -186,8 +199,14 @@ class BugCreationService:
         """
         bug_id = self.get_next_bug_id()
 
-        # Create bug file
-        self.create_bug_file(bug_id, error_data, base_dir)
+        # Try to create bug file (may fail in containerized production)
+        try:
+            self.create_bug_file(bug_id, error_data, base_dir)
+        except (PermissionError, OSError) as e:
+            logger.warning(
+                "Could not create bug file for %s (container filesystem?): %s",
+                bug_id, e
+            )
 
         # Create GitHub issue
         issue_number, issue_url = self.create_github_issue(bug_id, error_data)

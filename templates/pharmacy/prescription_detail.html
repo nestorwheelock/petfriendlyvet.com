@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ prescription.medication.name }} - {% trans "Prescription" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back link -->
+    <div class="mb-6">
+        <a href="{% url 'pharmacy:prescription_list' %}" class="text-primary-600 hover:text-primary-500 flex items-center">
+            <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            {% trans "Back to Prescriptions" %}
+        </a>
+    </div>
+
+    <!-- Prescription Header -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ prescription.medication.name }}</h1>
+                    <p class="text-lg text-gray-600">{{ prescription.strength }} {{ prescription.dosage_form }}</p>
+                </div>
+                <div>
+                    {% if prescription.is_expired %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                            {% trans "Expired" %}
+                        </span>
+                    {% elif prescription.status == 'active' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            {% trans "Active" %}
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            {{ prescription.get_status_display }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescription Details -->
+        <div class="px-6 py-5">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Pet" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.pet.name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Prescribed By" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {% if prescription.prescribing_vet %}
+                            Dr. {{ prescription.prescribing_vet.user.get_full_name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Dosage" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.dosage }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Frequency" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.frequency }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Duration" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.duration|default:"-" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Quantity" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.quantity }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Prescribed Date" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.prescribed_date }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Expiration Date" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ prescription.expiration_date }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Refills" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {{ prescription.refills_remaining }} {% trans "of" %} {{ prescription.refills_authorized }} {% trans "remaining" %}
+                    </dd>
+                </div>
+            </dl>
+
+            {% if prescription.instructions %}
+            <div class="mt-6">
+                <dt class="text-sm font-medium text-gray-500">{% trans "Instructions" %}</dt>
+                <dd class="mt-2 text-sm text-gray-900 bg-gray-50 rounded-md p-3">{{ prescription.instructions }}</dd>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Refill Action -->
+        {% if can_refill %}
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <a href="{% url 'pharmacy:request_refill' prescription_id=prescription.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+                <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                {% trans "Request Refill" %}
+            </a>
+        </div>
+        {% elif prescription.medication.is_controlled %}
+        <div class="px-6 py-4 bg-yellow-50 border-t border-yellow-200">
+            <p class="text-sm text-yellow-800">
+                <strong>{% trans "Controlled Substance" %}:</strong>
+                {% trans "This medication cannot be refilled online. Please call the clinic." %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Fill History -->
+    {% if fills %}
+    <div class="mt-8">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Fill History" %}</h2>
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul class="divide-y divide-gray-200">
+                {% for fill in fills %}
+                <li class="px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">
+                                {% trans "Fill" %} #{{ fill.fill_number }}
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                {{ fill.quantity_dispensed }} {% trans "dispensed" %} |
+                                {{ fill.get_fulfillment_method_display }}
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if fill.status == 'picked_up' or fill.status == 'delivered' %}bg-green-100 text-green-800
+                                {% elif fill.status == 'ready' %}bg-blue-100 text-blue-800
+                                {% elif fill.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ fill.get_status_display }}
+                            </span>
+                            <p class="mt-1 text-xs text-gray-500">{{ fill.requested_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Refill Requests -->
+    {% if refill_requests %}
+    <div class="mt-8">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Refill Requests" %}</h2>
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul class="divide-y divide-gray-200">
+                {% for request in refill_requests %}
+                <li class="px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500">
+                                {% trans "Requested" %} {{ request.created_at|date:"M d, Y" }}
+                            </p>
+                            {% if request.notes %}
+                            <p class="text-sm text-gray-600 mt-1">{{ request.notes }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if request.status == 'filled' %}bg-green-100 text-green-800
+                                {% elif request.status == 'approved' %}bg-blue-100 text-blue-800
+                                {% elif request.status == 'denied' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ request.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

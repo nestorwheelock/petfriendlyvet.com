@@ -362,6 +362,53 @@ class TestNotificationService:
         notifications = NotificationService.get_user_notifications(user)
         assert len(notifications) == 2
 
+    def test_get_user_notifications_unread_only(self, user):
+        """Get only unread notifications for a user."""
+        from apps.notifications.services import NotificationService
+        from apps.notifications.models import Notification
+
+        # Create read notification
+        read_notif = Notification.objects.create(
+            user=user,
+            notification_type='general',
+            title='Read Notification',
+            message='Already read'
+        )
+        read_notif.mark_as_read()
+
+        # Create unread notification
+        Notification.objects.create(
+            user=user,
+            notification_type='general',
+            title='Unread Notification',
+            message='Not yet read'
+        )
+
+        # Should return only unread
+        notifications = NotificationService.get_user_notifications(user, unread_only=True)
+        assert len(notifications) == 1
+        assert notifications[0].title == 'Unread Notification'
+
+    def test_send_email_exception_handling(self, user, mocker):
+        """Email send failure is handled gracefully."""
+        from apps.notifications.services import NotificationService
+
+        # Mock send_mail to raise exception
+        mocker.patch('apps.notifications.services.send_mail', side_effect=Exception("SMTP error"))
+
+        # Create notification and try to send email
+        notification = NotificationService.create_notification(
+            user=user,
+            notification_type='general',
+            title='Test Notification',
+            message='This should fail to send',
+            send_email=True
+        )
+
+        # Notification should be created but email not sent
+        assert notification is not None
+        assert notification.email_sent is False
+
     def test_mark_all_as_read(self, user):
         """Mark all user notifications as read."""
         from apps.notifications.services import NotificationService
@@ -513,6 +560,59 @@ class TestNotificationViews:
 
         assert response.status_code == 404
 
+    def test_mark_notification_read_ajax(self, client, user):
+        """Mark notification read via AJAX returns JSON."""
+        from apps.notifications.models import Notification
+
+        notification = Notification.objects.create(
+            user=user,
+            notification_type='general',
+            title='Test',
+            message='Test notification'
+        )
+
+        client.force_login(user)
+        url = reverse('notifications:mark_read', kwargs={'pk': notification.pk})
+        response = client.post(
+            url,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+
+        assert response.status_code == 200
+        assert response.json()['success'] is True
+        notification.refresh_from_db()
+        assert notification.is_read is True
+
+    def test_mark_all_read_ajax(self, client, user):
+        """Mark all notifications read via AJAX returns JSON."""
+        from apps.notifications.models import Notification
+
+        Notification.objects.create(
+            user=user,
+            notification_type='general',
+            title='Test 1',
+            message='Test'
+        )
+        Notification.objects.create(
+            user=user,
+            notification_type='general',
+            title='Test 2',
+            message='Test'
+        )
+
+        client.force_login(user)
+        url = reverse('notifications:mark_all_read')
+        response = client.post(
+            url,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data['success'] is True
+        assert data['count'] == 2
+        assert Notification.objects.filter(user=user, is_read=False).count() == 0
+
 
 # =============================================================================
 # Celery Task Tests
@@ -577,3 +677,88 @@ class TestNotificationTasks:
 
         assert result['sent'] == 0
         assert len(mail.outbox) == 0
+
+    def test_send_overdue_vaccination_alerts(self, owner, pet):
+        """Test sending overdue vaccination alerts."""
+        from apps.pets.models import Vaccination
+        from apps.notifications.tasks import send_overdue_vaccination_alerts
+
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=400),
+            next_due_date=date.today() - timedelta(days=35),  # Overdue
+            reminder_sent=False
+        )
+
+        result = send_overdue_vaccination_alerts()
+
+        assert 'sent' in result
+        assert 'errors' in result
+        assert 'total_checked' in result
+
+    def test_send_overdue_alerts_no_overdue(self, owner, pet):
+        """No alerts when no vaccinations are overdue."""
+        from apps.pets.models import Vaccination
+        from apps.notifications.tasks import send_overdue_vaccination_alerts
+
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=30),
+            next_due_date=date.today() + timedelta(days=335),  # Not overdue
+            reminder_sent=False
+        )
+
+        result = send_overdue_vaccination_alerts()
+
+        assert result['total_checked'] == 0
+        assert result['sent'] == 0
+
+    def test_vaccination_reminder_error_handling(self, owner, pet, mocker):
+        """Test error handling in vaccination reminder task."""
+        from apps.pets.models import Vaccination
+        from apps.notifications.tasks import send_vaccination_reminders
+        from apps.notifications import services
+
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=358),
+            next_due_date=date.today() + timedelta(days=7),
+            reminder_sent=False
+        )
+
+        mocker.patch.object(
+            services.VaccinationReminderService,
+            'send_reminder_email',
+            side_effect=Exception("Email service down")
+        )
+
+        result = send_vaccination_reminders(days_ahead=30)
+
+        assert result['errors'] >= 1
+
+    def test_overdue_alert_error_handling(self, owner, pet, mocker):
+        """Test error handling in overdue alert task."""
+        from apps.pets.models import Vaccination
+        from apps.notifications.tasks import send_overdue_vaccination_alerts
+        from apps.notifications import services
+
+        Vaccination.objects.create(
+            pet=pet,
+            vaccine_name='Rabies',
+            date_administered=date.today() - timedelta(days=400),
+            next_due_date=date.today() - timedelta(days=35),
+            reminder_sent=False
+        )
+
+        mocker.patch.object(
+            services.VaccinationReminderService,
+            'send_reminder_email',
+            side_effect=Exception("Email service down")
+        )
+
+        result = send_overdue_vaccination_alerts()
+
+        assert result['errors'] >= 1

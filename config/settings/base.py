@@ -52,6 +52,7 @@ LOCAL_APPS = [
     'apps.appointments',
     'apps.pets',
     'apps.store',
+    'apps.billing',
     'apps.pharmacy',
     'apps.communications',
     'apps.crm',
@@ -59,7 +60,17 @@ LOCAL_APPS = [
     'apps.notifications',
     'apps.services',
     'apps.travel',
+    'apps.inventory',
+    'apps.referrals',
+    'apps.emergency',
     'apps.error_tracking',
+    'apps.competitive',
+    'apps.reviews',
+    'apps.loyalty',
+    'apps.seo',
+    'apps.email_marketing',
+    'apps.reports',
+    'apps.accounting',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -321,6 +332,10 @@ ERROR_TRACKING = {
     'EXCLUDE_PATHS': ['/health/', '/static/', '/media/', '/favicon.ico'],
     'EXCLUDE_STATUS_CODES': [],
 }
+
+# GitHub API for automatic bug issue creation
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
+GITHUB_REPO = os.getenv('GITHUB_REPO', '')  # Format: owner/repo
 
 
 # Logging

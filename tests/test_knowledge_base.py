@@ -322,3 +322,173 @@ class TestGetContextFunction:
         from apps.knowledge.utils import get_ai_context
         context = get_ai_context(['hours', 'schedule'], language='en')
         assert 'hours' in context.lower() or 'open' in context.lower()
+
+    def test_get_ai_context_empty_keywords(self):
+        """get_ai_context should return empty string for empty keywords."""
+        from apps.knowledge.utils import get_ai_context
+        result = get_ai_context([], language='en')
+        assert result == ''
+
+    def test_search_empty_query(self):
+        """search_knowledge_base should return empty list for empty query."""
+        from apps.knowledge.utils import search_knowledge_base
+        result = search_knowledge_base('', language='en')
+        assert result == []
+
+
+@pytest.mark.django_db
+class TestKnowledgeUtilsEdgeCases:
+    """Test edge cases in knowledge utils."""
+
+    @pytest.fixture
+    def setup_knowledge(self):
+        """Set up knowledge data for testing."""
+        from apps.knowledge.models import KnowledgeCategory, KnowledgeArticle, FAQ
+        cat = KnowledgeCategory.objects.create(
+            name='Test Cat', name_es='Cat Prueba', name_en='Test Cat',
+            slug='test-cat'
+        )
+
+        # Article WITHOUT ai_context (to test truncation branch)
+        KnowledgeArticle.objects.create(
+            category=cat,
+            title='Long Article',
+            title_es='Artículo Largo',
+            title_en='Long Article',
+            content='A' * 600,  # Long content to trigger truncation
+            content_es='A' * 600,
+            content_en='A' * 600,
+            slug='long-article',
+            ai_context='',  # Empty ai_context
+            is_published=True,
+            priority=10
+        )
+
+        # Article WITH ai_context
+        KnowledgeArticle.objects.create(
+            category=cat,
+            title='Short Article',
+            title_es='Artículo Corto',
+            title_en='Short Article',
+            content='Short content',
+            content_es='Contenido corto',
+            content_en='Short content',
+            slug='short-article',
+            ai_context='AI context for short article',
+            is_published=True,
+            priority=5
+        )
+
+        # Featured FAQ
+        FAQ.objects.create(
+            category=cat,
+            question='Featured question',
+            question_es='Pregunta destacada',
+            question_en='Featured question',
+            answer='Featured answer',
+            answer_es='Respuesta destacada',
+            answer_en='Featured answer',
+            is_featured=True,
+            is_active=True,
+            order=1
+        )
+
+        # Non-featured FAQ
+        FAQ.objects.create(
+            category=cat,
+            question='Regular question',
+            question_es='Pregunta regular',
+            question_en='Regular question',
+            answer='Regular answer',
+            answer_es='Respuesta regular',
+            answer_en='Regular answer',
+            is_featured=False,
+            is_active=True,
+            order=2
+        )
+
+        return cat
+
+    def test_get_ai_context_without_ai_context_field(self, setup_knowledge):
+        """Test that content is used when ai_context is empty."""
+        from apps.knowledge.utils import get_ai_context
+        # Search for the long article which has no ai_context
+        context = get_ai_context(['Long'], language='en')
+        # Should contain truncated content (500 chars)
+        assert len(context) > 0
+
+    def test_get_ai_context_max_items_limit(self, setup_knowledge):
+        """Test that max_items limits the results."""
+        from apps.knowledge.utils import get_ai_context
+        from apps.knowledge.models import KnowledgeCategory, KnowledgeArticle
+
+        # Create many articles to test max_items
+        cat = KnowledgeCategory.objects.get(slug='test-cat')
+        for i in range(10):
+            KnowledgeArticle.objects.create(
+                category=cat,
+                title=f'Test Item {i}',
+                title_es=f'Item Prueba {i}',
+                title_en=f'Test Item {i}',
+                content=f'Content {i}',
+                content_es=f'Contenido {i}',
+                content_en=f'Content {i}',
+                slug=f'test-item-{i}',
+                ai_context=f'AI context {i}',
+                keywords=['test'],
+                is_published=True,
+            )
+
+        # Get context with max_items=2
+        context = get_ai_context(['test'], language='en', max_items=2)
+        # Should only contain at most 2 items (separated by \n\n)
+        parts = [p for p in context.split('\n\n') if p.strip()]
+        assert len(parts) <= 2
+
+    def test_get_featured_faqs(self, setup_knowledge):
+        """Test get_featured_faqs returns only featured FAQs."""
+        from apps.knowledge.utils import get_featured_faqs
+        faqs = get_featured_faqs(language='en')
+        assert len(faqs) >= 1
+        # All returned FAQs should be featured
+        for faq in faqs:
+            assert faq.is_featured is True
+
+    def test_get_featured_faqs_limit(self, setup_knowledge):
+        """Test get_featured_faqs respects limit."""
+        from apps.knowledge.utils import get_featured_faqs
+        from apps.knowledge.models import FAQ, KnowledgeCategory
+
+        cat = KnowledgeCategory.objects.get(slug='test-cat')
+        # Create more featured FAQs
+        for i in range(5):
+            FAQ.objects.create(
+                category=cat,
+                question=f'Featured Q {i}',
+                question_es=f'Pregunta {i}',
+                question_en=f'Featured Q {i}',
+                answer=f'Answer {i}',
+                answer_es=f'Respuesta {i}',
+                answer_en=f'Answer {i}',
+                is_featured=True,
+                is_active=True,
+                order=10 + i
+            )
+
+        faqs = get_featured_faqs(limit=2)
+        assert len(faqs) == 2
+
+    def test_get_articles_by_category(self, setup_knowledge):
+        """Test get_articles_by_category returns articles in category."""
+        from apps.knowledge.utils import get_articles_by_category
+        articles = get_articles_by_category('test-cat', language='en')
+        assert len(articles) >= 1
+        # All articles should be from the test category
+        for article in articles:
+            assert article.category.slug == 'test-cat'
+
+    def test_get_articles_by_category_empty(self, db):
+        """Test get_articles_by_category with non-existent category."""
+        from apps.knowledge.utils import get_articles_by_category
+        articles = get_articles_by_category('nonexistent-slug', language='en')
+        assert articles == []

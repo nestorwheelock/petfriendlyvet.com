@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Carrito de compras" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "Carrito de compras" %}</h1>
+
+    {% if cart.items.all %}
+    <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+        <!-- Cart Items -->
+        <div class="lg:col-span-8">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <ul class="divide-y divide-gray-200">
+                    {% for item in cart.items.all %}
+                    <li class="p-6">
+                        <div class="flex items-center">
+                            <!-- Product Image -->
+                            <div class="flex-shrink-0 w-24 h-24">
+                                {% if item.product.primary_image %}
+                                <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}"
+                                     class="w-full h-full object-cover rounded-md">
+                                {% else %}
+                                <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                                    <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Product Details -->
+                            <div class="ml-6 flex-1">
+                                <div class="flex justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-900">
+                                            <a href="{% url 'store:product_detail' slug=item.product.slug %}" class="hover:text-primary-600">
+                                                {{ item.product.name }}
+                                            </a>
+                                        </h3>
+                                        <p class="mt-1 text-sm text-gray-500">{{ item.product.category.name }}</p>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-900">${{ item.subtotal }}</p>
+                                </div>
+
+                                <div class="mt-4 flex items-center justify-between">
+                                    <!-- Quantity Update -->
+                                    <form method="post" action="{% url 'store:update_cart' %}" class="flex items-center">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ item.product.pk }}">
+                                        <label for="quantity-{{ item.product.pk }}" class="sr-only">{% trans "Cantidad" %}</label>
+                                        <select name="quantity" id="quantity-{{ item.product.pk }}"
+                                                onchange="this.form.submit()"
+                                                class="rounded-md border-gray-300 py-1 pl-2 pr-8 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                                            {% for i in "123456789"|make_list %}
+                                            <option value="{{ i }}" {% if item.quantity == forloop.counter %}selected{% endif %}>{{ i }}</option>
+                                            {% endfor %}
+                                            <option value="10" {% if item.quantity == 10 %}selected{% endif %}>10</option>
+                                        </select>
+                                        <span class="ml-2 text-sm text-gray-500">× ${{ item.product.price }}</span>
+                                    </form>
+
+                                    <!-- Remove Button -->
+                                    <form method="post" action="{% url 'store:remove_from_cart' product_id=item.product.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-sm text-red-600 hover:text-red-500">
+                                            {% trans "Eliminar" %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Continue Shopping -->
+            <div class="mt-6">
+                <a href="{% url 'store:product_list' %}" class="text-primary-600 hover:text-primary-500 flex items-center">
+                    <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    {% trans "Continuar comprando" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-4 mt-8 lg:mt-0">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-medium text-gray-900">{% trans "Resumen del pedido" %}</h2>
+
+                <dl class="mt-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <dt class="text-sm text-gray-600">{% trans "Subtotal" %}</dt>
+                        <dd class="text-sm font-medium text-gray-900">${{ cart.total }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <dt class="text-sm text-gray-600">{% trans "Artículos" %}</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ cart.item_count }}</dd>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4 flex items-center justify-between">
+                        <dt class="text-base font-medium text-gray-900">{% trans "Total" %}</dt>
+                        <dd class="text-base font-medium text-gray-900">${{ cart.total }}</dd>
+                    </div>
+                </dl>
+
+                <div class="mt-6">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'store:checkout' %}"
+                       class="w-full bg-primary-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center justify-center">
+                        {% trans "Proceder al pago" %}
+                    </a>
+                    {% else %}
+                    <p class="text-sm text-gray-500 mb-4">{% trans "Inicia sesión para continuar con el pago" %}</p>
+                    <a href="{% url 'account_login' %}?next={% url 'store:checkout' %}"
+                       class="w-full bg-primary-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex items-center justify-center">
+                        {% trans "Iniciar sesión" %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-500">
+                        <svg class="inline-block h-4 w-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        {% trans "Pago seguro" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="text-center py-16">
+        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h2 class="mt-4 text-xl font-medium text-gray-900">{% trans "Tu carrito está vacío" %}</h2>
+        <p class="mt-2 text-gray-500">{% trans "Agrega productos a tu carrito para comenzar a comprar." %}</p>
+        <a href="{% url 'store:product_list' %}"
+           class="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+            {% trans "Ver productos" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

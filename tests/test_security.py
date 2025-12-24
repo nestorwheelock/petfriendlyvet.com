@@ -724,3 +724,57 @@ class TestFileUploadValidation:
         assert ".." not in result
         assert "/" not in result
         assert result.endswith(".jpg")
+
+    def test_sanitize_filename_replaces_special_chars(self):
+        """Filename sanitizer replaces special chars with underscores."""
+        from apps.accounts.validators import sanitize_filename
+        # Special chars get replaced with underscores
+        result = sanitize_filename("@#$%.jpg")
+        assert result == "____.jpg"
+
+    def test_sanitize_filename_handles_dot_prefix(self):
+        """Filename sanitizer handles file starting with dot."""
+        from apps.accounts.validators import sanitize_filename
+        # Files starting with . are treated as name not extension
+        result = sanitize_filename(".hidden")
+        assert result == "_hidden"
+
+    def test_sanitize_filename_uses_upload_for_empty(self):
+        """Filename sanitizer uses 'upload' when name becomes empty."""
+        from apps.accounts.validators import sanitize_filename
+        # Empty filename (after path stripping) results in 'upload'
+        result = sanitize_filename("")
+        assert result == "upload"
+
+    def test_validate_image_type_rejects_bmp(self):
+        """Validator rejects valid but unsupported image types like BMP."""
+        from apps.accounts.validators import validate_image_type
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.core.exceptions import ValidationError
+        from PIL import Image
+        import io
+
+        # Create a valid BMP image (not in allowed list)
+        img = Image.new('RGB', (10, 10), color='red')
+        buffer = io.BytesIO()
+        img.save(buffer, format='BMP')
+        buffer.seek(0)
+
+        bmp_file = SimpleUploadedFile("test.bmp", buffer.read(), content_type="image/bmp")
+
+        with pytest.raises(ValidationError) as exc_info:
+            validate_image_type(bmp_file)
+        assert 'Unsupported image type' in str(exc_info.value)
+
+    def test_avatar_upload_path_generates_safe_path(self):
+        """avatar_upload_path generates a safe storage path."""
+        from apps.accounts.validators import avatar_upload_path
+        from unittest.mock import Mock
+
+        mock_user = Mock()
+        mock_user.pk = 42
+
+        path = avatar_upload_path(mock_user, "../malicious.jpg")
+        assert path.startswith("avatars/user_42/")
+        assert ".." not in path
+        assert path.endswith(".jpg")

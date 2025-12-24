@@ -1,7 +1,80 @@
-"""Models for external services and partner directory."""
+"""Models for veterinary services and external partner directory."""
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+
+SERVICE_CATEGORIES = [
+    ('consultation', _('Consultation')),
+    ('vaccination', _('Vaccination')),
+    ('surgery', _('Surgery')),
+    ('dental', _('Dental')),
+    ('laboratory', _('Laboratory')),
+    ('imaging', _('Imaging')),
+    ('grooming', _('Grooming')),
+    ('emergency', _('Emergency')),
+    ('preventive', _('Preventive Care')),
+    ('other', _('Other')),
+]
+
+
+class Service(models.Model):
+    """Veterinary service offered by the clinic."""
+
+    name = models.CharField(_('name'), max_length=200)
+    name_es = models.CharField(_('name (Spanish)'), max_length=200, blank=True)
+    description = models.TextField(_('description'), blank=True)
+    category = models.CharField(
+        _('category'),
+        max_length=20,
+        choices=SERVICE_CATEGORIES,
+        default='consultation'
+    )
+
+    # Pricing
+    base_price = models.DecimalField(
+        _('base price'),
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0')
+    )
+    duration_minutes = models.PositiveIntegerField(
+        _('duration (minutes)'),
+        default=30
+    )
+
+    # SAT codes for CFDI
+    clave_producto_sat = models.CharField(
+        _('SAT product code'),
+        max_length=10,
+        blank=True
+    )
+    clave_unidad_sat = models.CharField(
+        _('SAT unit code'),
+        max_length=5,
+        default='E48'  # Unit of service
+    )
+
+    # Status
+    is_active = models.BooleanField(_('active'), default=True)
+    requires_appointment = models.BooleanField(
+        _('requires appointment'),
+        default=True
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('service')
+        verbose_name_plural = _('services')
+        ordering = ['category', 'name']
+
+    def __str__(self):
+        return self.name
 
 
 PARTNER_TYPES = [

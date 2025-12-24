@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Finalizar compra" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "Finalizar compra" %}</h1>
+
+    {% if cart.item_count > 0 %}
+    <form method="post" action="{% url 'store:process_checkout' %}">
+        {% csrf_token %}
+        <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+            <!-- Checkout Form -->
+            <div class="lg:col-span-7">
+                <!-- Fulfillment Method -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Método de entrega" %}</h2>
+
+                    <div class="space-y-4" x-data="{ method: 'pickup' }">
+                        <!-- Pickup Option -->
+                        <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+                               :class="method === 'pickup' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
+                            <input type="radio" name="fulfillment_method" value="pickup" class="sr-only"
+                                   x-model="method">
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">
+                                        {% trans "Recoger en clínica" %}
+                                    </span>
+                                    <span class="mt-1 flex items-center text-sm text-gray-500">
+                                        {% trans "Gratis - Recoge tu pedido en nuestra ubicación" %}
+                                    </span>
+                                </span>
+                            </span>
+                            <svg class="h-5 w-5 text-primary-600" x-show="method === 'pickup'" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+
+                        <!-- Delivery Option -->
+                        <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+                               :class="method === 'delivery' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
+                            <input type="radio" name="fulfillment_method" value="delivery" class="sr-only"
+                                   x-model="method">
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">
+                                        {% trans "Entrega a domicilio" %}
+                                    </span>
+                                    <span class="mt-1 flex items-center text-sm text-gray-500">
+                                        {% trans "$50.00 MXN - Entrega en Puerto Morelos" %}
+                                    </span>
+                                </span>
+                            </span>
+                            <svg class="h-5 w-5 text-primary-600" x-show="method === 'delivery'" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+
+                        <!-- Shipping Address (shown only for delivery) -->
+                        <div x-show="method === 'delivery'" x-transition class="mt-4 space-y-4">
+                            <div>
+                                <label for="shipping_name" class="block text-sm font-medium text-gray-700">
+                                    {% trans "Nombre completo" %}
+                                </label>
+                                <input type="text" name="shipping_name" id="shipping_name"
+                                       value="{{ user.get_full_name }}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label for="shipping_address" class="block text-sm font-medium text-gray-700">
+                                    {% trans "Dirección de entrega" %}
+                                </label>
+                                <textarea name="shipping_address" id="shipping_address" rows="3"
+                                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                                          placeholder="{% trans 'Calle, número, colonia, código postal' %}"></textarea>
+                            </div>
+                            <div>
+                                <label for="shipping_phone" class="block text-sm font-medium text-gray-700">
+                                    {% trans "Teléfono de contacto" %}
+                                </label>
+                                <input type="tel" name="shipping_phone" id="shipping_phone"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                                       placeholder="+52 998 123 4567">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Información de contacto" %}</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">{% trans "Correo electrónico" %}</label>
+                            <p class="mt-1 text-gray-900">{{ user.email }}</p>
+                        </div>
+                        {% if user.profile.phone %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">{% trans "Teléfono" %}</label>
+                            <p class="mt-1 text-gray-900">{{ user.profile.phone }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Método de pago" %}</h2>
+
+                    <div class="space-y-4" x-data="{ payment: 'cash' }">
+                        <!-- Cash Option -->
+                        <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+                               :class="payment === 'cash' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
+                            <input type="radio" name="payment_method" value="cash" class="sr-only"
+                                   x-model="payment">
+                            <span class="flex flex-1">
+                                <span class="flex items-center">
+                                    <svg class="h-6 w-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <span class="flex flex-col">
+                                        <span class="block text-sm font-medium text-gray-900">
+                                            {% trans "Efectivo" %}
+                                        </span>
+                                        <span class="mt-1 text-sm text-gray-500">
+                                            {% trans "Pagar al recoger o recibir tu pedido" %}
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                            <svg class="h-5 w-5 text-primary-600" x-show="payment === 'cash'" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+
+                        <!-- Card Option -->
+                        <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+                               :class="payment === 'card' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
+                            <input type="radio" name="payment_method" value="card" class="sr-only"
+                                   x-model="payment">
+                            <span class="flex flex-1">
+                                <span class="flex items-center">
+                                    <svg class="h-6 w-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                    <span class="flex flex-col">
+                                        <span class="block text-sm font-medium text-gray-900">
+                                            {% trans "Tarjeta de crédito/débito" %}
+                                        </span>
+                                        <span class="mt-1 text-sm text-gray-500">
+                                            {% trans "Pago seguro en línea" %}
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                            <svg class="h-5 w-5 text-primary-600" x-show="payment === 'card'" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+
+                        <!-- Bank Transfer Option -->
+                        <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none"
+                               :class="payment === 'transfer' ? 'border-primary-500 ring-2 ring-primary-500' : 'border-gray-300'">
+                            <input type="radio" name="payment_method" value="transfer" class="sr-only"
+                                   x-model="payment">
+                            <span class="flex flex-1">
+                                <span class="flex items-center">
+                                    <svg class="h-6 w-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                    </svg>
+                                    <span class="flex flex-col">
+                                        <span class="block text-sm font-medium text-gray-900">
+                                            {% trans "Transferencia bancaria" %}
+                                        </span>
+                                        <span class="mt-1 text-sm text-gray-500">
+                                            {% trans "SPEI o depósito bancario" %}
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                            <svg class="h-5 w-5 text-primary-600" x-show="payment === 'transfer'" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </label>
+
+                        <!-- Card payment note -->
+                        <div x-show="payment === 'card'" x-transition class="mt-4 p-4 bg-blue-50 rounded-lg">
+                            <p class="text-sm text-blue-700">
+                                <svg class="inline-block h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                                {% trans "Tu pago será procesado de forma segura. No almacenamos datos de tarjeta." %}
+                            </p>
+                        </div>
+
+                        <!-- Transfer payment note -->
+                        <div x-show="payment === 'transfer'" x-transition class="mt-4 p-4 bg-purple-50 rounded-lg">
+                            <p class="text-sm text-purple-700">
+                                {% trans "Recibirás los datos bancarios por correo electrónico después de confirmar tu pedido." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-5 mt-8 lg:mt-0">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Tu pedido" %}</h2>
+
+                    <!-- Cart Items -->
+                    <ul class="divide-y divide-gray-200">
+                        {% for item in cart.items.all %}
+                        <li class="py-4 flex">
+                            <div class="flex-shrink-0 w-16 h-16">
+                                {% if item.product.primary_image %}
+                                <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}"
+                                     class="w-full h-full object-cover rounded-md">
+                                {% else %}
+                                <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <h3 class="text-sm font-medium text-gray-900">{{ item.product.name }}</h3>
+                                <p class="mt-1 text-sm text-gray-500">{% trans "Cantidad" %}: {{ item.quantity }}</p>
+                            </div>
+                            <p class="ml-4 text-sm font-medium text-gray-900">${{ item.subtotal }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Totals -->
+                    <dl class="mt-6 space-y-4 border-t border-gray-200 pt-4">
+                        <div class="flex items-center justify-between">
+                            <dt class="text-sm text-gray-600">{% trans "Subtotal" %}</dt>
+                            <dd class="text-sm font-medium text-gray-900">${{ cart.total }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <dt class="text-sm text-gray-600">{% trans "IVA (16%)" %}</dt>
+                            <dd class="text-sm font-medium text-gray-900" id="tax-amount">
+                                ${{ cart.total|floatformat:2 }}
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between" x-data x-show="$root.querySelector('[name=fulfillment_method]:checked')?.value === 'delivery'">
+                            <dt class="text-sm text-gray-600">{% trans "Envío" %}</dt>
+                            <dd class="text-sm font-medium text-gray-900">$50.00</dd>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+                            <dt class="text-base font-medium text-gray-900">{% trans "Total" %}</dt>
+                            <dd class="text-base font-medium text-gray-900" id="total-amount">
+                                <!-- Will be calculated client-side -->
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <!-- Submit Button -->
+                    <div class="mt-6">
+                        <button type="submit"
+                                class="w-full bg-primary-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            {% trans "Confirmar pedido" %}
+                        </button>
+                    </div>
+
+                    <p class="mt-4 text-xs text-gray-500 text-center">
+                        {% trans "Al confirmar tu pedido, aceptas nuestros términos y condiciones." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    {% else %}
+    <!-- Empty Cart Redirect -->
+    <div class="text-center py-16">
+        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h2 class="mt-4 text-xl font-medium text-gray-900">{% trans "Tu carrito está vacío" %}</h2>
+        <p class="mt-2 text-gray-500">{% trans "Agrega productos antes de proceder al pago." %}</p>
+        <a href="{% url 'store:product_list' %}"
+           class="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+            {% trans "Ver productos" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const subtotal = {{ cart.total }};
+    const taxRate = 0.16;
+    const shippingCost = 50.00;
+
+    function updateTotals() {
+        const method = document.querySelector('[name=fulfillment_method]:checked')?.value || 'pickup';
+        const tax = subtotal * taxRate;
+        const shipping = method === 'delivery' ? shippingCost : 0;
+        const total = subtotal + tax + shipping;
+
+        document.getElementById('tax-amount').textContent = '$' + tax.toFixed(2);
+        document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+    }
+
+    document.querySelectorAll('[name=fulfillment_method]').forEach(function(radio) {
+        radio.addEventListener('change', updateTotals);
+    });
+
+    updateTotals();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Tienda" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Tienda" %}</h1>
+            <p class="mt-2 text-gray-600">{% trans "Productos para el cuidado de tu mascota" %}</p>
+        </div>
+
+        <!-- Cart indicator -->
+        <a href="{% url 'store:cart' %}" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <svg class="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            {% trans "Carrito" %} ({{ cart.item_count }})
+        </a>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Filters -->
+        <aside class="lg:w-64 flex-shrink-0">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Categorías" %}</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{% url 'store:product_list' %}" class="text-gray-600 hover:text-primary-600">
+                            {% trans "Todas las categorías" %}
+                        </a>
+                    </li>
+                    {% for category in categories %}
+                    <li>
+                        <a href="{% url 'store:category_detail' slug=category.slug %}" class="text-gray-600 hover:text-primary-600">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Search Form -->
+                <form method="get" class="mt-6">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Buscar" %}</label>
+                    <input type="text" name="q" id="search" value="{{ request.GET.q }}"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                           placeholder="{% trans 'Buscar productos...' %}">
+                    <button type="submit" class="mt-2 w-full bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
+                        {% trans "Buscar" %}
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <div class="flex-1">
+            {% if products %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for product in products %}
+                <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                    <a href="{% url 'store:product_detail' slug=product.slug %}">
+                        {% if product.primary_image %}
+                        <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}"
+                             class="w-full h-48 object-cover">
+                        {% else %}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <svg class="h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </a>
+
+                    <div class="p-4">
+                        <a href="{% url 'store:product_detail' slug=product.slug %}" class="block">
+                            <h3 class="text-lg font-semibold text-gray-900 hover:text-primary-600">{{ product.name }}</h3>
+                        </a>
+                        <p class="text-sm text-gray-500 mt-1">{{ product.category.name }}</p>
+
+                        <div class="mt-2 flex items-center justify-between">
+                            <div>
+                                <span class="text-xl font-bold text-gray-900">${{ product.price }}</span>
+                                {% if product.compare_at_price %}
+                                <span class="text-sm text-gray-500 line-through ml-2">${{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if product.is_in_stock %}
+                            <span class="text-sm text-green-600">{% trans "En stock" %}</span>
+                            {% elif product.is_low_stock %}
+                            <span class="text-sm text-yellow-600">{% trans "Pocas unidades" %}</span>
+                            {% else %}
+                            <span class="text-sm text-red-600">{% trans "Agotado" %}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if product.is_in_stock %}
+                        <form method="post" action="{% url 'store:add_to_cart' product_id=product.pk %}" class="mt-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                                {% trans "Agregar al carrito" %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-8 flex justify-center">
+                <ul class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 border rounded-md hover:bg-gray-50">
+                            {% trans "Anterior" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    <li>
+                        <a href="?page={{ num }}"
+                           class="px-3 py-2 border rounded-md {% if page_obj.number == num %}bg-primary-600 text-white{% else %}hover:bg-gray-50{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 border rounded-md hover:bg-gray-50">
+                            {% trans "Siguiente" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <h3 class="mt-2 text-lg font-medium text-gray-900">{% trans "No hay productos disponibles" %}</h3>
+                <p class="mt-1 text-gray-500">{% trans "Próximamente agregaremos más productos." %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

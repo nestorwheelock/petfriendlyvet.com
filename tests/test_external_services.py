@@ -405,3 +405,12 @@ class TestExternalServiceTools:
         assert result['success'] is True
         assert result['partner']['name'] == 'Happy Paws Grooming'
         assert result['partner']['phone'] == '998-123-4567'
+
+    def test_get_partner_details_not_found(self, db):
+        """Get partner details returns error for non-existent partner."""
+        from apps.services.tools import get_partner_details
+
+        result = get_partner_details(partner_id=99999)
+
+        assert result['success'] is False
+        assert 'Partner not found' in result['error']

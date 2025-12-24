@@ -22,6 +22,7 @@ urlpatterns += i18n_patterns(
     path('appointments/', include('apps.appointments.urls')),
     path('store/', include('apps.store.urls')),
     path('pharmacy/', include('apps.pharmacy.urls')),
+    path('billing/', include('apps.billing.urls')),
     path('chat/', include('apps.ai_assistant.urls')),
     path('crm/', include('apps.crm.urls')),
     path('practice/', include('apps.practice.urls')),
