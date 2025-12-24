@@ -3,6 +3,20 @@
 
 {% block title %}{% trans "Carrito de compras" %}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "Carrito de compras" %}</h1>
@@ -70,7 +84,7 @@
                                                    value="{{ item.quantity }}"
                                                    min="1"
                                                    max="{{ item.product.get_max_order_quantity }}"
-                                                   class="w-16 text-center text-lg font-medium border border-gray-300 rounded-md py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                   class="w-16 text-center text-lg font-medium border border-gray-300 rounded-md py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                                    onchange="this.form.submit()">
                                         </form>
 
