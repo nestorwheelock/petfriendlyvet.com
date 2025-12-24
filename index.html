@@ -1722,6 +1722,8 @@
             // Save to cookie if user clicked (savePreference = true)
             if (savePreference !== false) {
                 setCookie('pfv_lang', lang, 365);
+                // Track manual language change
+                gtag('event', 'language_change', {event_category: 'language', event_label: lang});
             }
         }
 
@@ -1729,15 +1731,29 @@
         const supportedLangs = ['es', 'en', 'de', 'fr', 'it'];
         const savedLang = getCookie('pfv_lang');
         const browserLang = (navigator.language || navigator.userLanguage).split('-')[0];
+        let initialLang = 'es';
+        let langSource = 'default';
 
         if (savedLang && supportedLangs.includes(savedLang)) {
             // User has a saved preference - use it
             setLang(savedLang, false);
+            initialLang = savedLang;
+            langSource = 'cookie';
         } else if (supportedLangs.includes(browserLang) && browserLang !== 'es') {
             // No saved preference, use browser language
             setLang(browserLang, false);
+            initialLang = browserLang;
+            langSource = 'browser';
         }
         // Otherwise stays on Spanish (default in HTML)
+
+        // Track initial language displayed
+        gtag('event', 'page_language', {
+            event_category: 'language',
+            event_label: initialLang,
+            language_source: langSource,
+            browser_language: browserLang
+        });
 
         // Load gallery
         const galleryImages = [
