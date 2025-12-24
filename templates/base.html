@@ -25,6 +25,9 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 
+    <!-- Hide Alpine.js elements until initialized -->
+    <style>[x-cloak] { display: none !important; }</style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="h-full flex flex-col bg-white text-gray-800 font-sans"

@@ -28,7 +28,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-24 bg-white rounded-lg shadow-lg py-1 z-50">
+                    <div x-show="open" x-cloak @click.away="open = false" class="absolute right-0 mt-2 w-24 bg-white rounded-lg shadow-lg py-1 z-50">
                         {% get_available_languages as languages %}
                         {% for lang_code, lang_name in languages %}
                         <a href="#" onclick="document.getElementById('lang-form-{{ lang_code }}').submit(); return false;"
