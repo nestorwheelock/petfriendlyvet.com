@@ -157,6 +157,20 @@ def add_to_cart(request, product_id):
 
     quantity = int(request.POST.get('quantity', 1))
 
+    # Check max order quantity
+    max_qty = product.get_max_order_quantity()
+    current_in_cart = 0
+    existing_item = cart.items.filter(product=product).first()
+    if existing_item:
+        current_in_cart = existing_item.quantity
+
+    if current_in_cart + quantity > max_qty:
+        messages.error(
+            request,
+            f'Maximum {max_qty} per order. You already have {current_in_cart} in your cart.'
+        )
+        return redirect('store:product_detail', slug=product.slug)
+
     # Check stock
     if product.track_inventory and product.stock_quantity < quantity:
         messages.error(
@@ -184,15 +198,28 @@ def update_cart(request):
 
         product = get_object_or_404(Product, pk=product_id)
 
+        # Ensure quantity is at least 1
+        if quantity < 1:
+            quantity = 1
+
+        # Check max order quantity
+        max_qty = product.get_max_order_quantity()
+        if quantity > max_qty:
+            messages.error(
+                request,
+                f'Maximum {max_qty} per order.'
+            )
+            quantity = max_qty
+
         # Check stock
         if product.track_inventory and product.stock_quantity < quantity:
             messages.error(
                 request,
                 f'Sorry, only {product.stock_quantity} available.'
             )
-        else:
-            cart.update_item_quantity(product, quantity)
-            messages.success(request, 'Cart updated.')
+            quantity = product.stock_quantity
+
+        cart.update_item_quantity(product, quantity)
 
     return redirect('store:cart')
 

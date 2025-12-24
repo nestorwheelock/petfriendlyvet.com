@@ -7,6 +7,7 @@ Provides:
 - Cart/CartItem: Shopping cart functionality
 - Order/OrderItem: Order management
 """
+from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -107,6 +108,13 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
 
+    # Order limits
+    max_order_quantity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text='Maximum quantity per order. Leave blank to use default from settings.'
+    )
+
     # Pet-specific filters for recommendations
     suitable_for_species = models.JSONField(
         default=list,
@@ -172,6 +180,12 @@ class Product(models.Model):
         if primary:
             return primary
         return self.images.first()
+
+    def get_max_order_quantity(self):
+        """Return max order quantity, falling back to settings default."""
+        if self.max_order_quantity is not None:
+            return self.max_order_quantity
+        return getattr(settings, 'STORE_DEFAULT_MAX_ORDER_QUANTITY', 99)
 
 
 class ProductImage(models.Model):

@@ -2,7 +2,7 @@
 
 **Type**: Enhancement
 **Priority**: Medium
-**Status**: PENDING
+**Status**: COMPLETED
 
 ## Description
 
@@ -87,17 +87,17 @@ def update_cart(request):
 
 ## Acceptance Criteria
 
-- [ ] `STORE_DEFAULT_MAX_ORDER_QUANTITY` setting added (default: 99)
-- [ ] Product model has nullable `max_order_quantity` field
-- [ ] Product model has `get_max_order_quantity()` method
-- [ ] Quantity field is editable (type="number")
-- [ ] Field has min=1 enforced
-- [ ] Field has max from `product.get_max_order_quantity()`
-- [ ] Server validates max quantity on update
-- [ ] Server validates max quantity on add to cart
-- [ ] +/- buttons still work alongside input
-- [ ] Error message shown when max exceeded
-- [ ] Migration created for new field
+- [x] `STORE_DEFAULT_MAX_ORDER_QUANTITY` setting added (default: 99)
+- [x] Product model has nullable `max_order_quantity` field
+- [x] Product model has `get_max_order_quantity()` method
+- [x] Quantity field is editable (type="number")
+- [x] Field has min=1 enforced
+- [x] Field has max from `product.get_max_order_quantity()`
+- [x] Server validates max quantity on update
+- [x] Server validates max quantity on add to cart
+- [x] +/- buttons still work alongside input
+- [x] Error message shown when max exceeded
+- [x] Migration created for new field
 
 ## Notes
 

@@ -46,39 +46,39 @@
 
                                 <div class="mt-4 flex items-center justify-between">
                                     <!-- Quantity Controls -->
-                                    <div class="flex items-center space-x-3">
-                                        <!-- Minus Button -->
-                                        <form method="post" action="{% url 'store:update_cart' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="product_id" value="{{ item.product.pk }}">
-                                            <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
-                                            <button type="submit"
-                                                    {% if item.quantity <= 1 %}disabled{% endif %}
-                                                    class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                    <form method="post" action="{% url 'store:update_cart' %}" class="flex items-center space-x-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ item.product.pk }}">
 
-                                        <!-- Quantity Display -->
-                                        <span class="text-lg font-medium w-8 text-center">{{ item.quantity }}</span>
+                                        <!-- Minus Button -->
+                                        <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}"
+                                                {% if item.quantity <= 1 %}disabled{% endif %}
+                                                class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                            </svg>
+                                        </button>
+
+                                        <!-- Editable Quantity Input -->
+                                        <input type="number"
+                                               name="quantity"
+                                               value="{{ item.quantity }}"
+                                               min="1"
+                                               max="{{ item.product.get_max_order_quantity }}"
+                                               class="w-16 text-center text-lg font-medium border border-gray-300 rounded-md py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                               onchange="this.form.submit()">
 
                                         <!-- Plus Button -->
-                                        <form method="post" action="{% url 'store:update_cart' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="product_id" value="{{ item.product.pk }}">
-                                            <input type="hidden" name="quantity" value="{{ item.quantity|add:'1' }}">
-                                            <button type="submit"
-                                                    class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}"
+                                                {% if item.quantity >= item.product.get_max_order_quantity %}disabled{% endif %}
+                                                class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                        </button>
 
                                         <span class="ml-2 text-sm text-gray-500">× ${{ item.product.price }}</span>
-                                    </div>
+                                    </form>
 
                                     <!-- Remove Button (Trash Icon) -->
                                     <form method="post" action="{% url 'store:remove_from_cart' product_id=item.product.pk %}">

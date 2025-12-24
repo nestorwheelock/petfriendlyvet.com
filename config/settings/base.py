@@ -297,6 +297,10 @@ CONTENT_SECURITY_POLICY_REPORT_ONLY = {
 }
 
 
+# Store Configuration
+STORE_DEFAULT_MAX_ORDER_QUANTITY = int(os.getenv('STORE_DEFAULT_MAX_ORDER_QUANTITY', '99'))
+
+
 # Stripe Configuration (Mexico)
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
