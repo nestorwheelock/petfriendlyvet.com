@@ -251,4 +251,4 @@ class DeliveryRatingAPIView(View):
             'success': True,
             'rating': rating_value,
             'comment': comment,
-        })
+        }, status=201)

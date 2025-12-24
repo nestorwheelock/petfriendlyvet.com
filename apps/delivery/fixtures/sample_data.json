@@ -1,0 +1,134 @@
+[
+  {
+    "model": "delivery.deliveryzone",
+    "pk": 1,
+    "fields": {
+      "code": "CDMX-CENTRO",
+      "name": "Centro Historico",
+      "description": "Centro de la Ciudad de Mexico - Zocalo, Bellas Artes, Alameda",
+      "delivery_fee": "50.00",
+      "estimated_minutes": 30,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryzone",
+    "pk": 2,
+    "fields": {
+      "code": "CDMX-ROMA",
+      "name": "Roma / Condesa",
+      "description": "Colonias Roma Norte, Roma Sur, Condesa, Hipodromo",
+      "delivery_fee": "45.00",
+      "estimated_minutes": 25,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryzone",
+    "pk": 3,
+    "fields": {
+      "code": "CDMX-POLANCO",
+      "name": "Polanco",
+      "description": "Polanco I-V Seccion, Chapultepec",
+      "delivery_fee": "55.00",
+      "estimated_minutes": 35,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryzone",
+    "pk": 4,
+    "fields": {
+      "code": "CDMX-COYOACAN",
+      "name": "Coyoacan",
+      "description": "Centro de Coyoacan, Viveros, Ciudad Universitaria",
+      "delivery_fee": "60.00",
+      "estimated_minutes": 40,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryzone",
+    "pk": 5,
+    "fields": {
+      "code": "CDMX-SANTAFE",
+      "name": "Santa Fe",
+      "description": "Zona de Santa Fe, Interlomas",
+      "delivery_fee": "75.00",
+      "estimated_minutes": 50,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 1,
+    "fields": {
+      "date": "2025-12-26",
+      "start_time": "09:00:00",
+      "end_time": "12:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 2,
+    "fields": {
+      "date": "2025-12-26",
+      "start_time": "12:00:00",
+      "end_time": "15:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 3,
+    "fields": {
+      "date": "2025-12-26",
+      "start_time": "15:00:00",
+      "end_time": "18:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 4,
+    "fields": {
+      "date": "2025-12-27",
+      "start_time": "09:00:00",
+      "end_time": "12:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 5,
+    "fields": {
+      "date": "2025-12-27",
+      "start_time": "12:00:00",
+      "end_time": "15:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  },
+  {
+    "model": "delivery.deliveryslot",
+    "pk": 6,
+    "fields": {
+      "date": "2025-12-27",
+      "start_time": "15:00:00",
+      "end_time": "18:00:00",
+      "max_deliveries": 10,
+      "current_deliveries": 0,
+      "is_active": true
+    }
+  }
+]

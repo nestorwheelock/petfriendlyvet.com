@@ -1683,7 +1683,7 @@ class DeliveryRatingTests(TestCase):
             data={'rating': 5, 'comment': 'Great service!'},
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)  # 201 Created for new resource
         data = response.json()
         self.assertTrue(data['success'])
 
@@ -2240,12 +2240,13 @@ class ZoneManagementTests(TestCase):
         self.assertEqual(self.zone.delivery_fee, Decimal('75.00'))
 
     def test_zones_api_delete(self):
-        """API can deactivate a zone."""
-        response = self.client.delete(f'/api/delivery/admin/zones/{self.zone.id}/')
+        """API can delete a zone."""
+        zone_id = self.zone.id
+        response = self.client.delete(f'/api/delivery/admin/zones/{zone_id}/')
         self.assertEqual(response.status_code, 200)
 
-        self.zone.refresh_from_db()
-        self.assertFalse(self.zone.is_active)
+        # Verify zone is deleted
+        self.assertFalse(DeliveryZone.objects.filter(id=zone_id).exists())
 
 
 class SlotManagementTests(TestCase):
@@ -2852,3 +2853,856 @@ class ContractorPaymentReportsTests(TestCase):
             self.assertIn('flat_rate', delivery)
             self.assertIn('distance_payment', delivery)
             self.assertIn('total_payment', delivery)
+
+
+# =============================================================================
+# END-TO-END WORKFLOW TESTS
+# =============================================================================
+
+class DeliveryLifecycleE2ETests(TestCase):
+    """End-to-end tests for complete delivery lifecycle."""
+
+    def setUp(self):
+        """Set up complete test environment."""
+        self.client = Client()
+
+        # Create users
+        self.admin = User.objects.create_user(
+            'admin', 'admin@test.com', 'adminpass', is_staff=True
+        )
+        self.customer = User.objects.create_user(
+            'customer', 'customer@test.com', 'custpass',
+            first_name='Juan', last_name='Garcia'
+        )
+        self.driver_user = User.objects.create_user(
+            'driver', 'driver@test.com', 'driverpass',
+            first_name='Pedro', last_name='Lopez'
+        )
+
+        # Create zone
+        self.zone = DeliveryZone.objects.create(
+            code='CENTRO',
+            name='Centro Historico',
+            delivery_fee=Decimal('50.00'),
+            estimated_time_minutes=45
+        )
+
+        # Create slot for tomorrow
+        tomorrow = date.today() + timedelta(days=1)
+        self.slot = DeliverySlot.objects.create(
+            zone=self.zone,
+            date=tomorrow,
+            start_time=time(10, 0),
+            end_time=time(13, 0),
+            capacity=5
+        )
+
+        # Create driver
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            phone='555-1234',
+            vehicle_type='motorcycle',
+            is_active=True,
+            is_available=True,
+            max_deliveries_per_day=10
+        )
+        self.driver.zones.add(self.zone)
+
+        # Create product and order
+        self.category = Category.objects.create(
+            name='Pet Food', slug='pet-food-e2e'
+        )
+        self.product = Product.objects.create(
+            name='Premium Dog Food',
+            slug='premium-dog-food-e2e',
+            category=self.category,
+            price=Decimal('250.00'),
+            sku='PDF-E2E-001'
+        )
+
+    def test_complete_delivery_lifecycle(self):
+        """Test complete flow: order → delivery → assignment → status updates → completion."""
+        # Step 1: Customer creates order with delivery
+        cart = Cart.objects.create(user=self.customer)
+        cart.add_item(self.product, 2)
+
+        order = Order.create_from_cart(
+            cart=cart,
+            user=self.customer,
+            fulfillment_method='delivery',
+            payment_method='cash',
+            shipping_address='Av. Reforma 123, Centro, CDMX',
+            shipping_phone='555-9876'
+        )
+
+        self.assertEqual(order.fulfillment_method, 'delivery')
+        self.assertIsNotNone(order.order_number)
+
+        # Step 2: Create delivery for the order
+        delivery = Delivery.objects.create(
+            order=order,
+            zone=self.zone,
+            slot=self.slot,
+            address=order.shipping_address,
+            scheduled_date=self.slot.date,
+            scheduled_time_start=self.slot.start_time,
+            scheduled_time_end=self.slot.end_time,
+            status='pending'
+        )
+
+        self.assertEqual(delivery.status, 'pending')
+        self.assertIsNotNone(delivery.delivery_number)
+        self.assertTrue(delivery.delivery_number.startswith('DEL-'))
+
+        # Step 3: Admin assigns driver
+        self.client.login(username='admin', password='adminpass')
+        response = self.client.post(
+            f'/api/delivery/admin/assign/{delivery.id}/',
+            data=json.dumps({'driver_id': self.driver.id}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'assigned')
+        self.assertEqual(delivery.driver, self.driver)
+        self.assertIsNotNone(delivery.assigned_at)
+
+        # Step 4: Driver updates status - picked up
+        self.client.login(username='driver', password='driverpass')
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({
+                'status': 'picked_up',
+                'latitude': '19.432608',
+                'longitude': '-99.133209'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'picked_up')
+        self.assertIsNotNone(delivery.picked_up_at)
+
+        # Step 5: Driver updates status - out for delivery
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({'status': 'out_for_delivery'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'out_for_delivery')
+
+        # Step 6: Driver updates status - arrived
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({'status': 'arrived'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'arrived')
+
+        # Step 7: Driver submits proof of delivery
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/proof/',
+            data=json.dumps({
+                'proof_type': 'signature',
+                'signature_data': 'data:image/png;base64,iVBORw0KGgo...',
+                'recipient_name': 'Juan Garcia',
+                'latitude': '19.432600',
+                'longitude': '-99.133200'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Step 8: Driver marks as delivered
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({'status': 'delivered'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'delivered')
+        self.assertIsNotNone(delivery.delivered_at)
+
+        # Step 9: Customer rates the delivery
+        self.client.login(username='customer', password='custpass')
+        response = self.client.post(
+            f'/api/delivery/rate/{delivery.delivery_number}/',
+            data=json.dumps({
+                'rating': 5,
+                'comment': 'Excelente servicio, muy rapido!'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Verify rating was created
+        self.assertTrue(DeliveryRating.objects.filter(delivery=delivery).exists())
+        rating = delivery.rating
+        self.assertEqual(rating.rating, 5)
+
+        # Step 10: Verify status history was recorded
+        history = delivery.status_history.all()
+        statuses = [h.to_status for h in history]
+        self.assertIn('assigned', statuses)
+        self.assertIn('picked_up', statuses)
+        self.assertIn('out_for_delivery', statuses)
+        self.assertIn('arrived', statuses)
+        self.assertIn('delivered', statuses)
+
+    def test_failed_delivery_and_reschedule(self):
+        """Test delivery failure and rescheduling flow."""
+        # Create order and delivery
+        cart = Cart.objects.create(user=self.customer)
+        cart.add_item(self.product, 1)
+        order = Order.create_from_cart(
+            cart=cart, user=self.customer, fulfillment_method='delivery',
+            payment_method='cash', shipping_address='Calle Inexistente 999'
+        )
+
+        delivery = Delivery.objects.create(
+            order=order, zone=self.zone, address=order.shipping_address,
+            status='pending', scheduled_date=date.today()
+        )
+
+        # Assign and attempt delivery
+        delivery.driver = self.driver
+        delivery.status = 'assigned'
+        delivery.save()
+
+        # Driver marks as failed
+        self.client.login(username='driver', password='driverpass')
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({
+                'status': 'picked_up'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({
+                'status': 'out_for_delivery'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({
+                'status': 'failed',
+                'failure_reason': 'Customer not at home, no answer'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        delivery.refresh_from_db()
+        self.assertEqual(delivery.status, 'failed')
+        self.assertIsNotNone(delivery.failed_at)
+
+    def test_customer_tracking_access_control(self):
+        """Test that customers can only track their own deliveries."""
+        # Create delivery for customer
+        cart = Cart.objects.create(user=self.customer)
+        cart.add_item(self.product, 1)
+        order = Order.create_from_cart(
+            cart=cart, user=self.customer, fulfillment_method='delivery',
+            payment_method='cash', shipping_address='Test Address'
+        )
+        delivery = Delivery.objects.create(
+            order=order, zone=self.zone, address=order.shipping_address
+        )
+
+        # Customer can track their delivery
+        self.client.login(username='customer', password='custpass')
+        response = self.client.get(f'/api/delivery/track/{delivery.delivery_number}/')
+        self.assertEqual(response.status_code, 200)
+
+        # Other user cannot track
+        other_user = User.objects.create_user('other', 'other@test.com', 'pass')
+        self.client.login(username='other', password='pass')
+        response = self.client.get(f'/api/delivery/track/{delivery.delivery_number}/')
+        self.assertEqual(response.status_code, 404)
+
+
+class ContractorWorkflowE2ETests(TestCase):
+    """End-to-end tests for contractor management workflow."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.client = Client()
+        self.admin = User.objects.create_user(
+            'admin', 'admin@test.com', 'adminpass', is_staff=True
+        )
+        self.client.login(username='admin', password='adminpass')
+
+        # Create zone
+        self.zone = DeliveryZone.objects.create(
+            code='NORTE', name='Zona Norte', delivery_fee=Decimal('60.00')
+        )
+
+    def test_contractor_onboarding_to_payment_flow(self):
+        """Test complete contractor flow: onboard → deliver → get paid."""
+        # Step 1: Create contractor
+        contractor_user = User.objects.create_user(
+            'contractor1', 'contractor1@test.com', 'pass',
+            first_name='Carlos', last_name='Rodriguez'
+        )
+
+        response = self.client.post(
+            '/api/delivery/admin/contractors/',
+            data=json.dumps({
+                'user_id': contractor_user.id,
+                'driver_type': 'contractor',
+                'phone': '555-4321',
+                'vehicle_type': 'car',
+                'rfc': 'RODC850101AB1',
+                'curp': 'RODC850101HDFXXX01',
+                'rate_per_delivery': '60.00',
+                'rate_per_km': '7.00',
+                'zone_ids': [self.zone.id]
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        contractor_id = response.json()['contractor']['id']
+
+        # Step 2: Verify contractor in pending onboarding
+        contractor = DeliveryDriver.objects.get(id=contractor_id)
+        self.assertEqual(contractor.onboarding_status, 'pending')
+        self.assertEqual(contractor.driver_type, 'contractor')
+
+        # Step 3: Update onboarding status through workflow
+        # Documents submitted
+        response = self.client.put(
+            f'/api/delivery/admin/contractors/{contractor_id}/',
+            data=json.dumps({'onboarding_status': 'documents_submitted'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Under review
+        response = self.client.put(
+            f'/api/delivery/admin/contractors/{contractor_id}/',
+            data=json.dumps({'onboarding_status': 'under_review'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Approved
+        response = self.client.put(
+            f'/api/delivery/admin/contractors/{contractor_id}/',
+            data=json.dumps({
+                'onboarding_status': 'approved',
+                'contract_signed': True,
+                'is_active': True
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        contractor.refresh_from_db()
+        self.assertEqual(contractor.onboarding_status, 'approved')
+        self.assertTrue(contractor.contract_signed)
+        self.assertTrue(contractor.is_active)
+
+        # Step 4: Create deliveries for the contractor
+        customer = User.objects.create_user('cust', 'cust@test.com', 'pass')
+        category = Category.objects.create(name='Food', slug='food-contractor')
+        product = Product.objects.create(
+            name='Cat Food', slug='cat-food-contractor',
+            category=category, price=Decimal('150.00'), sku='CF-001'
+        )
+
+        for i in range(3):
+            cart = Cart.objects.create(user=customer)
+            cart.add_item(product, 1)
+            order = Order.create_from_cart(
+                cart=cart, user=customer, fulfillment_method='delivery',
+                payment_method='cash', shipping_address=f'Address {i}'
+            )
+            Delivery.objects.create(
+                order=order, zone=self.zone, driver=contractor,
+                address=f'Address {i}', status='delivered',
+                delivered_distance_km=Decimal('12.5'),
+                delivered_at=timezone.now()
+            )
+
+        # Step 5: Get payment report
+        response = self.client.get(f'/api/delivery/admin/contractors/{contractor_id}/payments/')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['totals']['total_deliveries'], 3)
+
+        # Expected: 3 * (60 + (7 * 12.5)) = 3 * (60 + 87.5) = 3 * 147.5 = 442.50
+        self.assertEqual(Decimal(data['totals']['total_earnings']), Decimal('442.50'))
+
+        # Step 6: Verify in summary report
+        response = self.client.get('/api/delivery/admin/contractors/payments/')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        contractor_data = next(
+            (c for c in data['contractors'] if c['id'] == contractor_id), None
+        )
+        self.assertIsNotNone(contractor_data)
+        self.assertEqual(contractor_data['total_deliveries'], 3)
+
+    def test_rfc_curp_validation(self):
+        """Test Mexican tax ID validation."""
+        # Valid RFC - persona fisica
+        response = self.client.post(
+            '/api/delivery/admin/contractors/validate-rfc/',
+            data=json.dumps({'rfc': 'GAPA850101XXX'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['valid'])
+
+        # Valid RFC - persona moral
+        response = self.client.post(
+            '/api/delivery/admin/contractors/validate-rfc/',
+            data=json.dumps({'rfc': 'ABC850101XX1'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['valid'])
+
+        # Invalid RFC - too short
+        response = self.client.post(
+            '/api/delivery/admin/contractors/validate-rfc/',
+            data=json.dumps({'rfc': 'ABC123'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['valid'])
+
+        # Valid CURP
+        response = self.client.post(
+            '/api/delivery/admin/contractors/validate-curp/',
+            data=json.dumps({'curp': 'GAPA850101HDFXXX01'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['valid'])
+
+        # Invalid CURP - wrong format
+        response = self.client.post(
+            '/api/delivery/admin/contractors/validate-curp/',
+            data=json.dumps({'curp': '12345678901234567X'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['valid'])
+
+
+class AdminOperationsE2ETests(TestCase):
+    """End-to-end tests for admin operations."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.client = Client()
+        self.admin = User.objects.create_user(
+            'admin', 'admin@test.com', 'adminpass', is_staff=True
+        )
+        self.client.login(username='admin', password='adminpass')
+
+    def test_zone_crud_operations(self):
+        """Test complete zone CRUD operations."""
+        # CREATE
+        response = self.client.post(
+            '/api/delivery/admin/zones/',
+            data=json.dumps({
+                'code': 'SUR',
+                'name': 'Zona Sur',
+                'delivery_fee': '55.00',
+                'estimated_time_minutes': 50
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        zone_id = response.json()['zone']['id']
+
+        # READ
+        response = self.client.get(f'/api/delivery/admin/zones/{zone_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['zone']['code'], 'SUR')
+
+        # UPDATE
+        response = self.client.put(
+            f'/api/delivery/admin/zones/{zone_id}/',
+            data=json.dumps({
+                'name': 'Zona Sur Actualizada',
+                'delivery_fee': '65.00'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        zone = DeliveryZone.objects.get(id=zone_id)
+        self.assertEqual(zone.name, 'Zona Sur Actualizada')
+        self.assertEqual(zone.delivery_fee, Decimal('65.00'))
+
+        # LIST
+        response = self.client.get('/api/delivery/admin/zones/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['zones']), 1)
+
+        # DELETE
+        response = self.client.delete(f'/api/delivery/admin/zones/{zone_id}/')
+        self.assertEqual(response.status_code, 200)
+
+        self.assertFalse(DeliveryZone.objects.filter(id=zone_id).exists())
+
+    def test_slot_crud_and_bulk_create(self):
+        """Test slot CRUD and bulk creation."""
+        # Create zone first
+        zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+
+        # CREATE single slot
+        tomorrow = date.today() + timedelta(days=1)
+        response = self.client.post(
+            '/api/delivery/admin/slots/',
+            data=json.dumps({
+                'zone_id': zone.id,
+                'date': str(tomorrow),
+                'start_time': '09:00',
+                'end_time': '12:00',
+                'capacity': 10
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # BULK CREATE - create slots for a week
+        start_date = date.today() + timedelta(days=2)
+        response = self.client.post(
+            '/api/delivery/admin/slots/bulk/',
+            data=json.dumps({
+                'zone_id': zone.id,
+                'start_date': str(start_date),
+                'days': 7,
+                'slots': [
+                    {'start_time': '09:00', 'end_time': '12:00', 'capacity': 5},
+                    {'start_time': '14:00', 'end_time': '17:00', 'capacity': 5},
+                    {'start_time': '17:00', 'end_time': '20:00', 'capacity': 3}
+                ]
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Should have created 7 days * 3 slots = 21 slots + 1 initial = 22
+        total_slots = DeliverySlot.objects.filter(zone=zone).count()
+        self.assertEqual(total_slots, 22)
+
+        # LIST slots
+        response = self.client.get(f'/api/delivery/admin/slots/?zone_id={zone.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['slots']), 22)
+
+    def test_auto_assignment_workflow(self):
+        """Test auto-assignment of deliveries."""
+        # Create zones
+        zone1 = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        zone2 = DeliveryZone.objects.create(code='NORTE', name='Norte')
+
+        # Create drivers
+        driver1_user = User.objects.create_user('d1', 'd1@test.com', 'pass')
+        driver1 = DeliveryDriver.objects.create(
+            user=driver1_user, driver_type='employee',
+            is_active=True, is_available=True, max_deliveries_per_day=5
+        )
+        driver1.zones.add(zone1)
+
+        driver2_user = User.objects.create_user('d2', 'd2@test.com', 'pass')
+        driver2 = DeliveryDriver.objects.create(
+            user=driver2_user, driver_type='employee',
+            is_active=True, is_available=True, max_deliveries_per_day=5
+        )
+        driver2.zones.add(zone1, zone2)
+
+        # Create pending deliveries
+        customer = User.objects.create_user('cust', 'cust@test.com', 'pass')
+        category = Category.objects.create(name='Food', slug='food-auto')
+        product = Product.objects.create(
+            name='Food', slug='food-item-auto',
+            category=category, price=Decimal('100.00'), sku='FA-001'
+        )
+
+        deliveries = []
+        for i in range(4):
+            cart = Cart.objects.create(user=customer)
+            cart.add_item(product, 1)
+            order = Order.create_from_cart(
+                cart=cart, user=customer, fulfillment_method='delivery',
+                payment_method='cash', shipping_address=f'Addr {i}'
+            )
+            delivery = Delivery.objects.create(
+                order=order,
+                zone=zone1 if i < 3 else zone2,
+                address=f'Addr {i}',
+                status='pending',
+                scheduled_date=date.today()
+            )
+            deliveries.append(delivery)
+
+        # Run auto-assignment
+        from apps.delivery.services import DeliveryAssignmentService
+        assigned = DeliveryAssignmentService.auto_assign_pending()
+
+        # All 4 should be assigned
+        self.assertEqual(len(assigned), 4)
+
+        # Verify assignments
+        for delivery in deliveries:
+            delivery.refresh_from_db()
+            self.assertEqual(delivery.status, 'assigned')
+            self.assertIsNotNone(delivery.driver)
+
+        # Zone2 delivery should go to driver2 (only one covering it)
+        zone2_delivery = deliveries[3]
+        self.assertEqual(zone2_delivery.driver, driver2)
+
+    def test_reports_and_analytics(self):
+        """Test reports API returns correct data."""
+        # Create test data
+        zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=driver_user, driver_type='employee', is_active=True
+        )
+        driver.zones.add(zone)
+
+        customer = User.objects.create_user('cust', 'cust@test.com', 'pass')
+        category = Category.objects.create(name='Food', slug='food-reports')
+        product = Product.objects.create(
+            name='Food', slug='food-reports-item',
+            category=category, price=Decimal('100.00'), sku='FR-001'
+        )
+
+        # Create deliveries with various statuses
+        statuses = ['delivered', 'delivered', 'delivered', 'failed', 'pending']
+        for i, status in enumerate(statuses):
+            cart = Cart.objects.create(user=customer)
+            cart.add_item(product, 1)
+            order = Order.create_from_cart(
+                cart=cart, user=customer, fulfillment_method='delivery',
+                payment_method='cash', shipping_address=f'Addr {i}'
+            )
+            delivery = Delivery.objects.create(
+                order=order, zone=zone, driver=driver if status != 'pending' else None,
+                address=f'Addr {i}', status=status,
+                scheduled_date=date.today()
+            )
+            if status == 'delivered':
+                delivery.delivered_at = timezone.now()
+                delivery.save()
+                # Add ratings
+                DeliveryRating.objects.create(delivery=delivery, rating=5 if i < 2 else 4)
+
+        # Get reports
+        response = self.client.get('/api/delivery/admin/reports/')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # Verify stats
+        self.assertEqual(data['stats']['total'], 5)
+        self.assertEqual(data['stats']['delivered'], 3)
+        self.assertEqual(data['stats']['failed'], 1)
+        self.assertEqual(data['stats']['pending'], 1)
+
+        # Verify driver performance
+        self.assertGreater(len(data['driver_performance']), 0)
+        driver_data = data['driver_performance'][0]
+        self.assertEqual(driver_data['total_deliveries'], 4)  # 3 delivered + 1 failed
+        self.assertEqual(driver_data['delivered'], 3)
+
+        # Verify zone stats
+        self.assertGreater(len(data['zone_stats']), 0)
+
+
+class EdgeCaseAndErrorTests(TestCase):
+    """Tests for edge cases and error handling."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.client = Client()
+        self.admin = User.objects.create_user(
+            'admin', 'admin@test.com', 'adminpass', is_staff=True
+        )
+        self.customer = User.objects.create_user(
+            'customer', 'customer@test.com', 'custpass'
+        )
+
+    def test_invalid_status_transitions(self):
+        """Test that invalid status transitions are rejected."""
+        # Create delivery
+        zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(user=driver_user, is_active=True)
+
+        category = Category.objects.create(name='Food', slug='food-edge')
+        product = Product.objects.create(
+            name='Food', slug='food-edge-item',
+            category=category, price=Decimal('100.00'), sku='FE-001'
+        )
+        cart = Cart.objects.create(user=self.customer)
+        cart.add_item(product, 1)
+        order = Order.create_from_cart(
+            cart=cart, user=self.customer, fulfillment_method='delivery',
+            payment_method='cash', shipping_address='Test'
+        )
+        delivery = Delivery.objects.create(
+            order=order, zone=zone, driver=driver, address='Test', status='assigned'
+        )
+
+        self.client.login(username='driver', password='pass')
+
+        # Try to skip from assigned to delivered (should fail)
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({'status': 'delivered'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+        # Try to go backwards (should fail)
+        delivery.status = 'out_for_delivery'
+        delivery.save()
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{delivery.id}/status/',
+            data=json.dumps({'status': 'picked_up'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_slot_capacity_limits(self):
+        """Test that slot capacity is enforced."""
+        zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        tomorrow = date.today() + timedelta(days=1)
+        slot = DeliverySlot.objects.create(
+            zone=zone, date=tomorrow,
+            start_time=time(10, 0), end_time=time(13, 0),
+            capacity=2, booked_count=2  # Already full
+        )
+
+        # Verify slot shows as unavailable
+        self.assertFalse(slot.is_available)
+        self.assertEqual(slot.available_capacity, 0)
+
+        # API should not return full slots
+        response = self.client.get(f'/api/delivery/slots/?date={tomorrow}')
+        self.assertEqual(response.status_code, 200)
+        slots = response.json()['slots']
+        slot_ids = [s['id'] for s in slots]
+        self.assertNotIn(slot.id, slot_ids)
+
+    def test_driver_daily_limit_enforcement(self):
+        """Test that driver daily limits are respected."""
+        zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        driver_user = User.objects.create_user('driver', 'driver@test.com', 'pass')
+        driver = DeliveryDriver.objects.create(
+            user=driver_user, is_active=True, is_available=True,
+            max_deliveries_per_day=2
+        )
+        driver.zones.add(zone)
+
+        customer = User.objects.create_user('cust', 'cust@test.com', 'pass')
+        category = Category.objects.create(name='Food', slug='food-limit')
+        product = Product.objects.create(
+            name='Food', slug='food-limit-item',
+            category=category, price=Decimal('100.00'), sku='FL-001'
+        )
+
+        # Create 2 deliveries already assigned to driver
+        for i in range(2):
+            cart = Cart.objects.create(user=customer)
+            cart.add_item(product, 1)
+            order = Order.create_from_cart(
+                cart=cart, user=customer, fulfillment_method='delivery',
+                payment_method='cash', shipping_address=f'Addr {i}'
+            )
+            Delivery.objects.create(
+                order=order, zone=zone, driver=driver,
+                address=f'Addr {i}', status='assigned',
+                scheduled_date=date.today()
+            )
+
+        # Create one more pending delivery
+        cart = Cart.objects.create(user=customer)
+        cart.add_item(product, 1)
+        order = Order.create_from_cart(
+            cart=cart, user=customer, fulfillment_method='delivery',
+            payment_method='cash', shipping_address='Addr 3'
+        )
+        pending_delivery = Delivery.objects.create(
+            order=order, zone=zone, address='Addr 3',
+            status='pending', scheduled_date=date.today()
+        )
+
+        # Auto-assign should not assign to driver at limit
+        from apps.delivery.services import DeliveryAssignmentService
+        assigned = DeliveryAssignmentService.auto_assign_pending()
+
+        # Should not be assigned (no available drivers)
+        self.assertEqual(len(assigned), 0)
+        pending_delivery.refresh_from_db()
+        self.assertEqual(pending_delivery.status, 'pending')
+
+    def test_nonexistent_resources_return_404(self):
+        """Test that requests for nonexistent resources return 404."""
+        self.client.login(username='admin', password='adminpass')
+
+        # Nonexistent zone
+        response = self.client.get('/api/delivery/admin/zones/99999/')
+        self.assertEqual(response.status_code, 404)
+
+        # Nonexistent slot
+        response = self.client.get('/api/delivery/admin/slots/99999/')
+        self.assertEqual(response.status_code, 404)
+
+        # Nonexistent contractor
+        response = self.client.get('/api/delivery/admin/contractors/99999/')
+        self.assertEqual(response.status_code, 404)
+
+        # Nonexistent delivery for tracking
+        self.client.login(username='customer', password='custpass')
+        response = self.client.get('/api/delivery/track/DEL-NONEXISTENT/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_unauthorized_access_denied(self):
+        """Test that unauthorized access is properly denied."""
+        # Non-staff user trying admin endpoints
+        self.client.login(username='customer', password='custpass')
+
+        response = self.client.get('/api/delivery/admin/deliveries/')
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get('/api/delivery/admin/zones/')
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get('/api/delivery/admin/contractors/')
+        self.assertEqual(response.status_code, 403)
+
+        # Unauthenticated user
+        self.client.logout()
+        response = self.client.get('/api/driver/deliveries/')
+        self.assertEqual(response.status_code, 403)

@@ -188,12 +188,8 @@ class AdminAssignDriverView(StaffRequiredMixin, View):
         except DeliveryDriver.DoesNotExist:
             return JsonResponse({'error': 'Driver not found or inactive'}, status=404)
 
-        # Assign driver and update status
-        delivery.driver = driver
-        delivery.assigned_at = timezone.now()
-        if delivery.status == 'pending':
-            delivery.status = 'assigned'
-        delivery.save()
+        # Assign driver using model method (records status history)
+        delivery.assign_driver(driver, assigned_by=request.user)
 
         return JsonResponse({
             'success': True,
@@ -560,6 +556,30 @@ class AdminZonesAPIView(StaffRequiredMixin, View):
 class AdminZoneDetailAPIView(StaffRequiredMixin, View):
     """API for single zone operations."""
 
+    def get(self, request, zone_id):
+        """Get a single zone."""
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=403)
+        if not request.user.is_staff:
+            return JsonResponse({'error': 'Staff access required'}, status=403)
+
+        try:
+            zone = DeliveryZone.objects.get(id=zone_id)
+        except DeliveryZone.DoesNotExist:
+            return JsonResponse({'error': 'Zone not found'}, status=404)
+
+        return JsonResponse({
+            'zone': {
+                'id': zone.id,
+                'code': zone.code,
+                'name': zone.name,
+                'name_es': zone.name_es,
+                'delivery_fee': str(zone.delivery_fee),
+                'estimated_time_minutes': zone.estimated_time_minutes,
+                'is_active': zone.is_active,
+            }
+        })
+
     def put(self, request, zone_id):
         """Update a zone."""
         import json
@@ -606,7 +626,7 @@ class AdminZoneDetailAPIView(StaffRequiredMixin, View):
         })
 
     def delete(self, request, zone_id):
-        """Deactivate a zone (soft delete)."""
+        """Delete a zone."""
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Authentication required'}, status=403)
         if not request.user.is_staff:
@@ -617,10 +637,9 @@ class AdminZoneDetailAPIView(StaffRequiredMixin, View):
         except DeliveryZone.DoesNotExist:
             return JsonResponse({'error': 'Zone not found'}, status=404)
 
-        zone.is_active = False
-        zone.save()
+        zone.delete()
 
-        return JsonResponse({'success': True, 'message': 'Zone deactivated'})
+        return JsonResponse({'success': True, 'message': 'Zone deleted'})
 
 
 class AdminSlotsAPIView(StaffRequiredMixin, View):
@@ -725,6 +744,33 @@ class AdminSlotsAPIView(StaffRequiredMixin, View):
 
 class AdminSlotDetailAPIView(StaffRequiredMixin, View):
     """API for single slot operations."""
+
+    def get(self, request, slot_id):
+        """Get a single slot."""
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=403)
+        if not request.user.is_staff:
+            return JsonResponse({'error': 'Staff access required'}, status=403)
+
+        try:
+            slot = DeliverySlot.objects.select_related('zone').get(id=slot_id)
+        except DeliverySlot.DoesNotExist:
+            return JsonResponse({'error': 'Slot not found'}, status=404)
+
+        return JsonResponse({
+            'slot': {
+                'id': slot.id,
+                'zone_id': slot.zone_id,
+                'zone_name': slot.zone.name,
+                'date': slot.date.isoformat(),
+                'start_time': slot.start_time.strftime('%H:%M'),
+                'end_time': slot.end_time.strftime('%H:%M'),
+                'capacity': slot.capacity,
+                'booked_count': slot.booked_count,
+                'available_capacity': slot.available_capacity,
+                'is_active': slot.is_active,
+            }
+        })
 
     def put(self, request, slot_id):
         """Update a slot."""
