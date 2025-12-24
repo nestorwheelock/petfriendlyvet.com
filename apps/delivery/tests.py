@@ -670,3 +670,145 @@ class DeliveryNotificationTests(TestCase):
             message='Message 2'
         )
         self.assertEqual(self.delivery.notifications.count(), 2)
+
+
+class DriverAPITests(TestCase):
+    """Tests for Driver API endpoints."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.client = Client()
+        self.driver_user = User.objects.create_user(
+            'driver', 'driver@test.com', 'driverpass'
+        )
+        self.driver = DeliveryDriver.objects.create(
+            user=self.driver_user,
+            driver_type='employee',
+            is_active=True,
+            is_available=True
+        )
+        self.customer = User.objects.create_user(
+            'customer', 'customer@test.com', 'customerpass'
+        )
+        self.category = Category.objects.create(
+            name='Test', name_es='Test', name_en='Test', slug='test'
+        )
+        self.product = Product.objects.create(
+            name='Test Product',
+            name_es='Producto',
+            name_en='Product',
+            slug='test-product',
+            category=self.category,
+            price=Decimal('100.00'),
+            sku='TEST-001'
+        )
+        self.cart = Cart.objects.create(user=self.customer)
+        self.cart.add_item(self.product, 1)
+        self.order = Order.create_from_cart(
+            cart=self.cart,
+            user=self.customer,
+            fulfillment_method='delivery',
+            shipping_address='Test Address'
+        )
+        self.zone = DeliveryZone.objects.create(code='CENTRO', name='Centro')
+        self.delivery = Delivery.objects.create(
+            order=self.order,
+            zone=self.zone,
+            address=self.order.shipping_address
+        )
+
+    def test_driver_deliveries_list_requires_auth(self):
+        """Driver deliveries endpoint requires authentication."""
+        response = self.client.get('/api/driver/deliveries/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_driver_deliveries_list_returns_assigned(self):
+        """Driver can list their assigned deliveries."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.get('/api/driver/deliveries/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['deliveries']), 1)
+        self.assertEqual(data['deliveries'][0]['delivery_number'], self.delivery.delivery_number)
+
+    def test_driver_deliveries_excludes_others(self):
+        """Driver only sees their own deliveries."""
+        self.client.force_login(self.driver_user)
+        # Delivery not assigned to this driver
+
+        response = self.client.get('/api/driver/deliveries/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data['deliveries']), 0)
+
+    def test_driver_update_status_picked_up(self):
+        """Driver can update delivery status to picked_up."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/status/',
+            data={'status': 'picked_up'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.delivery.refresh_from_db()
+        self.assertEqual(self.delivery.status, 'picked_up')
+
+    def test_driver_update_status_with_gps(self):
+        """Driver can update status with GPS coordinates."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/status/',
+            data={
+                'status': 'picked_up',
+                'latitude': '19.432608',
+                'longitude': '-99.133209'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        history = self.delivery.status_history.last()
+        self.assertEqual(str(history.latitude), '19.432608')
+        self.assertEqual(str(history.longitude), '-99.133209')
+
+    def test_driver_cannot_update_others_delivery(self):
+        """Driver cannot update delivery assigned to another driver."""
+        self.client.force_login(self.driver_user)
+        other_driver_user = User.objects.create_user('other', 'other@test.com', 'pass')
+        other_driver = DeliveryDriver.objects.create(user=other_driver_user)
+        self.delivery.assign_driver(other_driver)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/status/',
+            data={'status': 'picked_up'},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_driver_invalid_status_transition(self):
+        """Invalid status transitions return error."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.post(
+            f'/api/driver/deliveries/{self.delivery.id}/status/',
+            data={'status': 'delivered'},  # Can't go from assigned to delivered
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_driver_delivery_detail(self):
+        """Driver can get delivery details."""
+        self.client.force_login(self.driver_user)
+        self.delivery.assign_driver(self.driver)
+
+        response = self.client.get(f'/api/driver/deliveries/{self.delivery.id}/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['delivery_number'], self.delivery.delivery_number)
+        self.assertEqual(data['address'], self.delivery.address)

@@ -12,6 +12,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),
     path('i18n/', include('django.conf.urls.i18n')),
+    # API endpoints (no i18n prefix)
+    path('api/driver/', include('apps.delivery.api_urls')),
 ]
 
 # i18n URLs (language prefix)
