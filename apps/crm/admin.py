@@ -66,18 +66,23 @@ class InteractionInline(admin.TabularInline):
 @admin.register(OwnerProfile)
 class OwnerProfileAdmin(admin.ModelAdmin):
     list_display = [
-        'user', 'preferred_language', 'preferred_contact_method',
+        'user', 'pet_count', 'preferred_language', 'preferred_contact_method',
         'total_visits', 'total_spent', 'tag_list'
     ]
     list_filter = ['preferred_language', 'preferred_contact_method', 'tags']
     search_fields = ['user__email', 'user__first_name', 'user__last_name', 'notes']
     raw_id_fields = ['user', 'referred_by']
     filter_horizontal = ['tags']
+    readonly_fields = ['pets_display']
     inlines = [CustomerNoteInline, InteractionInline]
 
     fieldsets = (
         (None, {
             'fields': ('user',)
+        }),
+        ('Pets', {
+            'fields': ('pets_display',),
+            'description': 'Pets owned by this customer (managed via Pets admin)'
         }),
         ('Preferences', {
             'fields': ('preferred_language', 'preferred_contact_method', 'marketing_preferences')
@@ -100,6 +105,38 @@ class OwnerProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
     )
+
+    @admin.display(description='Pets')
+    def pet_count(self, obj):
+        count = obj.user.pets.count()
+        if count == 0:
+            return '-'
+        return count
+
+    @admin.display(description='Pets')
+    def pets_display(self, obj):
+        from django.urls import reverse
+        pets = obj.user.pets.all()
+        if not pets:
+            add_url = reverse('admin:pets_pet_add') + f'?owner={obj.user.id}'
+            return format_html(
+                'No pets registered. <a href="{}">+ Add Pet</a>',
+                add_url
+            )
+
+        pet_links = []
+        for pet in pets:
+            url = reverse('admin:pets_pet_change', args=[pet.id])
+            species_icons = {
+                'dog': '🐕', 'cat': '🐱', 'bird': '🐦', 'rabbit': '🐰',
+                'hamster': '🐹', 'guinea_pig': '🐹', 'reptile': '🦎', 'other': '🐾',
+            }
+            icon = species_icons.get(pet.species, '🐾')
+            pet_links.append(f'<a href="{url}">{icon} {pet.name}</a> ({pet.get_species_display()})')
+
+        add_url = reverse('admin:pets_pet_add') + f'?owner={obj.user.id}'
+        pet_links.append(f'<a href="{add_url}">+ Add Pet</a>')
+        return format_html('<br>'.join(pet_links))
 
     @admin.display(description='Tags')
     def tag_list(self, obj):
