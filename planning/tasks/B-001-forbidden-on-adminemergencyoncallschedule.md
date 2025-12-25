@@ -1,0 +1,28 @@
+# B-001: Forbidden on /admin/emergency/oncallschedule/
+
+**Severity**: Medium
+**Status**: Open
+**Error Type**: forbidden
+**Status Code**: 403
+
+## Description
+
+HTTP 403 error detected on URL pattern: /admin/emergency/oncallschedule/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/admin/emergency/oncallschedule/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `cd0a8260b99ce8fd`
+- **Error Type**: forbidden
+- **HTTP Status**: 403
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production

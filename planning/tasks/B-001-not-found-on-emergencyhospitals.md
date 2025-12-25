@@ -1,0 +1,28 @@
+# B-001: Not Found on /emergency/hospitals/
+
+**Severity**: Low
+**Status**: Open
+**Error Type**: not_found
+**Status Code**: 404
+
+## Description
+
+HTTP 404 error detected on URL pattern: /emergency/hospitals/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/emergency/hospitals/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `7015b51a9ec61d70`
+- **Error Type**: not_found
+- **HTTP Status**: 404
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production

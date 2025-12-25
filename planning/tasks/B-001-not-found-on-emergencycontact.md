@@ -1,0 +1,28 @@
+# B-001: Not Found on /emergency/contact/
+
+**Severity**: Low
+**Status**: Open
+**Error Type**: not_found
+**Status Code**: 404
+
+## Description
+
+HTTP 404 error detected on URL pattern: /emergency/contact/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/emergency/contact/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `c491e10ad6f60327`
+- **Error Type**: not_found
+- **HTTP Status**: 404
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production
