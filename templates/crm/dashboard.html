@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "CRM Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Customer Relationship Management" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Manage customer relationships and communications" %}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+        {% trans "CRM features coming soon." %}
+    </div>
+</div>
+{% endblock %}

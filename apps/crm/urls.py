@@ -1,7 +1,9 @@
 from django.urls import path
 
+from . import views
+
 app_name = 'crm'
 
 urlpatterns = [
-    # URL patterns for CRM app will be defined here
+    path('', views.CRMDashboardView.as_view(), name='dashboard'),
 ]

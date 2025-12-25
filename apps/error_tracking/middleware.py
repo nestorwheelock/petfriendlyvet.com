@@ -2,6 +2,7 @@
 import hashlib
 import logging
 import re
+import traceback as tb
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -32,15 +33,33 @@ class ErrorCaptureMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
+        # Thread-local storage for exception info
+        self._exception_info = {}
 
     def __call__(self, request):
+        # Clear any previous exception info for this request
+        request_id = id(request)
+        self._exception_info.pop(request_id, None)
+
         response = self.get_response(request)
 
         # Capture 4xx and 5xx errors
         if response.status_code >= 400:
-            self.capture_error(request, response)
+            exception_data = self._exception_info.pop(request_id, None)
+            self.capture_error(request, response, exception_data)
 
         return response
+
+    def process_exception(self, request, exception):
+        """Capture exception details before they're converted to 500 response."""
+        request_id = id(request)
+        self._exception_info[request_id] = {
+            'exception_type': type(exception).__name__,
+            'exception_message': str(exception),
+            'traceback': tb.format_exc(),
+        }
+        # Return None to let Django handle the exception normally
+        return None
 
     def get_config(self):
         """Get error tracking configuration from settings."""
@@ -106,7 +125,7 @@ class ErrorCaptureMiddleware:
         path = request.get_full_path()
         return f"{scheme}://{host}{path}"
 
-    def capture_error(self, request, response):
+    def capture_error(self, request, response, exception_data=None):
         """Capture and log the error to the database."""
         if not self.is_enabled():
             return
@@ -131,6 +150,15 @@ class ErrorCaptureMiddleware:
                 if not isinstance(request.user, AnonymousUser) and request.user.is_authenticated:
                     user = request.user
 
+            # Prepare exception details
+            exception_type = ''
+            exception_message = ''
+            traceback_str = ''
+            if exception_data:
+                exception_type = exception_data.get('exception_type', '')
+                exception_message = exception_data.get('exception_message', '')
+                traceback_str = exception_data.get('traceback', '')
+
             # Create error log entry
             ErrorLog.objects.create(
                 fingerprint=fingerprint,
@@ -146,6 +174,9 @@ class ErrorCaptureMiddleware:
                     'method': request.method,
                     'content_type': request.content_type if hasattr(request, 'content_type') else '',
                 },
+                exception_type=exception_type,
+                exception_message=exception_message,
+                traceback=traceback_str,
             )
 
             logger.debug(

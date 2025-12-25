@@ -9,7 +9,7 @@ app_name = 'delivery'
 
 urlpatterns = [
     # Root redirect to admin dashboard (staff) or driver dashboard
-    path('', RedirectView.as_view(pattern_name='delivery_admin:dashboard'), name='index'),
+    path('', RedirectView.as_view(pattern_name='delivery:delivery_admin:dashboard'), name='index'),
 
     # Direct access shortcuts for common admin pages
     path('zones/', ZonesView.as_view(), name='zones'),
