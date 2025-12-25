@@ -7,14 +7,15 @@ from . import document_views
 app_name = 'pets'
 
 urlpatterns = [
+    # Main views
     path('', views.OwnerDashboardView.as_view(), name='dashboard'),
-    path('pets/', views.PetListView.as_view(), name='pet_list'),
-    path('pets/add/', views.PetCreateView.as_view(), name='pet_add'),
-    path('pets/<int:pk>/', views.PetDetailView.as_view(), name='pet_detail'),
-    path('pets/<int:pk>/edit/', views.PetUpdateView.as_view(), name='pet_edit'),
+    path('list/', views.PetListView.as_view(), name='pet_list'),
+    path('add/', views.PetCreateView.as_view(), name='pet_add'),
+    path('<int:pk>/', views.PetDetailView.as_view(), name='pet_detail'),
+    path('<int:pk>/edit/', views.PetUpdateView.as_view(), name='pet_edit'),
 
     # Document management
-    path('pets/<int:pet_pk>/documents/', document_views.DocumentListView.as_view(), name='document_list'),
-    path('pets/<int:pet_pk>/documents/upload/', document_views.DocumentUploadView.as_view(), name='document_upload'),
-    path('pets/<int:pet_pk>/documents/<int:pk>/delete/', document_views.DocumentDeleteView.as_view(), name='document_delete'),
+    path('<int:pet_pk>/documents/', document_views.DocumentListView.as_view(), name='document_list'),
+    path('<int:pet_pk>/documents/upload/', document_views.DocumentUploadView.as_view(), name='document_upload'),
+    path('<int:pet_pk>/documents/<int:pk>/delete/', document_views.DocumentDeleteView.as_view(), name='document_delete'),
 ]

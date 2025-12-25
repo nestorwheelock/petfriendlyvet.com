@@ -1,11 +1,13 @@
 """Appointment URL configuration."""
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
 app_name = 'appointments'
 
 urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='appointments:my_appointments'), name='index'),
     path('services/', views.ServiceListView.as_view(), name='services'),
     path('book/', views.BookAppointmentView.as_view(), name='book'),
     path('my-appointments/', views.MyAppointmentsView.as_view(), name='my_appointments'),
