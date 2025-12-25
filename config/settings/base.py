@@ -43,6 +43,13 @@ THIRD_PARTY_APPS = [
     'corsheaders',
 ]
 
+# Optional development tools (may not be installed in Docker)
+try:
+    import docgen  # noqa: F401
+    THIRD_PARTY_APPS.append('docgen')
+except ImportError:
+    pass  # docgen not installed (e.g., in Docker)
+
 LOCAL_APPS = [
     'apps.core',
     'apps.accounts',
@@ -384,4 +391,50 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+
+# Documentation Generation (django-docgen)
+DOCGEN = {
+    # Output directories
+    'OUTPUT_DIR': BASE_DIR / 'docs',
+    'SCREENSHOTS_DIR': 'screenshots',
+    'GIFS_DIR': 'gifs',
+    'GUIDES_DIR': 'guides',
+    'GALLERY_DIR': 'gallery',
+
+    # Languages to generate
+    'LANGUAGES': ['es', 'en'],
+    'DEFAULT_LANGUAGE': 'es',
+
+    # Screenshot settings
+    'VIEWPORT_WIDTH': 1280,
+    'VIEWPORT_HEIGHT': 720,
+    'MOBILE_VIEWPORT_WIDTH': 375,
+    'MOBILE_VIEWPORT_HEIGHT': 667,
+    'FULL_PAGE': True,
+    'MAX_IMAGE_WIDTH': 1200,
+    'SCREENSHOT_QUALITY': 85,
+
+    # GIF settings
+    'GIF_FPS': 10,
+    'GIF_QUALITY': 80,
+    'GIF_DURATION': 100,
+
+    # Authentication
+    'LOGIN_URL': '/accounts/login/',
+    'LOGIN_USERNAME_FIELD': 'username',
+    'LOGIN_PASSWORD_FIELD': 'password',
+
+    # Test users for different roles (TEST USERS ONLY)
+    'TEST_USERS': {
+        'admin': {'username': 'devadmin', 'password': 'testpass123'},
+        'staff': {'username': 'dr_rodriguez', 'password': 'testpass123'},
+        'customer': {'username': 'devadmin', 'password': 'testpass123'},
+        'driver': {'username': 'devadmin', 'password': 'testpass123'},
+    },
+
+    # Page/workflow configuration modules
+    'PAGES_MODULE': 'config.docgen_pages',
+    'WORKFLOWS_MODULE': 'config.docgen_workflows',
 }
