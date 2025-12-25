@@ -427,11 +427,13 @@ DOCGEN = {
     'LOGIN_PASSWORD_FIELD': 'password',
 
     # Test users for different roles (TEST USERS ONLY)
+    # These must exist in the database with matching passwords
     'TEST_USERS': {
-        'admin': {'username': 'devadmin', 'password': 'testpass123'},
-        'staff': {'username': 'dr_rodriguez', 'password': 'testpass123'},
-        'customer': {'username': 'devadmin', 'password': 'testpass123'},
-        'driver': {'username': 'devadmin', 'password': 'testpass123'},
+        'admin': {'username': 'devadmin', 'password': 'admin123'},
+        'staff': {'username': 'recepcion1', 'password': 'testpass123'},
+        'vet': {'username': 'dr_rodriguez', 'password': 'testpass123'},
+        'customer': {'username': 'customer_1', 'password': 'testpass123'},
+        'driver': {'username': 'driver_carlos', 'password': 'testpass123'},
     },
 
     # Page/workflow configuration modules
