@@ -71,6 +71,34 @@ def staff_page(page, live_server, staff_user):
 
 
 @pytest.fixture
+def admin_user(db):
+    """Create a superuser for admin access."""
+    email = 'admin@test.petfriendlyvet.com'
+    user = User.objects.create_superuser(
+        username=email,
+        email=email,
+        password='admin123',
+        first_name='Admin',
+        last_name='User',
+    )
+    return user
+
+
+@pytest.fixture
+def admin_page(page, live_server, admin_user):
+    """Page with authenticated admin user session."""
+    page.goto(f'{live_server.url}/accounts/login/')
+
+    page.fill('input[name="username"]', admin_user.email)
+    page.fill('input[name="password"]', 'admin123')
+    page.click('button[type="submit"]')
+
+    page.wait_for_load_state('networkidle')
+
+    return page
+
+
+@pytest.fixture
 def driver_page(page, live_server, driver_user):
     """Page with authenticated driver user session."""
     page.goto(f'{live_server.url}/accounts/login/')
@@ -120,3 +148,176 @@ def store_with_products(db):
         ))
 
     return {'category': category, 'products': products}
+
+
+@pytest.fixture
+def pet_with_vaccinations(db, owner_user):
+    """Pet with vaccination records."""
+    from datetime import date, timedelta
+    from apps.pets.models import Pet, Vaccination
+
+    pet = Pet.objects.create(
+        owner=owner_user,
+        name='Vacunado',
+        species='dog',
+        breed='Labrador',
+        gender='male',
+        date_of_birth=date.today() - timedelta(days=365),
+    )
+
+    Vaccination.objects.create(
+        pet=pet,
+        vaccine_name='Rabies',
+        date_administered=date.today() - timedelta(days=30),
+        next_due_date=date.today() + timedelta(days=335),
+        batch_number='VAX-001',
+    )
+
+    return {'pet': pet}
+
+
+@pytest.fixture
+def pet_with_overdue_vaccination(db, owner_user):
+    """Pet with overdue vaccination."""
+    from datetime import date, timedelta
+    from apps.pets.models import Pet, Vaccination
+
+    pet = Pet.objects.create(
+        owner=owner_user,
+        name='NecesitaVacuna',
+        species='dog',
+        breed='Beagle',
+        gender='female',
+        date_of_birth=date.today() - timedelta(days=730),
+    )
+
+    Vaccination.objects.create(
+        pet=pet,
+        vaccine_name='Distemper',
+        date_administered=date.today() - timedelta(days=400),
+        next_due_date=date.today() - timedelta(days=35),  # Overdue
+        batch_number='VAX-002',
+    )
+
+    return {'pet': pet}
+
+
+@pytest.fixture
+def pet_with_medical_records(db, owner_user, vet_user):
+    """Pet with complete medical records."""
+    from datetime import date, timedelta
+    from decimal import Decimal
+    from apps.pets.models import Pet, ClinicalNote, WeightRecord
+
+    pet = Pet.objects.create(
+        owner=owner_user,
+        name='Documentado',
+        species='cat',
+        breed='Siamese',
+        gender='female',
+        date_of_birth=date.today() - timedelta(days=500),
+        weight_kg=Decimal('4.5'),
+    )
+
+    ClinicalNote.objects.create(
+        pet=pet,
+        author=vet_user,
+        note_type='observation',
+        note='Healthy cat, good appetite.',
+    )
+
+    WeightRecord.objects.create(
+        pet=pet,
+        weight_kg=Decimal('4.5'),
+        recorded_by=vet_user,
+    )
+
+    return {'pet': pet}
+
+
+@pytest.fixture
+def emergency_setup(db, vet_user, owner_user):
+    """Emergency system setup."""
+    from datetime import date, time, timedelta
+    from apps.practice.models import StaffProfile
+    from apps.emergency.models import OnCallSchedule, EmergencySymptom
+    from apps.pets.models import Pet
+
+    staff_profile, _ = StaffProfile.objects.get_or_create(
+        user=vet_user,
+        defaults={'role': 'veterinarian', 'can_prescribe': True}
+    )
+
+    on_call = OnCallSchedule.objects.create(
+        staff=staff_profile,
+        date=date.today(),
+        start_time=time(0, 0),
+        end_time=time(23, 59),
+        contact_phone='555-EMERGENCY',
+        is_active=True,
+    )
+
+    pet = Pet.objects.create(
+        owner=owner_user,
+        name='Emergencia',
+        species='dog',
+        breed='Poodle',
+        gender='male',
+        date_of_birth=date.today() - timedelta(days=365),
+    )
+
+    return {'on_call': on_call, 'pet': pet, 'staff': staff_profile}
+
+
+@pytest.fixture
+def loyalty_program_setup(db, owner_user):
+    """Loyalty program setup."""
+    from decimal import Decimal
+    from apps.loyalty.models import LoyaltyProgram, LoyaltyTier, LoyaltyAccount
+
+    program = LoyaltyProgram.objects.create(
+        name='PetFriendly Rewards',
+        description='Earn points with every purchase',
+        points_per_currency=Decimal('1.0'),
+        is_active=True,
+    )
+
+    tier = LoyaltyTier.objects.create(
+        program=program,
+        name='Bronze',
+        min_points=0,
+        discount_percent=Decimal('5.0'),
+        points_multiplier=Decimal('1.0'),
+        display_order=1,
+    )
+
+    account = LoyaltyAccount.objects.create(
+        user=owner_user,
+        program=program,
+        tier=tier,
+        points_balance=500,
+        lifetime_points=500,
+    )
+
+    return {'program': program, 'tier': tier, 'account': account}
+
+
+@pytest.fixture
+def staff_schedule_setup(db, staff_user):
+    """Staff scheduling setup."""
+    from datetime import date, time
+    from apps.practice.models import StaffProfile, Shift
+
+    profile, _ = StaffProfile.objects.get_or_create(
+        user=staff_user,
+        defaults={'role': 'receptionist'}
+    )
+
+    shift = Shift.objects.create(
+        staff=profile,
+        date=date.today(),
+        start_time=time(9, 0),
+        end_time=time(17, 0),
+    )
+
+    return {'profile': profile, 'shift': shift}
