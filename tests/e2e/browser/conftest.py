@@ -40,7 +40,7 @@ def live_server_url(live_server):
 
 @pytest.fixture
 def authenticated_page(page, live_server, owner_user):
-    """Page with authenticated owner user session."""
+    """Page with authenticated owner user session (alias for owner_page)."""
     # Login the user
     page.goto(f'{live_server.url}/accounts/login/')
 
@@ -56,13 +56,40 @@ def authenticated_page(page, live_server, owner_user):
 
 
 @pytest.fixture
+def owner_page(page, live_server, owner_user):
+    """Page with authenticated pet owner session."""
+    page.goto(f'{live_server.url}/accounts/login/')
+
+    page.fill('input[name="username"]', owner_user.email)
+    page.fill('input[name="password"]', 'owner123')
+    page.click('button[type="submit"]')
+
+    page.wait_for_load_state('networkidle')
+
+    return page
+
+
+@pytest.fixture
 def staff_page(page, live_server, staff_user):
     """Page with authenticated staff user session."""
     page.goto(f'{live_server.url}/accounts/login/')
 
-    # Use email since the form expects email format
     page.fill('input[name="username"]', staff_user.email)
     page.fill('input[name="password"]', 'staff123')
+    page.click('button[type="submit"]')
+
+    page.wait_for_load_state('networkidle')
+
+    return page
+
+
+@pytest.fixture
+def vet_page(page, live_server, vet_user):
+    """Page with authenticated veterinarian session."""
+    page.goto(f'{live_server.url}/accounts/login/')
+
+    page.fill('input[name="username"]', vet_user.email)
+    page.fill('input[name="password"]', 'vet123')
     page.click('button[type="submit"]')
 
     page.wait_for_load_state('networkidle')
