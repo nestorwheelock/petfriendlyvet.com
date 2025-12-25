@@ -10,8 +10,113 @@
         <p class="text-gray-600 mt-1">{% trans "Manage customer relationships and communications" %}</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
-        {% trans "CRM features coming soon." %}
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Customers" %}</div>
+            <div class="text-3xl font-bold text-gray-900 mt-2">{{ total_customers }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "New This Month" %}</div>
+            <div class="text-3xl font-bold text-green-600 mt-2">{{ new_customers_month }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Follow-ups Due" %}</div>
+            <div class="text-3xl font-bold text-orange-600 mt-2">{{ followups_due|length }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Recent Interactions" %}</div>
+            <div class="text-3xl font-bold text-blue-600 mt-2">{{ recent_interactions|length }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Interactions -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Interactions" %}</h2>
+                <a href="{% url 'crm:customer_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for interaction in recent_interactions %}
+                <div class="px-6 py-4">
+                    <div class="flex justify-between">
+                        <div>
+                            <span class="font-medium">{{ interaction.owner_profile.user.get_full_name|default:interaction.owner_profile.user.email }}</span>
+                            <span class="text-gray-500 text-sm ml-2">{{ interaction.get_interaction_type_display }}</span>
+                        </div>
+                        <span class="text-sm text-gray-500">{{ interaction.created_at|timesince }} {% trans "ago" %}</span>
+                    </div>
+                    {% if interaction.subject %}
+                    <p class="text-sm text-gray-600 mt-1">{{ interaction.subject }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No recent interactions" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Follow-ups Due -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Follow-ups Due" %}</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for followup in followups_due %}
+                <div class="px-6 py-4">
+                    <div class="flex justify-between">
+                        <span class="font-medium">{{ followup.owner_profile.user.get_full_name|default:followup.owner_profile.user.email }}</span>
+                        <span class="text-sm text-red-600">{{ followup.follow_up_date }}</span>
+                    </div>
+                    {% if followup.subject %}
+                    <p class="text-sm text-gray-600 mt-1">{{ followup.subject }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No follow-ups due" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Customers -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Top Customers" %}</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for customer in top_customers %}
+                <a href="{% url 'crm:customer_detail' pk=customer.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                    <div class="flex justify-between">
+                        <span class="font-medium">{{ customer.user.get_full_name|default:customer.user.email }}</span>
+                        <span class="text-sm font-semibold text-green-600">${{ customer.total_spent }}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ customer.total_visits }} {% trans "visits" %}</p>
+                </a>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No customer data yet" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Customer Tags -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Customer Tags" %}</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in tags %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                        {{ tag.name }}
+                        <span class="ml-2 text-xs bg-white rounded-full px-2">{{ tag.customer_count }}</span>
+                    </span>
+                    {% empty %}
+                    <span class="text-gray-500">{% trans "No tags defined" %}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

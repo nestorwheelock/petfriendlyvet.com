@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ customer.user.get_full_name|default:customer.user.email }} - {% trans "Customer" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'crm:customer_list' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Customers" %}
+        </a>
+    </nav>
+
+    <!-- Customer Header -->
+    <div class="bg-white rounded-xl shadow mb-8">
+        <div class="px-6 py-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ customer.user.get_full_name|default:customer.user.email }}</h1>
+                    <p class="text-gray-500 mt-1">{{ customer.user.email }}</p>
+                </div>
+                <div class="flex space-x-2">
+                    {% for tag in customer.tags.all %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 pt-6 border-t border-gray-200">
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Total Visits" %}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ customer.total_visits }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Total Spent" %}</div>
+                    <div class="text-2xl font-bold text-green-600">${{ customer.total_spent }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Lifetime Value" %}</div>
+                    <div class="text-2xl font-bold text-blue-600">${{ customer.lifetime_value }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Preferred Contact" %}</div>
+                    <div class="text-lg font-medium text-gray-900">{{ customer.get_preferred_contact_method_display }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Pets -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Pets" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for pet in pets %}
+                    <div class="px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-medium text-gray-900">{{ pet.name }}</span>
+                                <span class="text-gray-500 ml-2">{{ pet.get_species_display }}</span>
+                            </div>
+                            {% if pet.breed %}
+                            <span class="text-sm text-gray-500">{{ pet.breed }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center text-gray-500">{% trans "No pets registered" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Interactions -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Interactions" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for interaction in interactions %}
+                    <div class="px-6 py-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ interaction.get_interaction_type_display }}
+                                </span>
+                                <span class="text-sm text-gray-500 ml-2">{{ interaction.get_direction_display }}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">{{ interaction.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                        {% if interaction.subject %}
+                        <p class="font-medium text-gray-900 mt-2">{{ interaction.subject }}</p>
+                        {% endif %}
+                        {% if interaction.notes %}
+                        <p class="text-sm text-gray-600 mt-1">{{ interaction.notes }}</p>
+                        {% endif %}
+                        {% if interaction.handled_by %}
+                        <p class="text-xs text-gray-400 mt-2">{% trans "Handled by" %}: {{ interaction.handled_by.get_full_name|default:interaction.handled_by.email }}</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center text-gray-500">{% trans "No interactions recorded" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-8">
+            <!-- Customer Info -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Details" %}</h2>
+                </div>
+                <div class="px-6 py-4 space-y-4">
+                    <div>
+                        <div class="text-sm text-gray-500">{% trans "Preferred Language" %}</div>
+                        <div class="font-medium">{{ customer.get_preferred_language_display }}</div>
+                    </div>
+                    {% if customer.first_visit_date %}
+                    <div>
+                        <div class="text-sm text-gray-500">{% trans "First Visit" %}</div>
+                        <div class="font-medium">{{ customer.first_visit_date|date:"M d, Y" }}</div>
+                    </div>
+                    {% endif %}
+                    {% if customer.last_visit_date %}
+                    <div>
+                        <div class="text-sm text-gray-500">{% trans "Last Visit" %}</div>
+                        <div class="font-medium">{{ customer.last_visit_date|date:"M d, Y" }}</div>
+                    </div>
+                    {% endif %}
+                    {% if customer.referral_source %}
+                    <div>
+                        <div class="text-sm text-gray-500">{% trans "Referral Source" %}</div>
+                        <div class="font-medium">{{ customer.referral_source }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Notes" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for note in notes %}
+                    <div class="px-6 py-4">
+                        {% if note.is_pinned %}
+                        <span class="text-xs text-yellow-600 font-medium">{% trans "Pinned" %}</span>
+                        {% endif %}
+                        <p class="text-sm text-gray-700 mt-1">{{ note.content }}</p>
+                        <p class="text-xs text-gray-400 mt-2">{{ note.author.get_full_name|default:note.author.email }} - {{ note.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center text-gray-500">{% trans "No notes" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
