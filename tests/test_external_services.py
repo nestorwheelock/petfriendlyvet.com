@@ -414,3 +414,228 @@ class TestExternalServiceTools:
 
         assert result['success'] is False
         assert 'Partner not found' in result['error']
+
+
+# =============================================================================
+# Service Model Tests (Veterinary Services)
+# =============================================================================
+
+@pytest.mark.django_db
+class TestServiceModel:
+    """Tests for the Service model (veterinary services)."""
+
+    def test_create_consultation_service(self):
+        """Can create a consultation service."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        service = Service.objects.create(
+            name='General Consultation',
+            name_es='Consulta General',
+            description='Standard veterinary consultation',
+            category='consultation',
+            base_price=Decimal('500.00'),
+            duration_minutes=30,
+        )
+
+        assert service.pk is not None
+        assert service.category == 'consultation'
+        assert service.base_price == Decimal('500.00')
+        assert service.is_active is True
+
+    def test_create_vaccination_service(self):
+        """Can create a vaccination service."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        service = Service.objects.create(
+            name='Rabies Vaccination',
+            name_es='Vacuna Antirrábica',
+            category='vaccination',
+            base_price=Decimal('350.00'),
+            duration_minutes=15,
+        )
+
+        assert service.pk is not None
+        assert service.category == 'vaccination'
+
+    def test_create_surgery_service(self):
+        """Can create a surgery service."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        service = Service.objects.create(
+            name='Spay/Neuter',
+            name_es='Esterilización',
+            category='surgery',
+            base_price=Decimal('2500.00'),
+            duration_minutes=120,
+            requires_appointment=True,
+        )
+
+        assert service.pk is not None
+        assert service.category == 'surgery'
+        assert service.requires_appointment is True
+
+    def test_service_default_values(self):
+        """Service has correct default values."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        service = Service.objects.create(
+            name='Test Service',
+        )
+
+        assert service.category == 'consultation'
+        assert service.base_price == Decimal('0')
+        assert service.duration_minutes == 30
+        assert service.is_active is True
+        assert service.requires_appointment is True
+        assert service.clave_unidad_sat == 'E48'
+
+    def test_service_str(self):
+        """Service string representation."""
+        from apps.services.models import Service
+
+        service = Service.objects.create(
+            name='Dental Cleaning',
+        )
+
+        assert 'Dental Cleaning' in str(service)
+
+    def test_service_ordering(self):
+        """Services are ordered by category then name."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        Service.objects.create(name='Zulu Service', category='vaccination')
+        Service.objects.create(name='Alpha Service', category='vaccination')
+        Service.objects.create(name='Beta Service', category='consultation')
+
+        services = list(Service.objects.all())
+        # consultation comes before vaccination alphabetically
+        assert services[0].category == 'consultation'
+        assert services[1].category == 'vaccination'
+
+    def test_service_sat_codes(self):
+        """Service can have SAT codes for CFDI."""
+        from apps.services.models import Service
+        from decimal import Decimal
+
+        service = Service.objects.create(
+            name='Consulta',
+            clave_producto_sat='85121800',
+            clave_unidad_sat='E48',
+        )
+
+        assert service.clave_producto_sat == '85121800'
+        assert service.clave_unidad_sat == 'E48'
+
+    def test_all_service_categories(self):
+        """All service categories are valid."""
+        from apps.services.models import Service, SERVICE_CATEGORIES
+
+        for category, _ in SERVICE_CATEGORIES:
+            service = Service.objects.create(
+                name=f'Test {category}',
+                category=category
+            )
+            assert service.category == category
+
+
+# =============================================================================
+# Referral Form Tests
+# =============================================================================
+
+@pytest.mark.django_db
+class TestReferralForm:
+    """Tests for the ReferralForm."""
+
+    @pytest.fixture
+    def owner(self):
+        return User.objects.create_user(
+            username='petowner',
+            email='owner@example.com',
+            password='testpass123',
+            role='owner'
+        )
+
+    @pytest.fixture
+    def other_owner(self):
+        return User.objects.create_user(
+            username='other_owner',
+            email='other@example.com',
+            password='testpass123',
+            role='owner'
+        )
+
+    @pytest.fixture
+    def pet(self, owner):
+        from apps.pets.models import Pet
+        return Pet.objects.create(
+            owner=owner,
+            name='Luna',
+            species='dog'
+        )
+
+    @pytest.fixture
+    def other_pet(self, other_owner):
+        from apps.pets.models import Pet
+        return Pet.objects.create(
+            owner=other_owner,
+            name='Max',
+            species='dog'
+        )
+
+    def test_form_filters_pets_by_user(self, owner, pet, other_pet):
+        """Form only shows user's pets."""
+        from apps.services.forms import ReferralForm
+
+        form = ReferralForm(user=owner)
+        pet_queryset = form.fields['pet'].queryset
+
+        assert pet in pet_queryset
+        assert other_pet not in pet_queryset
+
+    def test_form_valid_with_required_fields(self, owner, pet):
+        """Form is valid with required fields."""
+        from apps.services.forms import ReferralForm
+
+        form = ReferralForm(data={
+            'pet': pet.pk,
+            'notes': 'Some notes',
+        }, user=owner)
+
+        assert form.is_valid()
+
+    def test_form_valid_with_preferred_date(self, owner, pet):
+        """Form accepts preferred date."""
+        from apps.services.forms import ReferralForm
+
+        form = ReferralForm(data={
+            'pet': pet.pk,
+            'preferred_date': date.today() + timedelta(days=7),
+            'notes': 'Some notes',
+        }, user=owner)
+
+        assert form.is_valid()
+
+    def test_form_invalid_without_pet(self, owner):
+        """Form requires pet selection."""
+        from apps.services.forms import ReferralForm
+
+        form = ReferralForm(data={
+            'notes': 'Some notes',
+        }, user=owner)
+
+        assert not form.is_valid()
+        assert 'pet' in form.errors
+
+    def test_form_has_widget_classes(self, owner, pet):
+        """Form widgets have CSS classes."""
+        from apps.services.forms import ReferralForm
+
+        form = ReferralForm(user=owner)
+
+        assert 'rounded-md' in form.fields['pet'].widget.attrs.get('class', '')
+        assert 'rounded-md' in form.fields['notes'].widget.attrs.get('class', '')
