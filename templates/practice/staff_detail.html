@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ staff.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'practice:staff_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Staff" %}
+        </a>
+    </div>
+
+    <!-- Staff Profile -->
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                    <span class="text-2xl font-bold text-primary-600">
+                        {{ staff.user.first_name|slice:":1" }}{{ staff.user.last_name|slice:":1" }}
+                    </span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ staff.user.get_full_name }}</h1>
+                    <p class="text-gray-500">{{ staff.get_role_display }}</p>
+                    {% if staff.title %}
+                    <p class="text-sm text-gray-500">{{ staff.title }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Contact" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Email" %}</dt>
+                        <dd><a href="mailto:{{ staff.user.email }}" class="text-primary-600 hover:underline">{{ staff.user.email }}</a></dd>
+                    </div>
+                    {% if staff.phone %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Phone" %}</dt>
+                        <dd>{{ staff.phone }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Permissions" %}</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% if staff.can_prescribe %}
+                    <span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">{% trans "Can Prescribe" %}</span>
+                    {% endif %}
+                    {% if staff.can_dispense %}
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">{% trans "Can Dispense" %}</span>
+                    {% endif %}
+                    {% if staff.can_handle_controlled %}
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">{% trans "Controlled Substances" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Shifts -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="font-semibold text-gray-900">{% trans "Recent Shifts" %}</h2>
+            </div>
+            {% if recent_shifts %}
+            <ul class="divide-y divide-gray-200">
+                {% for shift in recent_shifts %}
+                <li class="p-4">
+                    <p class="font-medium">{{ shift.date|date:"D, M d" }}</p>
+                    <p class="text-sm text-gray-500">{{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-6 text-center text-gray-500">{% trans "No recent shifts" %}</div>
+            {% endif %}
+        </div>
+
+        <!-- Assigned Tasks -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="font-semibold text-gray-900">{% trans "Active Tasks" %}</h2>
+            </div>
+            {% if assigned_tasks %}
+            <ul class="divide-y divide-gray-200">
+                {% for task in assigned_tasks %}
+                <li class="p-4">
+                    <a href="{% url 'practice:task_detail' task.pk %}" class="block hover:bg-gray-50">
+                        <p class="font-medium">{{ task.title }}</p>
+                        <span class="text-xs px-2 py-1 rounded-full
+                            {% if task.priority == 'urgent' %}bg-red-100 text-red-800
+                            {% elif task.priority == 'high' %}bg-orange-100 text-orange-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-6 text-center text-gray-500">{% trans "No active tasks" %}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{{ batch.batch_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'inventory:batches' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Batches" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ batch.product.name }}</h1>
+                    <p class="text-gray-500 mt-1">{% trans "Batch" %}: {{ batch.batch_number }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if batch.status == 'available' %}bg-green-100 text-green-800
+                    {% elif batch.status == 'expired' %}bg-red-100 text-red-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ batch.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Batch Information" %}</h3>
+                <dl class="space-y-2">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Lot Number" %}</dt>
+                        <dd class="font-medium">{{ batch.lot_number|default:"-" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Location" %}</dt>
+                        <dd class="font-medium">{{ batch.location.name }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Supplier" %}</dt>
+                        <dd class="font-medium">{{ batch.supplier.name|default:"-" }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Quantities" %}</h3>
+                <dl class="space-y-2">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Initial Qty" %}</dt>
+                        <dd class="font-medium">{{ batch.initial_quantity }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Current Qty" %}</dt>
+                        <dd class="font-medium text-primary-600">{{ batch.current_quantity }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Unit Cost" %}</dt>
+                        <dd class="font-medium">${{ batch.unit_cost }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Dates" %}</h3>
+                <dl class="space-y-2">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Received" %}</dt>
+                        <dd class="font-medium">{{ batch.received_date|date:"M d, Y" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Manufactured" %}</dt>
+                        <dd class="font-medium">{{ batch.manufacture_date|date:"M d, Y"|default:"-" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-600">{% trans "Expires" %}</dt>
+                        <dd class="font-medium {% if batch.is_expired %}text-red-600{% endif %}">
+                            {{ batch.expiry_date|date:"M d, Y"|default:"-" }}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        {% if batch.notes %}
+        <div class="px-6 pb-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Notes" %}</h3>
+            <p class="text-gray-600">{{ batch.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Movement History -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Movement History" %}</h2>
+        </div>
+        {% if movements %}
+        <ul class="divide-y divide-gray-200">
+            {% for movement in movements %}
+            <li class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ movement.get_movement_type_display }}</p>
+                        <p class="text-sm text-gray-500">
+                            {% if movement.from_location %}{{ movement.from_location.name }} → {% endif %}
+                            {% if movement.to_location %}{{ movement.to_location.name }}{% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">{{ movement.quantity }}</p>
+                        <p class="text-xs text-gray-500">{{ movement.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No movements recorded" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Suppliers" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Suppliers" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Manage product suppliers and vendors" %}</p>
+        </div>
+        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex gap-4">
+            <input type="text" name="search" value="{{ search }}"
+                   placeholder="{% trans 'Search suppliers...' %}"
+                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500">
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Search" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Suppliers Grid -->
+    {% if suppliers %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for supplier in suppliers %}
+        <a href="{% url 'inventory:supplier_detail' supplier.pk %}" class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">{{ supplier.name }}</h2>
+                        {% if supplier.code %}
+                        <p class="text-sm text-gray-500">{{ supplier.code }}</p>
+                        {% endif %}
+                    </div>
+                    {% if supplier.is_preferred %}
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">⭐ {% trans "Preferred" %}</span>
+                    {% endif %}
+                </div>
+
+                {% if supplier.contact_name %}
+                <p class="text-gray-600 mt-3">📧 {{ supplier.contact_name }}</p>
+                {% endif %}
+
+                {% if supplier.phone %}
+                <p class="text-gray-600 mt-1">📞 {{ supplier.phone }}</p>
+                {% endif %}
+
+                {% if supplier.lead_time_days %}
+                <p class="text-sm text-gray-500 mt-3">
+                    {% trans "Lead time:" %} {{ supplier.lead_time_days }} {% trans "days" %}
+                </p>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-gray-50 rounded-xl p-8 text-center">
+        <span class="text-4xl block mb-4">🏢</span>
+        <p class="text-gray-500">{% trans "No suppliers found" %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ schedule.specialist.name }} - {{ schedule.date|date:"M d" }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'referrals:visiting_schedule' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Schedule" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ schedule.specialist.name }}</h1>
+                    <p class="text-gray-500">{{ schedule.specialist.get_specialty_display }}</p>
+                    <p class="text-primary-600 font-medium mt-1">{{ schedule.date|date:"l, F d, Y" }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if schedule.status == 'completed' %}bg-green-100 text-green-800
+                    {% elif schedule.status == 'cancelled' %}bg-red-100 text-red-800
+                    {% elif schedule.status == 'confirmed' %}bg-blue-100 text-blue-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ schedule.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Visit Details" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Time" %}</dt>
+                        <dd class="font-medium">{{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}</dd>
+                    </div>
+                    {% if schedule.max_appointments %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Appointments" %}</dt>
+                        <dd class="font-medium">{{ schedule.appointments_booked }} / {{ schedule.max_appointments }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Specialist Contact" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Phone" %}</dt>
+                        <dd class="font-medium">{{ schedule.specialist.phone }}</dd>
+                    </div>
+                    {% if schedule.specialist.email %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Email" %}</dt>
+                        <dd><a href="mailto:{{ schedule.specialist.email }}" class="text-primary-600 hover:underline">{{ schedule.specialist.email }}</a></dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        {% if schedule.notes %}
+        <div class="px-6 pb-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Notes" %}</h3>
+            <p class="text-gray-700">{{ schedule.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Appointments -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Appointments" %}</h2>
+        </div>
+        {% if appointments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Time" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Patient" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Service" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for appt in appointments %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">{{ appt.appointment_time|time:"H:i" }}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ appt.pet.name }}</p>
+                            <p class="text-sm text-gray-500">{{ appt.owner.get_full_name }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ appt.service }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if appt.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif appt.status == 'cancelled' or appt.status == 'no_show' %}bg-red-100 text-red-800
+                                {% elif appt.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No appointments scheduled yet" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

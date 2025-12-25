@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Schedule" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Weekly Schedule" %}</h1>
+            <p class="text-gray-600 mt-1">{{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}</p>
+        </div>
+        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6 flex items-center justify-between">
+        <a href="?week={{ week_offset|add:-1 }}" class="text-primary-600 hover:underline font-medium">
+            ← {% trans "Previous Week" %}
+        </a>
+        {% if week_offset != 0 %}
+        <a href="?week=0" class="text-gray-600 hover:underline">{% trans "Today" %}</a>
+        {% endif %}
+        <a href="?week={{ week_offset|add:1 }}" class="text-primary-600 hover:underline font-medium">
+            {% trans "Next Week" %} →
+        </a>
+    </div>
+
+    <!-- Schedule Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+        {% for day, shifts in schedule_by_day.items %}
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <p class="font-semibold text-gray-900">{{ day|date:"D" }}</p>
+                <p class="text-sm text-gray-500">{{ day|date:"M d" }}</p>
+            </div>
+            {% if shifts %}
+            <ul class="divide-y divide-gray-100">
+                {% for shift in shifts %}
+                <li class="p-3">
+                    <p class="font-medium text-sm">{{ shift.staff.user.get_short_name }}</p>
+                    <p class="text-xs text-gray-500">{{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}</p>
+                    {% if shift.is_confirmed %}
+                    <span class="inline-block mt-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">{% trans "Confirmed" %}</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-4 text-center text-gray-400 text-sm">-</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

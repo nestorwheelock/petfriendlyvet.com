@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{% trans "Inventory Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Inventory Dashboard" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Stock levels, alerts, and recent activity" %}</p>
+        </div>
+    </div>
+
+    <!-- Alert Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <a href="{% url 'inventory:alerts' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition {% if low_stock_count > 0 %}border-l-4 border-yellow-500{% endif %}">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">{% trans "Low Stock" %}</p>
+                    <p class="text-2xl font-bold {% if low_stock_count > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">{{ low_stock_count }}</p>
+                </div>
+                <span class="text-3xl">📉</span>
+            </div>
+        </a>
+
+        <a href="{% url 'inventory:expiring' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition {% if expiring_count > 0 %}border-l-4 border-orange-500{% endif %}">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">{% trans "Expiring Soon" %}</p>
+                    <p class="text-2xl font-bold {% if expiring_count > 0 %}text-orange-600{% else %}text-gray-900{% endif %}">{{ expiring_count }}</p>
+                </div>
+                <span class="text-3xl">⏰</span>
+            </div>
+        </a>
+
+        <a href="{% url 'inventory:alerts' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition {% if expired_count > 0 %}border-l-4 border-red-500{% endif %}">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">{% trans "Expired" %}</p>
+                    <p class="text-2xl font-bold {% if expired_count > 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ expired_count }}</p>
+                </div>
+                <span class="text-3xl">🚫</span>
+            </div>
+        </a>
+
+        <a href="{% url 'inventory:purchase_orders' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">{% trans "Pending POs" %}</p>
+                    <p class="text-2xl font-bold text-primary-600">{{ pending_po_count }}</p>
+                </div>
+                <span class="text-3xl">📦</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <a href="{% url 'inventory:stock_levels' %}" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">📊</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Stock Levels" %}</span>
+        </a>
+        <a href="{% url 'inventory:batches' %}" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">🏷️</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Batches" %}</span>
+        </a>
+        <a href="{% url 'inventory:movements' %}" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">🔄</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Movements" %}</span>
+        </a>
+        <a href="{% url 'inventory:suppliers' %}" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">🏢</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Suppliers" %}</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Movements -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Recent Movements" %}</h2>
+                <a href="{% url 'inventory:movements' %}" class="text-primary-600 text-sm hover:underline">{% trans "View all" %}</a>
+            </div>
+            {% if recent_movements %}
+            <ul class="divide-y divide-gray-200">
+                {% for movement in recent_movements %}
+                <li class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ movement.product.name }}</p>
+                            <p class="text-sm text-gray-500">{{ movement.get_movement_type_display }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium {% if movement.quantity > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if movement.quantity > 0 %}+{% endif %}{{ movement.quantity }}
+                            </p>
+                            <p class="text-xs text-gray-500">{{ movement.created_at|date:"M d, H:i" }}</p>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No recent movements" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Locations -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="font-semibold text-gray-900">{% trans "Stock Locations" %}</h2>
+            </div>
+            {% if locations %}
+            <ul class="divide-y divide-gray-200">
+                {% for location in locations %}
+                <li class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">
+                                {% if location.location_type == 'pharmacy' %}💊
+                                {% elif location.location_type == 'refrigerated' %}❄️
+                                {% elif location.location_type == 'controlled' %}🔒
+                                {% elif location.location_type == 'warehouse' %}🏭
+                                {% else %}📦{% endif %}
+                            </span>
+                            <div>
+                                <p class="font-medium text-gray-900">{{ location.name }}</p>
+                                <p class="text-sm text-gray-500">{{ location.get_location_type_display }}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'inventory:stock_levels' %}?location={{ location.pk }}" class="text-primary-600 text-sm hover:underline">
+                            {% trans "View stock" %}
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No locations configured" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

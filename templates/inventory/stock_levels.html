@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{% trans "Stock Levels" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Levels" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Current inventory by product and location" %}</p>
+        </div>
+        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="search" value="{{ search }}"
+                       placeholder="{% trans 'Search products...' %}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500">
+            </div>
+            <select name="location" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Locations" %}</option>
+                {% for location in locations %}
+                <option value="{{ location.pk }}" {% if current_location == location.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ location.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Low Stock Alert -->
+    {% if low_stock %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+        <h2 class="font-bold text-yellow-800 mb-2">⚠️ {% trans "Low Stock Items" %}</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="text-left text-sm text-yellow-800">
+                        <th class="py-2">{% trans "Product" %}</th>
+                        <th class="py-2">{% trans "Location" %}</th>
+                        <th class="py-2 text-right">{% trans "Current" %}</th>
+                        <th class="py-2 text-right">{% trans "Minimum" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="text-yellow-700">
+                    {% for stock in low_stock %}
+                    <tr>
+                        <td class="py-2">{{ stock.product.name }}</td>
+                        <td class="py-2">{{ stock.location.name }}</td>
+                        <td class="py-2 text-right font-bold text-red-600">{{ stock.quantity }}</td>
+                        <td class="py-2 text-right">{{ stock.min_level }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Stock -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "All Stock" %}</h2>
+        </div>
+        {% if normal_stock %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Location" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Quantity" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Reserved" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Available" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stock in normal_stock %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ stock.product.name }}</p>
+                            <p class="text-sm text-gray-500">{{ stock.product.sku }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ stock.location.name }}</td>
+                        <td class="px-6 py-4 text-right font-medium">{{ stock.quantity }}</td>
+                        <td class="px-6 py-4 text-right text-gray-500">{{ stock.reserved_quantity }}</td>
+                        <td class="px-6 py-4 text-right font-medium text-green-600">{{ stock.available_quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No stock found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

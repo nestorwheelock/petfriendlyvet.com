@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{{ supplier.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'inventory:suppliers' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Suppliers" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ supplier.name }}</h1>
+                    {% if supplier.code %}
+                    <p class="text-gray-500">{{ supplier.code }}</p>
+                    {% endif %}
+                </div>
+                {% if supplier.is_preferred %}
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                    ⭐ {% trans "Preferred Supplier" %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Contact Information" %}</h3>
+                <dl class="space-y-2">
+                    {% if supplier.contact_name %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Contact" %}</dt>
+                        <dd class="font-medium">{{ supplier.contact_name }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if supplier.email %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Email" %}</dt>
+                        <dd><a href="mailto:{{ supplier.email }}" class="text-primary-600 hover:underline">{{ supplier.email }}</a></dd>
+                    </div>
+                    {% endif %}
+                    {% if supplier.phone %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Phone" %}</dt>
+                        <dd><a href="tel:{{ supplier.phone }}" class="text-primary-600 hover:underline">{{ supplier.phone }}</a></dd>
+                    </div>
+                    {% endif %}
+                    {% if supplier.address %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Address" %}</dt>
+                        <dd class="font-medium">{{ supplier.address|linebreaksbr }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Business Details" %}</h3>
+                <dl class="space-y-2">
+                    {% if supplier.rfc %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Tax ID (RFC)" %}</dt>
+                        <dd class="font-medium">{{ supplier.rfc }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if supplier.payment_terms %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Payment Terms" %}</dt>
+                        <dd class="font-medium">{{ supplier.payment_terms }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if supplier.lead_time_days %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Lead Time" %}</dt>
+                        <dd class="font-medium">{{ supplier.lead_time_days }} {% trans "days" %}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        {% if supplier.notes %}
+        <div class="px-6 pb-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">{% trans "Notes" %}</h3>
+            <p class="text-gray-600">{{ supplier.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Recent Orders" %}</h2>
+        </div>
+        {% if orders %}
+        <ul class="divide-y divide-gray-200">
+            {% for order in orders %}
+            <li class="p-4 hover:bg-gray-50">
+                <a href="{% url 'inventory:purchase_order_detail' order.pk %}" class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ order.po_number }}</p>
+                        <p class="text-sm text-gray-500">{{ order.order_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">${{ order.total|intcomma }}</p>
+                        <span class="px-2 py-0.5 text-xs rounded-full
+                            {% if order.status == 'received' %}bg-green-100 text-green-800
+                            {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No orders from this supplier" %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Products from this Supplier -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Products" %}</h2>
+        </div>
+        {% if products %}
+        <ul class="divide-y divide-gray-200">
+            {% for ps in products %}
+            <li class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ ps.product.name }}</p>
+                        {% if ps.supplier_sku %}
+                        <p class="text-sm text-gray-500">{% trans "SKU:" %} {{ ps.supplier_sku }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">${{ ps.unit_cost }}</p>
+                        {% if ps.is_preferred %}
+                        <span class="text-xs text-yellow-600">⭐ {% trans "Preferred" %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No products linked to this supplier" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Referrals" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Referrals" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Inbound and outbound referrals" %}</p>
+        </div>
+        <a href="{% url 'referrals:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <select name="direction" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Directions" %}</option>
+                {% for value, label in direction_choices %}
+                <option value="{{ value }}" {% if current_direction == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Statuses" %}</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Referrals List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if referrals %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Ref #" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Patient" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Direction" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Specialist" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-6 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for referral in referrals %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ referral.referral_number }}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ referral.pet.name }}</p>
+                            <p class="text-sm text-gray-500">{{ referral.owner.get_full_name }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if referral.direction == 'outbound' %}bg-blue-100 text-blue-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ referral.get_direction_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {% if referral.specialist %}
+                            {{ referral.specialist.name }}
+                            {% else %}
+                            {{ referral.referring_clinic|default:referral.referring_vet_name|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if referral.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif referral.status == 'cancelled' or referral.status == 'declined' %}bg-red-100 text-red-800
+                                {% elif referral.status == 'draft' %}bg-gray-100 text-gray-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ referral.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ referral.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'referrals:referral_detail' referral.pk %}" class="text-primary-600 hover:underline text-sm">
+                                {% trans "View" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No referrals found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

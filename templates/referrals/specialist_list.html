@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Specialists Directory" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Specialists Directory" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Referral network partners" %}</p>
+        </div>
+        <a href="{% url 'referrals:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <select name="specialty" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Specialties" %}</option>
+                {% for value, label in specialty_choices %}
+                <option value="{{ value }}" {% if current_specialty == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="visiting" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Types" %}</option>
+                <option value="yes" {% if current_visiting == 'yes' %}selected{% endif %}>{% trans "Visiting Only" %}</option>
+                <option value="no" {% if current_visiting == 'no' %}selected{% endif %}>{% trans "External Only" %}</option>
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Specialists Grid -->
+    {% if specialists %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for specialist in specialists %}
+        <a href="{% url 'referrals:specialist_detail' specialist.pk %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <p class="font-semibold text-gray-900">{{ specialist.name }}</p>
+                    {% if specialist.clinic_name %}
+                    <p class="text-sm text-gray-500">{{ specialist.clinic_name }}</p>
+                    {% endif %}
+                </div>
+                {% if specialist.is_visiting %}
+                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">{% trans "Visiting" %}</span>
+                {% endif %}
+            </div>
+            <p class="text-primary-600 font-medium mb-2">{{ specialist.get_specialty_display }}</p>
+            <p class="text-sm text-gray-500">{{ specialist.city }}</p>
+            <div class="mt-3 flex items-center gap-4 text-sm text-gray-500">
+                <span>📧 {{ specialist.email|default:"-" }}</span>
+                <span>📞 {{ specialist.phone }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+        {% trans "No specialists found" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

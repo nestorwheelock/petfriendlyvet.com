@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Referral" %} {{ referral.referral_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'referrals:referral_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Referrals" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ referral.referral_number }}</h1>
+                    <p class="text-gray-500">{% trans "Created" %} {{ referral.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 text-sm font-medium rounded-full
+                        {% if referral.direction == 'outbound' %}bg-blue-100 text-blue-800
+                        {% else %}bg-green-100 text-green-800{% endif %}">
+                        {{ referral.get_direction_display }}
+                    </span>
+                    <span class="px-3 py-1 text-sm font-medium rounded-full
+                        {% if referral.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif referral.status == 'cancelled' or referral.status == 'declined' %}bg-red-100 text-red-800
+                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ referral.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Patient Information" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Pet" %}</dt>
+                        <dd class="font-medium">{{ referral.pet.name }} ({{ referral.pet.species }})</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Owner" %}</dt>
+                        <dd class="font-medium">{{ referral.owner.get_full_name }}</dd>
+                    </div>
+                </dl>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">
+                    {% if referral.direction == 'outbound' %}{% trans "Specialist" %}{% else %}{% trans "Referring Vet" %}{% endif %}
+                </h3>
+                <dl class="space-y-2">
+                    {% if referral.specialist %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Name" %}</dt>
+                        <dd class="font-medium">
+                            <a href="{% url 'referrals:specialist_detail' referral.specialist.pk %}" class="text-primary-600 hover:underline">
+                                {{ referral.specialist.name }}
+                            </a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Specialty" %}</dt>
+                        <dd class="font-medium">{{ referral.specialist.get_specialty_display }}</dd>
+                    </div>
+                    {% else %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Referring Vet" %}</dt>
+                        <dd class="font-medium">{{ referral.referring_vet_name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Clinic" %}</dt>
+                        <dd class="font-medium">{{ referral.referring_clinic|default:"-" }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <div class="px-6 pb-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Reason for Referral" %}</h3>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ referral.reason }}</p>
+        </div>
+
+        {% if referral.clinical_summary %}
+        <div class="px-6 pb-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Clinical Summary" %}</h3>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ referral.clinical_summary }}</p>
+        </div>
+        {% endif %}
+
+        {% if referral.specialist_findings or referral.specialist_recommendations %}
+        <div class="px-6 pb-6 border-t border-gray-200 pt-6">
+            <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Specialist Report" %}</h3>
+            {% if referral.specialist_findings %}
+            <div class="mb-4">
+                <p class="text-gray-600 text-sm">{% trans "Findings" %}</p>
+                <p class="text-gray-700">{{ referral.specialist_findings }}</p>
+            </div>
+            {% endif %}
+            {% if referral.specialist_diagnosis %}
+            <div class="mb-4">
+                <p class="text-gray-600 text-sm">{% trans "Diagnosis" %}</p>
+                <p class="text-gray-700">{{ referral.specialist_diagnosis }}</p>
+            </div>
+            {% endif %}
+            {% if referral.specialist_recommendations %}
+            <div>
+                <p class="text-gray-600 text-sm">{% trans "Recommendations" %}</p>
+                <p class="text-gray-700">{{ referral.specialist_recommendations }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Documents -->
+    {% if documents %}
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Documents" %}</h2>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for doc in documents %}
+            <li class="p-4 flex items-center justify-between">
+                <div>
+                    <p class="font-medium">{{ doc.title }}</p>
+                    <p class="text-sm text-gray-500">{{ doc.get_document_type_display }}</p>
+                </div>
+                <a href="{{ doc.file.url }}" target="_blank" class="text-primary-600 hover:underline text-sm">
+                    {% trans "Download" %}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Notes -->
+    {% if notes %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Notes" %}</h2>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for note in notes %}
+            <li class="p-4">
+                <p class="text-gray-700">{{ note.note }}</p>
+                <p class="text-sm text-gray-500 mt-2">
+                    {% if note.author %}{{ note.author.get_short_name }}{% endif %} - {{ note.created_at|date:"M d, Y H:i" }}
+                    {% if note.is_internal %}<span class="text-yellow-600">({% trans "Internal" %})</span>{% endif %}
+                </p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

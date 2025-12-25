@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Record Stock Movement" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Record Stock Movement" %}</h1>
+        <a href="{% url 'inventory:movements' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Movement Type" %}</label>
+                <select name="movement_type" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select type..." %}</option>
+                    {% for value, label in movement_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Product" %}</label>
+                <input type="text" name="product_search" placeholder="{% trans 'Search products...' %}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "From Location" %}</label>
+                    <select name="from_location" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option value="">{% trans "N/A" %}</option>
+                        {% for location in locations %}
+                        <option value="{{ location.pk }}">{{ location.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "To Location" %}</label>
+                    <select name="to_location" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option value="">{% trans "N/A" %}</option>
+                        {% for location in locations %}
+                        <option value="{{ location.pk }}">{{ location.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Quantity" %}</label>
+                <input type="number" name="quantity" step="0.01" required
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Reason/Notes" %}</label>
+                <textarea name="reason" rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2"></textarea>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% trans "Record Movement" %}
+            </button>
+            <a href="{% url 'inventory:movements' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

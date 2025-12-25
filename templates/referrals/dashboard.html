@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Referral Network" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Referral Network" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Specialist referrals and visiting specialists" %}</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Active Specialists" %}</p>
+            <p class="text-3xl font-bold text-primary-600">{{ active_specialists }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Pending Referrals" %}</p>
+            <p class="text-3xl font-bold text-orange-600">{{ pending_referrals }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Upcoming Visits" %}</p>
+            <p class="text-3xl font-bold text-blue-600">{{ upcoming_visits }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Completed This Month" %}</p>
+            <p class="text-3xl font-bold text-green-600">{{ completed_this_month }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <a href="{% url 'referrals:specialist_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">🏥</span>
+            <span class="font-medium">{% trans "Specialists" %}</span>
+        </a>
+        <a href="{% url 'referrals:referral_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">📋</span>
+            <span class="font-medium">{% trans "Referrals" %}</span>
+        </a>
+        <a href="{% url 'referrals:visiting_schedule' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">📅</span>
+            <span class="font-medium">{% trans "Visiting Schedule" %}</span>
+        </a>
+        <a href="{% url 'referrals:specialist_list' %}?visiting=yes" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">👨‍⚕️</span>
+            <span class="font-medium">{% trans "Visiting Specialists" %}</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Referrals -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Recent Referrals" %}</h2>
+                <a href="{% url 'referrals:referral_list' %}" class="text-primary-600 text-sm hover:underline">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            {% if recent_referrals %}
+            <ul class="divide-y divide-gray-200">
+                {% for referral in recent_referrals %}
+                <li class="p-4 hover:bg-gray-50">
+                    <a href="{% url 'referrals:referral_detail' referral.pk %}" class="block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ referral.pet.name }}</p>
+                                <p class="text-sm text-gray-500">
+                                    {% if referral.specialist %}
+                                    → {{ referral.specialist.name }}
+                                    {% else %}
+                                    {{ referral.referring_clinic|default:referral.referring_vet_name }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if referral.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif referral.status == 'draft' %}bg-gray-100 text-gray-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ referral.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No recent referrals" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Upcoming Visiting Specialists -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Upcoming Visits" %}</h2>
+                <a href="{% url 'referrals:visiting_schedule' %}" class="text-primary-600 text-sm hover:underline">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            {% if upcoming_schedules %}
+            <ul class="divide-y divide-gray-200">
+                {% for schedule in upcoming_schedules %}
+                <li class="p-4 hover:bg-gray-50">
+                    <a href="{% url 'referrals:visiting_detail' schedule.pk %}" class="block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ schedule.specialist.name }}</p>
+                                <p class="text-sm text-gray-500">{{ schedule.specialist.get_specialty_display }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">{{ schedule.date|date:"M d" }}</p>
+                                <p class="text-sm text-gray-500">{{ schedule.start_time|time:"H:i" }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No upcoming visits scheduled" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Tasks" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Tasks" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Staff task management" %}</p>
+        </div>
+        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <select name="status" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Status" %}</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="priority" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Priorities" %}</option>
+                {% for value, label in priority_choices %}
+                <option value="{{ value }}" {% if current_priority == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if tasks %}
+        <ul class="divide-y divide-gray-200">
+            {% for task in tasks %}
+            <li class="p-4 hover:bg-gray-50">
+                <a href="{% url 'practice:task_detail' task.pk %}" class="block">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900">{{ task.title }}</p>
+                            {% if task.description %}
+                            <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ task.description }}</p>
+                            {% endif %}
+                            <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                {% if task.assigned_to %}
+                                <span>{% trans "Assigned to" %}: {{ task.assigned_to.user.get_short_name }}</span>
+                                {% endif %}
+                                {% if task.due_date %}
+                                <span>{% trans "Due" %}: {{ task.due_date|date:"M d" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if task.priority == 'urgent' %}bg-red-100 text-red-800
+                                {% elif task.priority == 'high' %}bg-orange-100 text-orange-800
+                                {% elif task.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ task.get_priority_display }}
+                            </span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if task.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif task.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% elif task.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No tasks found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

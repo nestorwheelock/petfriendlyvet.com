@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{% trans "Stock Batches" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Batches" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Batch and lot tracking with expiry dates" %}</p>
+        </div>
+        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4">
+            <select name="status" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Statuses" %}</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="location" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Locations" %}</option>
+                {% for location in locations %}
+                <option value="{{ location.pk }}" {% if current_location == location.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ location.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Batches List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if batches %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Batch #" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Location" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Quantity" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Expiry" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for batch in batches %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ batch.product.name }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ batch.batch_number }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ batch.location.name }}</td>
+                        <td class="px-6 py-4 text-right font-medium">{{ batch.current_quantity }}</td>
+                        <td class="px-6 py-4">
+                            {% if batch.expiry_date %}
+                            <span class="{% if batch.is_expired %}text-red-600 font-bold{% elif batch.days_until_expiry < 30 %}text-orange-600{% else %}text-gray-500{% endif %}">
+                                {{ batch.expiry_date|date:"M d, Y" }}
+                                {% if batch.days_until_expiry %}
+                                <span class="text-xs">({{ batch.days_until_expiry }}d)</span>
+                                {% endif %}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if batch.status == 'available' %}bg-green-100 text-green-800
+                                {% elif batch.status == 'expired' %}bg-red-100 text-red-800
+                                {% elif batch.status == 'low' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ batch.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'inventory:batch_detail' batch.pk %}" class="text-primary-600 hover:underline text-sm">
+                                {% trans "Details" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No batches found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

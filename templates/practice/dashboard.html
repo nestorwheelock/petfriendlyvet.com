@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Practice Management" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Practice Management" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Staff and clinic operations" %}</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Active Staff" %}</p>
+            <p class="text-3xl font-bold text-primary-600">{{ staff_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Today's Shifts" %}</p>
+            <p class="text-3xl font-bold text-blue-600">{{ today_shifts }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Pending Tasks" %}</p>
+            <p class="text-3xl font-bold text-orange-600">{{ pending_tasks }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Urgent Tasks" %}</p>
+            <p class="text-3xl font-bold text-red-600">{{ urgent_tasks }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <a href="{% url 'practice:staff_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">👥</span>
+            <span class="font-medium">{% trans "Staff Directory" %}</span>
+        </a>
+        <a href="{% url 'practice:schedule' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">📅</span>
+            <span class="font-medium">{% trans "Schedule" %}</span>
+        </a>
+        <a href="{% url 'practice:task_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">✅</span>
+            <span class="font-medium">{% trans "Tasks" %}</span>
+        </a>
+        <a href="{% url 'practice:time_tracking' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">⏰</span>
+            <span class="font-medium">{% trans "Time Tracking" %}</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Today's Schedule -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Today's Schedule" %}</h2>
+                <a href="{% url 'practice:schedule' %}" class="text-primary-600 text-sm hover:underline">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            {% if today_schedule %}
+            <ul class="divide-y divide-gray-200">
+                {% for shift in today_schedule %}
+                <li class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">
+                                {{ shift.staff.user.get_full_name|default:shift.staff.user.username }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ shift.staff.get_role_display }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium">{{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}</p>
+                            {% if shift.is_confirmed %}
+                            <span class="text-xs text-green-600">{% trans "Confirmed" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No shifts scheduled for today" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Tasks -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Active Tasks" %}</h2>
+                <a href="{% url 'practice:task_list' %}" class="text-primary-600 text-sm hover:underline">
+                    {% trans "View All" %}
+                </a>
+            </div>
+            {% if recent_tasks %}
+            <ul class="divide-y divide-gray-200">
+                {% for task in recent_tasks %}
+                <li class="p-4">
+                    <a href="{% url 'practice:task_detail' task.pk %}" class="block hover:bg-gray-50">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ task.title }}</p>
+                                {% if task.assigned_to %}
+                                <p class="text-sm text-gray-500">
+                                    {% trans "Assigned to" %}: {{ task.assigned_to.user.get_short_name }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if task.priority == 'urgent' %}bg-red-100 text-red-800
+                                {% elif task.priority == 'high' %}bg-orange-100 text-orange-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No active tasks" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -38,6 +38,8 @@ urlpatterns += i18n_patterns(
     path('travel/', include('apps.travel.urls')),
     path('loyalty/', include('apps.loyalty.urls')),
     path('emergency/', include('apps.emergency.urls')),
+    path('inventory/', include('apps.inventory.urls')),
+    path('referrals/', include('apps.referrals.urls')),
     prefix_default_language=False,
 )
 

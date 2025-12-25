@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Staff Directory" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Staff Directory" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "All active staff members" %}</p>
+        </div>
+        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex gap-4">
+            <select name="role" class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">{% trans "All Roles" %}</option>
+                {% for value, label in role_choices %}
+                <option value="{{ value }}" {% if current_role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                {% trans "Filter" %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Staff Grid -->
+    {% if staff %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for member in staff %}
+        <a href="{% url 'practice:staff_detail' member.pk %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <span class="text-xl font-bold text-primary-600">
+                        {{ member.user.first_name|slice:":1" }}{{ member.user.last_name|slice:":1" }}
+                    </span>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-900">{{ member.user.get_full_name }}</p>
+                    <p class="text-sm text-gray-500">{{ member.get_role_display }}</p>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                {% if member.can_prescribe %}
+                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{% trans "Prescribe" %}</span>
+                {% endif %}
+                {% if member.can_dispense %}
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{% trans "Dispense" %}</span>
+                {% endif %}
+                {% if member.can_handle_controlled %}
+                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">{% trans "Controlled" %}</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+        {% trans "No staff members found" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{{ order.po_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'inventory:purchase_orders' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Purchase Orders" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ order.po_number }}</h1>
+                    <p class="text-gray-500">{{ order.supplier.name }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if order.status == 'received' %}bg-green-100 text-green-800
+                    {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                    {% elif order.status == 'draft' %}bg-gray-100 text-gray-800
+                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Order Date" %}</p>
+                <p class="font-medium">{{ order.order_date|date:"M d, Y"|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Expected Date" %}</p>
+                <p class="font-medium">{{ order.expected_date|date:"M d, Y"|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Received Date" %}</p>
+                <p class="font-medium">{{ order.received_date|date:"M d, Y"|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Delivery Location" %}</p>
+                <p class="font-medium">{{ order.delivery_location.name|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Lines -->
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Order Items" %}</h2>
+        </div>
+        {% if lines %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Ordered" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Received" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Unit Cost" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Total" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for line in lines %}
+                    <tr>
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ line.product.name }}</p>
+                            {% if line.supplier_sku %}
+                            <p class="text-sm text-gray-500">{{ line.supplier_sku }}</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">{{ line.quantity_ordered }}</td>
+                        <td class="px-6 py-4 text-right
+                            {% if line.quantity_received < line.quantity_ordered %}text-orange-600
+                            {% elif line.quantity_received == line.quantity_ordered %}text-green-600
+                            {% endif %}">
+                            {{ line.quantity_received }}
+                        </td>
+                        <td class="px-6 py-4 text-right">${{ line.unit_cost }}</td>
+                        <td class="px-6 py-4 text-right font-medium">${{ line.line_total|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No items on this order" %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Totals -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="p-6">
+            <dl class="space-y-2">
+                <div class="flex justify-between">
+                    <dt class="text-gray-600">{% trans "Subtotal" %}</dt>
+                    <dd class="font-medium">${{ order.subtotal|intcomma }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-600">{% trans "Tax" %}</dt>
+                    <dd class="font-medium">${{ order.tax|intcomma }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-600">{% trans "Shipping" %}</dt>
+                    <dd class="font-medium">${{ order.shipping|intcomma }}</dd>
+                </div>
+                <hr>
+                <div class="flex justify-between text-lg">
+                    <dt class="font-bold text-gray-900">{% trans "Total" %}</dt>
+                    <dd class="font-bold text-primary-600">${{ order.total|intcomma }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        {% if order.notes %}
+        <div class="px-6 pb-6 border-t border-gray-200 pt-4">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">{% trans "Notes" %}</h3>
+            <p class="text-gray-600">{{ order.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

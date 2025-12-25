@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Visiting Specialists Schedule" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Visiting Specialists Schedule" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Specialist visits to our clinic" %}</p>
+        </div>
+        <a href="{% url 'referrals:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <!-- Period Filter -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <div class="flex gap-2">
+            <a href="?period=today" class="px-4 py-2 rounded-lg text-sm font-medium {% if current_period == 'today' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                {% trans "Today" %}
+            </a>
+            <a href="?period=week" class="px-4 py-2 rounded-lg text-sm font-medium {% if current_period == 'week' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                {% trans "This Week" %}
+            </a>
+            <a href="?period=upcoming" class="px-4 py-2 rounded-lg text-sm font-medium {% if current_period == 'upcoming' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                {% trans "Upcoming" %}
+            </a>
+            <a href="?period=past" class="px-4 py-2 rounded-lg text-sm font-medium {% if current_period == 'past' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                {% trans "Past" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Schedule List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if schedules %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Specialist" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Specialty" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Time" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for schedule in schedules %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ schedule.date|date:"D, M d" }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="{% url 'referrals:specialist_detail' schedule.specialist.pk %}" class="text-primary-600 hover:underline">
+                                {{ schedule.specialist.name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ schedule.specialist.get_specialty_display }}</td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if schedule.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif schedule.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% elif schedule.status == 'confirmed' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ schedule.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'referrals:visiting_detail' schedule.pk %}" class="text-primary-600 hover:underline text-sm">
+                                {% trans "View" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No visiting schedules found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
