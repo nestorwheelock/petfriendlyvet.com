@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "First Aid Guides" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "First Aid Guides" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Step-by-step instructions for common emergencies" %}</p>
+        </div>
+        <a href="{% url 'emergency:home' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <!-- Species Filter -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'emergency:first_aid_list' %}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if not species_filter %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                {% trans "All Species" %}
+            </a>
+            <a href="?species=dog"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if species_filter == 'dog' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                🐕 Dog
+            </a>
+            <a href="?species=cat"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if species_filter == 'cat' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                🐈 Cat
+            </a>
+            <a href="?species=bird"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if species_filter == 'bird' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                🦜 Bird
+            </a>
+            <a href="?species=rabbit"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if species_filter == 'rabbit' %}bg-primary-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                🐰 Rabbit
+            </a>
+        </div>
+    </div>
+
+    <!-- Guides Grid -->
+    {% if guides %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for guide in guides %}
+        <a href="{% url 'emergency:first_aid_detail' guide.pk %}" class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-start gap-4">
+                    <span class="text-3xl">🩹</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">{{ guide.title }}</h2>
+                        <p class="text-sm text-gray-500 mt-1">{{ guide.condition }}</p>
+                        <p class="text-gray-600 mt-2 line-clamp-2">{{ guide.description }}</p>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-1">
+                    {% for species in guide.species %}
+                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                        {{ species|title }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-gray-50 rounded-xl p-8 text-center">
+        <span class="text-4xl block mb-4">📋</span>
+        <p class="text-gray-500">{% trans "No first aid guides available yet." %}</p>
+    </div>
+    {% endif %}
+
+    <!-- Important Disclaimer -->
+    <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+                <h3 class="font-bold text-yellow-800">{% trans "Disclaimer" %}</h3>
+                <p class="text-yellow-700 mt-1 text-sm">
+                    {% trans "These guides are for general information only and are not a substitute for professional veterinary care. Always consult a veterinarian for proper diagnosis and treatment." %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

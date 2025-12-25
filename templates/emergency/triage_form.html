@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Symptom Checker" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Symptom Checker" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Describe your pet's symptoms to assess urgency" %}</p>
+        </div>
+        <a href="{% url 'emergency:home' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <!-- Warning -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+            <span class="text-xl">🚨</span>
+            <p class="text-red-700 text-sm">
+                <strong>{% trans "Important:" %}</strong>
+                {% trans "This tool provides general guidance only. If your pet is in severe distress, bleeding heavily, or unconscious, call us immediately or go to the nearest emergency hospital." %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        <!-- Species -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "What type of pet?" %}
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {% for value, label in species_choices %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="species" value="{{ value }}" class="peer hidden" required>
+                    <div class="border-2 border-gray-200 rounded-lg p-3 text-center peer-checked:border-primary-500 peer-checked:bg-primary-50 hover:bg-gray-50 transition">
+                        <span class="text-2xl block mb-1">
+                            {% if value == 'dog' %}🐕{% elif value == 'cat' %}🐈{% elif value == 'bird' %}🦜{% elif value == 'rabbit' %}🐰{% else %}🐾{% endif %}
+                        </span>
+                        <span class="text-sm">{{ label }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="mb-6">
+            <label for="symptoms" class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "Describe the symptoms" %}
+            </label>
+            <textarea
+                id="symptoms"
+                name="symptoms"
+                rows="5"
+                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{% trans "e.g., Not eating, vomiting, lethargy, difficulty breathing..." %}"
+                required
+            ></textarea>
+            <p class="text-sm text-gray-500 mt-1">
+                {% trans "Include details like when it started, frequency, and any other observations" %}
+            </p>
+        </div>
+
+        <!-- Common Symptoms Quick Select -->
+        <div class="mb-6">
+            <p class="text-sm font-medium text-gray-700 mb-2">{% trans "Quick select common symptoms:" %}</p>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="addSymptom('vomiting')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">vomiting</button>
+                <button type="button" onclick="addSymptom('diarrhea')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">diarrhea</button>
+                <button type="button" onclick="addSymptom('not eating')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">not eating</button>
+                <button type="button" onclick="addSymptom('lethargy')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">lethargy</button>
+                <button type="button" onclick="addSymptom('coughing')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">coughing</button>
+                <button type="button" onclick="addSymptom('limping')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">limping</button>
+                <button type="button" onclick="addSymptom('bleeding')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">bleeding</button>
+                <button type="button" onclick="addSymptom('difficulty breathing')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition">difficulty breathing</button>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-700 transition">
+            {% trans "Check Symptoms" %}
+        </button>
+    </form>
+</div>
+
+<script>
+function addSymptom(symptom) {
+    const textarea = document.getElementById('symptoms');
+    const current = textarea.value.trim();
+    if (current) {
+        textarea.value = current + ', ' + symptom;
+    } else {
+        textarea.value = symptom;
+    }
+    textarea.focus();
+}
+</script>
+{% endblock %}

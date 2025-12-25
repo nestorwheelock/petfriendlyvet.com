@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Triage Result" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Assessment Result" %}</h1>
+        <a href="{% url 'emergency:triage' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "New Assessment" %}
+        </a>
+    </div>
+
+    {% if result.severity %}
+    <!-- Severity Result -->
+    <div class="border-2 rounded-xl p-6 mb-6 {{ severity_info.class }}">
+        <div class="flex items-start gap-4">
+            <span class="text-4xl">{{ severity_info.icon }}</span>
+            <div>
+                <h2 class="text-2xl font-bold">{{ severity_info.title }}</h2>
+                <p class="mt-2">{{ severity_info.message }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- What You Reported -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h3 class="font-bold text-gray-900 mb-3">{% trans "What You Reported" %}</h3>
+        <div class="space-y-2 text-gray-600">
+            <p><strong>{% trans "Species:" %}</strong> {{ result.species|title }}</p>
+            <p><strong>{% trans "Symptoms:" %}</strong> {{ result.symptoms }}</p>
+            {% if result.matched_symptoms %}
+            <p><strong>{% trans "Matched symptoms:" %}</strong> {{ result.matched_symptoms|join:", " }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- First Aid Tips -->
+    {% if result.first_aid_tips %}
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+        <h3 class="font-bold text-blue-800 mb-4">🩹 {% trans "First Aid Tips" %}</h3>
+        {% for tip in result.first_aid_tips %}
+        <div class="mb-4 last:mb-0">
+            <h4 class="font-medium text-blue-900">{{ tip.symptom|title }}</h4>
+            <p class="text-blue-700 mt-1">{{ tip.instructions }}</p>
+            {% if tip.warning_signs %}
+            <p class="text-red-700 mt-2 text-sm">
+                <strong>{% trans "Warning signs:" %}</strong> {{ tip.warning_signs }}
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No Match Found -->
+    <div class="bg-gray-50 rounded-xl p-6 mb-6 text-center">
+        <span class="text-4xl block mb-4">🤔</span>
+        <h2 class="text-xl font-bold text-gray-900">{% trans "Unable to Assess" %}</h2>
+        <p class="text-gray-600 mt-2">
+            {% trans "We couldn't match your symptoms to our database. When in doubt, please contact us directly for professional guidance." %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <a href="{% url 'emergency:contact' %}"
+           class="bg-red-600 text-white py-3 px-4 rounded-lg font-semibold text-center hover:bg-red-700 transition">
+            📞 {% trans "Contact Us Now" %}
+        </a>
+        <a href="{% url 'emergency:hospitals' %}"
+           class="bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold text-center hover:bg-gray-50 transition">
+            🏥 {% trans "Find Emergency Hospital" %}
+        </a>
+    </div>
+
+    <!-- Nearby 24-hour Hospitals -->
+    {% if hospitals %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="font-bold text-gray-900">{% trans "Nearby 24-Hour Hospitals" %}</h3>
+        </div>
+        <ul class="divide-y divide-gray-200">
+            {% for hospital in hospitals %}
+            <li class="p-4">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h4 class="font-medium text-gray-900">{{ hospital.name }}</h4>
+                        <p class="text-sm text-gray-500">{{ hospital.address }}</p>
+                    </div>
+                    <a href="tel:{{ hospital.phone }}" class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+                        📞 {{ hospital.phone }}
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

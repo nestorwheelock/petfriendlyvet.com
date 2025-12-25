@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load i18n humanize loyalty_tags %}
+
+{% block title %}{% trans "Tier Benefits" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Tier Benefits" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Discover the perks at each level" %}</p>
+        </div>
+        <a href="{% url 'loyalty:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <!-- Current Status -->
+    <div class="bg-gradient-to-r from-primary-500 to-primary-700 rounded-xl p-6 text-white mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-white/80">{% trans "Your Current Tier" %}</p>
+                <h2 class="text-2xl font-bold mt-1">
+                    {% if current_tier %}
+                    {{ current_tier.icon|default:"🏆" }} {{ current_tier.name }}
+                    {% else %}
+                    {% trans "Not enrolled" %}
+                    {% endif %}
+                </h2>
+            </div>
+            <div class="text-right">
+                <p class="text-white/80">{% trans "Lifetime Points" %}</p>
+                <p class="text-2xl font-bold">{{ account.lifetime_points|intcomma }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier Cards -->
+    <div class="space-y-6">
+        {% for tier in tiers %}
+        <div class="bg-white rounded-xl shadow overflow-hidden {% if current_tier and tier.pk == current_tier.pk %}ring-2 ring-primary-500{% endif %}">
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="text-4xl">{{ tier.icon|default:"🏆" }}</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">{{ tier.name }}</h3>
+                            <p class="text-gray-500">
+                                {{ tier.min_points|intcomma }} {% trans "points required" %}
+                                {% if tier.max_points %} - {{ tier.max_points|intcomma }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if current_tier and tier.pk == current_tier.pk %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                        ✓ {% trans "Current" %}
+                    </span>
+                    {% elif account.lifetime_points >= tier.min_points %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        ✓ {% trans "Achieved" %}
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                        {{ tier.min_points|subtract:account.lifetime_points }} {% trans "points to go" %}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Benefits -->
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% if tier.discount_percent > 0 %}
+                    <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <span class="text-2xl">💰</span>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ tier.discount_percent }}% {% trans "Discount" %}</p>
+                            <p class="text-sm text-gray-500">{% trans "On all purchases" %}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if tier.points_multiplier > 1 %}
+                    <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                        <span class="text-2xl">✨</span>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ tier.points_multiplier }}x {% trans "Points" %}</p>
+                            <p class="text-sm text-gray-500">{% trans "Earn faster" %}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for benefit in tier.benefits %}
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <span class="text-2xl">🎁</span>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ benefit }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% if tier.discount_percent == 0 and tier.points_multiplier <= 1 %}
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg col-span-2">
+                        <span class="text-2xl">📋</span>
+                        <p class="text-gray-500">{% trans "Basic membership benefits" %}</p>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Progress bar for next tier -->
+            {% if not current_tier or tier.min_points > current_tier.min_points %}
+            {% if account.lifetime_points < tier.min_points %}
+            <div class="px-6 pb-4">
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    {% widthratio account.lifetime_points tier.min_points 100 as progress %}
+                    <div class="h-full bg-primary-500 rounded-full" style="width: {{ progress }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="bg-gray-50 rounded-xl p-8 text-center">
+            <p class="text-gray-500">{% trans "No tiers configured yet." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

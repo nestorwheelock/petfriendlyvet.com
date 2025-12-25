@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Emergency History" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Emergency History" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Your past emergency contacts" %}</p>
+        </div>
+        <a href="{% url 'emergency:home' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    {% if contacts %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <ul class="divide-y divide-gray-200">
+            {% for contact in contacts %}
+            <li class="p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">
+                                {% if contact.pet_species == 'dog' %}🐕
+                                {% elif contact.pet_species == 'cat' %}🐈
+                                {% elif contact.pet_species == 'bird' %}🦜
+                                {% elif contact.pet_species == 'rabbit' %}🐰
+                                {% else %}🐾{% endif %}
+                            </span>
+                            <h3 class="font-medium text-gray-900">{{ contact.pet_species|title }}</h3>
+                            {% if contact.severity %}
+                            <span class="px-2 py-0.5 rounded text-xs font-medium
+                                {% if contact.severity == 'critical' %}bg-red-100 text-red-800
+                                {% elif contact.severity == 'urgent' %}bg-orange-100 text-orange-800
+                                {% elif contact.severity == 'moderate' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ contact.get_severity_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-gray-600 mt-1">{{ contact.reported_symptoms }}</p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            {{ contact.created_at|date:"M d, Y - g:i A" }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                            {% if contact.status == 'resolved' %}bg-green-100 text-green-800
+                            {% elif contact.status == 'escalated' %}bg-orange-100 text-orange-800
+                            {% elif contact.status == 'initiated' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ contact.get_status_display }}
+                        </span>
+                        {% if contact.outcome %}
+                        <p class="text-sm text-gray-500 mt-2">{{ contact.outcome }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if contact.resolution %}
+                <div class="mt-4 bg-gray-50 rounded-lg p-3">
+                    <p class="text-sm text-gray-600">
+                        <strong>{% trans "Resolution:" %}</strong> {{ contact.resolution }}
+                    </p>
+                </div>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div class="bg-gray-50 rounded-xl p-8 text-center">
+        <span class="text-4xl block mb-4">📋</span>
+        <p class="text-gray-500">{% trans "No emergency contacts recorded." %}</p>
+        <p class="text-sm text-gray-400 mt-2">{% trans "We hope you never need to use this!" %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

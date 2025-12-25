@@ -36,6 +36,8 @@ urlpatterns += i18n_patterns(
     path('notifications/', include('apps.notifications.urls')),
     path('services/', include('apps.services.urls')),
     path('travel/', include('apps.travel.urls')),
+    path('loyalty/', include('apps.loyalty.urls')),
+    path('emergency/', include('apps.emergency.urls')),
     prefix_default_language=False,
 )
 

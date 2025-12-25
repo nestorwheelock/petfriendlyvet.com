@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Emergency" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Emergency Header -->
+    <div class="text-center mb-8">
+        <div class="text-6xl mb-4">🚨</div>
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Pet Emergency Resources" %}</h1>
+        <p class="text-gray-600 mt-2">{% trans "Quick access to emergency care and information" %}</p>
+    </div>
+
+    <!-- Emergency Phone Banner -->
+    <div class="bg-red-600 text-white rounded-xl p-6 text-center mb-8">
+        <p class="text-lg font-medium mb-2">{% trans "For immediate emergencies, call us:" %}</p>
+        <a href="tel:+1234567890" class="text-3xl font-bold hover:underline">
+            (123) 456-7890
+        </a>
+        <p class="text-red-100 mt-2 text-sm">{% trans "Available 24/7 for emergencies" %}</p>
+    </div>
+
+    <!-- Quick Actions Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Triage -->
+        <a href="{% url 'emergency:triage' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4 border-orange-500">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">🔍</span>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">{% trans "Symptom Checker" %}</h2>
+                    <p class="text-gray-600 mt-1">{% trans "Describe symptoms to assess urgency and get first aid tips" %}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Emergency Contact -->
+        <a href="{% url 'emergency:contact' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4 border-red-500">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">📞</span>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">{% trans "Contact Us Now" %}</h2>
+                    <p class="text-gray-600 mt-1">{% trans "Submit an emergency request and we'll call you back" %}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- First Aid -->
+        <a href="{% url 'emergency:first_aid_list' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4 border-blue-500">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">🩹</span>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">{% trans "First Aid Guides" %}</h2>
+                    <p class="text-gray-600 mt-1">{% trans "Step-by-step instructions for common emergencies" %}</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Nearby Hospitals -->
+        <a href="{% url 'emergency:hospitals' %}" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4 border-green-500">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">🏥</span>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">{% trans "Emergency Hospitals" %}</h2>
+                    <p class="text-gray-600 mt-1">{% trans "Find 24-hour veterinary hospitals near you" %}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Important Notice -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+                <h3 class="font-bold text-yellow-800">{% trans "When in Doubt, Seek Help" %}</h3>
+                <p class="text-yellow-700 mt-1">
+                    {% trans "If your pet shows any signs of distress, difficulty breathing, severe bleeding, or loss of consciousness, seek immediate veterinary care. It's always better to be safe than sorry." %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <!-- History Link -->
+    <div class="mt-8 text-center">
+        <a href="{% url 'emergency:history' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            {% trans "View your emergency contact history" %} →
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

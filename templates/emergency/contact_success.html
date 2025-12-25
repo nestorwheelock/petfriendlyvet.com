@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Request Submitted" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="bg-green-500 text-white p-6 text-center">
+            <span class="text-5xl block mb-4">✓</span>
+            <h1 class="text-2xl font-bold">{% trans "Request Submitted" %}</h1>
+            <p class="text-green-100 mt-2">{% trans "We'll call you back as soon as possible" %}</p>
+        </div>
+
+        <div class="p-6">
+            {% if contact %}
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="font-medium text-gray-900 mb-2">{% trans "Your Request" %}</h3>
+                <div class="space-y-1 text-sm text-gray-600">
+                    <p><strong>{% trans "Phone:" %}</strong> {{ contact.phone }}</p>
+                    <p><strong>{% trans "Pet:" %}</strong> {{ contact.pet_species|title }}</p>
+                    <p><strong>{% trans "Symptoms:" %}</strong> {{ contact.reported_symptoms }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- What to do while waiting -->
+            <div class="mb-6">
+                <h3 class="font-medium text-gray-900 mb-3">{% trans "While you wait:" %}</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500">✓</span>
+                        {% trans "Keep your phone nearby and charged" %}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500">✓</span>
+                        {% trans "Keep your pet calm and comfortable" %}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500">✓</span>
+                        {% trans "Note any changes in symptoms" %}
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-500">✓</span>
+                        {% trans "Review first aid tips if available" %}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- If it gets worse -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <h3 class="font-bold text-red-800 mb-2">{% trans "If symptoms worsen:" %}</h3>
+                <p class="text-red-700 text-sm mb-2">
+                    {% trans "Don't wait for our call. Contact the nearest 24-hour emergency hospital immediately." %}
+                </p>
+                <a href="{% url 'emergency:hospitals' %}" class="text-red-600 font-medium text-sm hover:underline">
+                    {% trans "Find emergency hospitals" %} →
+                </a>
+            </div>
+
+            <!-- Nearby Hospitals -->
+            {% if hospitals %}
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="font-medium text-gray-900 mb-3">{% trans "Nearest 24-Hour Hospitals" %}</h3>
+                <ul class="space-y-3">
+                    {% for hospital in hospitals %}
+                    <li class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ hospital.name }}</p>
+                            <p class="text-sm text-gray-500">{{ hospital.address|truncatechars:40 }}</p>
+                        </div>
+                        <a href="tel:{{ hospital.phone }}" class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+                            {{ hospital.phone }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="flex gap-4 mt-6">
+                <a href="{% url 'emergency:home' %}" class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-center font-semibold hover:bg-gray-200 transition">
+                    {% trans "Back to Emergency" %}
+                </a>
+                <a href="{% url 'emergency:first_aid_list' %}" class="flex-1 bg-primary-600 text-white py-3 px-4 rounded-lg text-center font-semibold hover:bg-primary-700 transition">
+                    {% trans "First Aid Tips" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

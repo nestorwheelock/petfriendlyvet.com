@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ guide.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'emergency:first_aid_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Guides" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">🩹</span>
+                <div>
+                    <h1 class="text-2xl font-bold">{{ guide.title }}</h1>
+                    <p class="text-blue-100 mt-1">{{ guide.condition }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Species -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                {% for species in guide.species %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                    {% if species == 'dog' %}🐕{% elif species == 'cat' %}🐈{% elif species == 'bird' %}🦜{% elif species == 'rabbit' %}🐰{% else %}🐾{% endif %}
+                    {{ species|title }}
+                </span>
+                {% endfor %}
+            </div>
+
+            <!-- Description -->
+            <div class="prose max-w-none mb-6">
+                <p class="text-gray-600">{{ guide.description }}</p>
+            </div>
+
+            <!-- Steps -->
+            {% if guide.steps %}
+            <div class="mb-6">
+                <h2 class="font-bold text-gray-900 mb-4">{% trans "What To Do" %}</h2>
+                <ol class="space-y-3">
+                    {% for step in guide.steps %}
+                    <li class="flex items-start gap-3">
+                        <span class="w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                            {{ forloop.counter }}
+                        </span>
+                        <span class="text-gray-600">{{ step }}</span>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            <!-- Warnings -->
+            {% if guide.warnings %}
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h3 class="font-bold text-yellow-800 mb-2">⚠️ {% trans "Warning Signs" %}</h3>
+                <ul class="space-y-1 text-yellow-700">
+                    {% for warning in guide.warnings %}
+                    <li>• {{ warning }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Do Not -->
+            {% if guide.do_not %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <h3 class="font-bold text-red-800 mb-2">🚫 {% trans "Do NOT" %}</h3>
+                <ul class="space-y-1 text-red-700">
+                    {% for item in guide.do_not %}
+                    <li>• {{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Video -->
+            {% if guide.video_url %}
+            <div class="mb-6">
+                <h2 class="font-bold text-gray-900 mb-4">{% trans "Video Guide" %}</h2>
+                <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                    <iframe src="{{ guide.video_url }}" class="w-full h-full" allowfullscreen></iframe>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-red-800">{% trans "Still concerned?" %}</h3>
+                <p class="text-red-700 text-sm">{% trans "Contact us for professional advice" %}</p>
+            </div>
+            <a href="{% url 'emergency:contact' %}" class="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition">
+                {% trans "Contact Us" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

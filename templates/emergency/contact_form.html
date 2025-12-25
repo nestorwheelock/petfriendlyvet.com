@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Emergency Contact" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Emergency Contact" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "We'll call you back as soon as possible" %}</p>
+        </div>
+        <a href="{% url 'emergency:home' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <!-- Urgent Warning -->
+    <div class="bg-red-600 text-white rounded-xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl">🚨</span>
+            <div>
+                <p class="font-bold">{% trans "For life-threatening emergencies:" %}</p>
+                <p class="text-red-100">{% trans "Call us directly at" %} <a href="tel:+1234567890" class="underline font-bold">(123) 456-7890</a></p>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+        <input type="hidden" name="channel" value="web">
+
+        <!-- Phone Number -->
+        <div class="mb-6">
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "Your Phone Number" %} *
+            </label>
+            <input type="tel"
+                   id="phone"
+                   name="phone"
+                   required
+                   class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                   placeholder="{% trans "(123) 456-7890" %}">
+        </div>
+
+        <!-- Pet Species -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "Pet Type" %} *
+            </label>
+            <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {% for value, label in species_choices %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="species" value="{{ value }}" class="peer hidden" required>
+                    <div class="border-2 border-gray-200 rounded-lg p-2 text-center peer-checked:border-primary-500 peer-checked:bg-primary-50 hover:bg-gray-50 transition">
+                        <span class="text-xl block">
+                            {% if value == 'dog' %}🐕{% elif value == 'cat' %}🐈{% elif value == 'bird' %}🦜{% elif value == 'rabbit' %}🐰{% else %}🐾{% endif %}
+                        </span>
+                        <span class="text-xs">{{ label }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pet Age -->
+        <div class="mb-6">
+            <label for="age" class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "Pet Age (approximate)" %}
+            </label>
+            <input type="text"
+                   id="age"
+                   name="age"
+                   class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                   placeholder="{% trans "e.g., 3 years, 6 months" %}">
+        </div>
+
+        <!-- Symptoms -->
+        <div class="mb-6">
+            <label for="symptoms" class="block text-sm font-medium text-gray-700 mb-2">
+                {% trans "What's happening?" %} *
+            </label>
+            <textarea id="symptoms"
+                      name="symptoms"
+                      rows="4"
+                      required
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="{% trans "Describe the symptoms or situation..." %}"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition">
+            📞 {% trans "Request Call Back" %}
+        </button>
+
+        <p class="text-sm text-gray-500 text-center mt-4">
+            {% trans "We typically respond within 15 minutes during business hours" %}
+        </p>
+    </form>
+</div>
+{% endblock %}

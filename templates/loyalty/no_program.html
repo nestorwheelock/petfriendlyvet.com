@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Rewards Program" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center">
+        <div class="text-6xl mb-6">🎁</div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">{% trans "Rewards Program Coming Soon" %}</h1>
+        <p class="text-gray-600 mb-8">
+            {% trans "We're working on an exciting rewards program for our loyal customers. Check back soon!" %}
+        </p>
+        <a href="{% url 'core:home' %}" class="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition">
+            {% trans "Back to Home" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

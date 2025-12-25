@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load i18n humanize %}
+
+{% block title %}{% trans "My Rewards" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">{% trans "My Rewards" %}</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Points Card -->
+        <div class="lg:col-span-2">
+            <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        {% if account.tier %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20">
+                            {{ account.tier.icon|default:"🏆" }} {{ account.tier.name }}
+                        </span>
+                        {% endif %}
+                        <p class="text-white/80 mt-2">{% trans "Member since" %} {{ account.enrolled_at|date:"F Y" }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-4xl font-bold">{{ account.points_balance|intcomma }}</p>
+                        <p class="text-white/80">{% trans "points available" %}</p>
+                    </div>
+                </div>
+
+                {% if next_tier %}
+                <div class="mt-6">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span>{% trans "Progress to" %} {{ next_tier.name }}</span>
+                        <span>{{ points_to_next|intcomma }} {% trans "points to go" %}</span>
+                    </div>
+                    <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div class="h-full bg-white rounded-full transition-all duration-500" style="width: {{ progress_percent }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="mt-6 flex gap-4">
+                    <a href="{% url 'loyalty:rewards' %}" class="flex-1 bg-white text-primary-600 font-semibold py-3 px-4 rounded-lg text-center hover:bg-gray-100 transition">
+                        {% trans "Redeem Points" %}
+                    </a>
+                    <a href="{% url 'loyalty:history' %}" class="flex-1 bg-white/20 text-white font-semibold py-3 px-4 rounded-lg text-center hover:bg-white/30 transition">
+                        {% trans "View History" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="space-y-4">
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">{% trans "Lifetime Points" %}</h3>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ account.lifetime_points|intcomma }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">{% trans "Points Redeemed" %}</h3>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ account.points_redeemed|intcomma }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Redemptions -->
+    {% if pending_redemptions %}
+    <div class="mt-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">{% trans "Pending Redemptions" %}</h2>
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <ul class="divide-y divide-gray-200">
+                {% for redemption in pending_redemptions %}
+                <li class="p-4 flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ redemption.reward.name }}</p>
+                        <p class="text-sm text-gray-500">{% trans "Code:" %} <span class="font-mono">{{ redemption.code }}</span></p>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if redemption.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-green-100 text-green-800{% endif %}">
+                        {{ redemption.get_status_display }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity -->
+    <div class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Recent Activity" %}</h2>
+            <a href="{% url 'loyalty:history' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+                {% trans "View All" %} →
+            </a>
+        </div>
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            {% if recent_transactions %}
+            <ul class="divide-y divide-gray-200">
+                {% for transaction in recent_transactions %}
+                <li class="p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center
+                            {% if transaction.points > 0 %}bg-green-100 text-green-600
+                            {% else %}bg-red-100 text-red-600{% endif %}">
+                            {% if transaction.points > 0 %}+{% endif %}{{ transaction.points }}
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ transaction.description }}</p>
+                            <p class="text-sm text-gray-500">{{ transaction.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">
+                        {% trans "Balance:" %} {{ transaction.balance_after|intcomma }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                <p>{% trans "No transactions yet. Start earning points with your next purchase!" %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <a href="{% url 'loyalty:tiers' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition group">
+            <div class="text-2xl mb-2">🏆</div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-primary-600">{% trans "Tier Benefits" %}</h3>
+            <p class="text-sm text-gray-500">{% trans "See all tiers and perks" %}</p>
+        </a>
+        <a href="{% url 'loyalty:rewards' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition group">
+            <div class="text-2xl mb-2">🎁</div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-primary-600">{% trans "Rewards Catalog" %}</h3>
+            <p class="text-sm text-gray-500">{% trans "Browse available rewards" %}</p>
+        </a>
+        <a href="{% url 'loyalty:referrals' %}" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition group">
+            <div class="text-2xl mb-2">👥</div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-primary-600">{% trans "Refer Friends" %}</h3>
+            <p class="text-sm text-gray-500">{% trans "Earn bonus points" %}</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

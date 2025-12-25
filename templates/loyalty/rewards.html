@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load i18n humanize loyalty_tags %}
+
+{% block title %}{% trans "Rewards Catalog" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Rewards Catalog" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Redeem your points for exclusive rewards" %}</p>
+        </div>
+        <div class="bg-primary-100 text-primary-800 px-4 py-2 rounded-lg">
+            <span class="font-bold">{{ account.points_balance|intcomma }}</span> {% trans "points available" %}
+        </div>
+    </div>
+
+    <!-- Featured Rewards -->
+    {% if featured_rewards %}
+    <div class="mb-10">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">{% trans "Featured Rewards" %}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for reward in featured_rewards %}
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mb-2">
+                                ⭐ {% trans "Featured" %}
+                            </span>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ reward.name }}</h3>
+                        </div>
+                        <span class="text-2xl">🎁</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">{{ reward.description }}</p>
+
+                    {% if reward.min_tier %}
+                    <p class="text-xs text-gray-500 mt-2">
+                        {% trans "Requires" %} {{ reward.min_tier.name }} {% trans "tier" %}
+                    </p>
+                    {% endif %}
+
+                    <div class="mt-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-2xl font-bold text-primary-600">{{ reward.points_cost|intcomma }}</span>
+                            <span class="text-gray-500 text-sm">{% trans "points" %}</span>
+                        </div>
+                        {% if account.points_balance >= reward.points_cost %}
+                        <a href="{% url 'loyalty:redeem' reward.pk %}" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition">
+                            {% trans "Redeem" %}
+                        </a>
+                        {% else %}
+                        <span class="text-gray-400 text-sm">
+                            {% trans "Need" %} {{ reward.points_cost|subtract:account.points_balance }} {% trans "more" %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Rewards -->
+    <div>
+        <h2 class="text-xl font-bold text-gray-900 mb-4">{% trans "All Rewards" %}</h2>
+        {% if regular_rewards %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for reward in regular_rewards %}
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ reward.name }}</h3>
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                            {{ reward.get_reward_type_display }}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">{{ reward.description }}</p>
+
+                    {% if reward.min_tier %}
+                    <p class="text-xs text-gray-500 mt-2">
+                        {% trans "Requires" %} {{ reward.min_tier.name }} {% trans "tier" %}
+                    </p>
+                    {% endif %}
+
+                    {% if reward.quantity_available %}
+                    <p class="text-xs text-orange-600 mt-2">
+                        {{ reward.quantity_available|subtract:reward.quantity_redeemed }} {% trans "remaining" %}
+                    </p>
+                    {% endif %}
+
+                    <div class="mt-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-2xl font-bold text-primary-600">{{ reward.points_cost|intcomma }}</span>
+                            <span class="text-gray-500 text-sm">{% trans "points" %}</span>
+                        </div>
+                        {% if account.points_balance >= reward.points_cost %}
+                        <a href="{% url 'loyalty:redeem' reward.pk %}" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition">
+                            {% trans "Redeem" %}
+                        </a>
+                        {% else %}
+                        <button disabled class="bg-gray-100 text-gray-400 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
+                            {% trans "Not enough points" %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-50 rounded-xl p-8 text-center">
+            <p class="text-gray-500">{% trans "No rewards available at this time. Check back soon!" %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-8">
+        <a href="{% url 'loyalty:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Rewards Dashboard" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

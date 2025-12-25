@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n humanize loyalty_tags %}
+
+{% block title %}{% trans "Confirm Redemption" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Confirm Redemption" %}</h1>
+        </div>
+
+        <div class="p-6">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-4">🎁</div>
+                <h2 class="text-xl font-semibold text-gray-900">{{ reward.name }}</h2>
+                <p class="text-gray-500 mt-2">{{ reward.description }}</p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-600">{% trans "Points Cost" %}</span>
+                    <span class="font-semibold text-gray-900">{{ reward.points_cost|intcomma }}</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-600">{% trans "Your Balance" %}</span>
+                    <span class="font-semibold text-gray-900">{{ account.points_balance|intcomma }}</span>
+                </div>
+                <hr class="my-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">{% trans "Balance After" %}</span>
+                    <span class="font-semibold text-primary-600">
+                        {{ account.points_balance|subtract:reward.points_cost|intcomma }}
+                    </span>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="flex gap-4">
+                    <a href="{% url 'loyalty:rewards' %}" class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-center font-semibold hover:bg-gray-200 transition">
+                        {% trans "Cancel" %}
+                    </a>
+                    <button type="submit" class="flex-1 bg-primary-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-700 transition">
+                        {% trans "Confirm Redemption" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
