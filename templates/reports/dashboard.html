@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Reports" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Reports & Analytics" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Generate and view business reports" %}</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Today's Revenue" %}</p>
+            <p class="text-3xl font-bold text-green-600">$0.00</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Appointments Today" %}</p>
+            <p class="text-3xl font-bold text-blue-600">0</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "New Customers" %}</p>
+            <p class="text-3xl font-bold text-purple-600">0</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500">{% trans "Low Stock Items" %}</p>
+            <p class="text-3xl font-bold text-orange-600">0</p>
+        </div>
+    </div>
+
+    <!-- Available Reports -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">{% trans "Available Reports" %}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for report in available_reports %}
+            <a href="{% url report.url_name %}" class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+                <div class="flex items-center gap-4">
+                    <span class="text-3xl">{{ report.icon }}</span>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">
+                            {% if LANGUAGE_CODE == 'es' %}{{ report.name_es }}{% else %}{{ report.name }}{% endif %}
+                        </h3>
+                        <p class="text-sm text-gray-500">{{ report.description }}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Recent Reports" %}</h2>
+        </div>
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No reports generated yet. Select a report type above to get started." %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,13 +3,16 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 
 from .views import DriverDashboardView, DeliveryTrackingView
-from .admin_views import AdminDashboardView
+from .admin_views import AdminDashboardView, ZonesView
 
 app_name = 'delivery'
 
 urlpatterns = [
-    # Root redirect to driver dashboard
-    path('', RedirectView.as_view(pattern_name='delivery:driver_dashboard'), name='index'),
+    # Root redirect to admin dashboard (staff) or driver dashboard
+    path('', RedirectView.as_view(pattern_name='delivery_admin:dashboard'), name='index'),
+
+    # Direct access shortcuts for common admin pages
+    path('zones/', ZonesView.as_view(), name='zones'),
 
     # Driver-facing URLs
     path('driver/dashboard/', DriverDashboardView.as_view(), name='driver_dashboard'),

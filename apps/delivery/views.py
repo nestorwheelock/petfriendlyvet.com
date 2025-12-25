@@ -1,8 +1,10 @@
 """Views for the delivery app."""
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseForbidden, Http404
+from django.contrib import messages
+from django.http import Http404
+from django.utils.translation import gettext as _
 
 from .models import Delivery, DeliveryDriver
 
@@ -17,9 +19,14 @@ class DriverRequiredMixin(LoginRequiredMixin):
         try:
             self.driver = request.user.delivery_driver
             if not self.driver.is_active:
-                return HttpResponseForbidden("Driver account is inactive")
+                messages.error(request, _("Your driver account is inactive."))
+                return redirect('delivery_admin:dashboard')
         except DeliveryDriver.DoesNotExist:
-            return HttpResponseForbidden("User is not a driver")
+            # Non-drivers get redirected to admin dashboard if staff, home otherwise
+            if request.user.is_staff:
+                return redirect('delivery_admin:dashboard')
+            messages.error(request, _("You don't have access to the driver dashboard."))
+            return redirect('core:home')
 
         return super().dispatch(request, *args, **kwargs)
 
