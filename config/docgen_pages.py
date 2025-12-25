@@ -16,7 +16,7 @@ PAGES = {
                     "url": "/practice/",
                     "title": "Practice Dashboard",
                     "title_es": "Panel de Práctica",
-                    "wait_for": ".dashboard-content",
+                    "wait_for": ".max-w-7xl",
                 },
                 {
                     "id": "staff_list",
