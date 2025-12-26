@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+import daisyui from 'daisyui'
+import forms from '@tailwindcss/forms'
+import typography from '@tailwindcss/typography'
+
+export default {
   content: [
     './templates/**/*.html',
     './apps/**/templates/**/*.html',
@@ -14,7 +18,7 @@ module.exports = {
           200: '#A3C3E3',
           300: '#75A5D5',
           400: '#4787C7',
-          500: '#1E4D8C',  // Primary Blue
+          500: '#1E4D8C',
           600: '#183D70',
           700: '#122E54',
           800: '#0C1E38',
@@ -26,7 +30,7 @@ module.exports = {
           200: '#BFE3A3',
           300: '#9FD575',
           400: '#7FC747',
-          500: '#5FAD41',  // Secondary Green
+          500: '#5FAD41',
           600: '#4C8A34',
           700: '#396827',
           800: '#26451A',
@@ -39,9 +43,9 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    require('daisyui'),
+    forms,
+    typography,
+    daisyui,
   ],
   daisyui: {
     themes: [
