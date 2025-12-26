@@ -2,11 +2,14 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum, Q, F
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from datetime import timedelta
 
+from apps.core.utils import staff_redirect
+
 from .models import (
+    InventoryItem,
     LocationType,
     PurchaseOrder,
     StockBatch,
@@ -296,7 +299,7 @@ def movement_add(request):
                 update_batch_quantity(movement)
 
             messages.success(request, 'Stock movement recorded successfully.')
-            return redirect('inventory:movements')
+            return staff_redirect(request, 'inventory:movements')
     else:
         form = StockMovementForm()
 
@@ -354,7 +357,7 @@ def supplier_create(request):
         if form.is_valid():
             supplier = form.save()
             messages.success(request, f'Supplier {supplier.name} created.')
-            return redirect('inventory:supplier_detail', pk=supplier.pk)
+            return staff_redirect(request, 'inventory:supplier_detail', pk=supplier.pk)
     else:
         form = SupplierForm()
 
@@ -376,7 +379,7 @@ def supplier_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Supplier {supplier.name} updated.')
-            return redirect('inventory:supplier_detail', pk=supplier.pk)
+            return staff_redirect(request, 'inventory:supplier_detail', pk=supplier.pk)
     else:
         form = SupplierForm(instance=supplier)
 
@@ -412,7 +415,7 @@ def stock_location_create(request):
         if form.is_valid():
             location = form.save()
             messages.success(request, f'Location {location.name} created.')
-            return redirect('inventory:locations')
+            return staff_redirect(request, 'inventory:locations')
     else:
         form = StockLocationForm()
 
@@ -434,7 +437,7 @@ def stock_location_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Location {location.name} updated.')
-            return redirect('inventory:locations')
+            return staff_redirect(request, 'inventory:locations')
     else:
         form = StockLocationForm(instance=location)
 
@@ -470,7 +473,7 @@ def location_type_create(request):
         if form.is_valid():
             location_type = form.save()
             messages.success(request, f'Location type "{location_type.name}" created.')
-            return redirect('inventory:location_types')
+            return staff_redirect(request, 'inventory:location_types')
     else:
         form = LocationTypeForm()
 
@@ -492,7 +495,7 @@ def location_type_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Location type "{location_type.name}" updated.')
-            return redirect('inventory:location_types')
+            return staff_redirect(request, 'inventory:location_types')
     else:
         form = LocationTypeForm(instance=location_type)
 
@@ -520,7 +523,7 @@ def location_type_delete(request, pk):
                 request,
                 f'Cannot delete "{location_type.name}" - it is in use by locations.'
             )
-    return redirect('inventory:location_types')
+    return staff_redirect(request, 'inventory:location_types')
 
 
 @staff_member_required
@@ -632,7 +635,7 @@ def purchase_order_create(request):
             po.created_by = request.user
             po.save()
             messages.success(request, f'Purchase order {po.po_number} created.')
-            return redirect('inventory:purchase_order_detail', pk=po.pk)
+            return staff_redirect(request, 'inventory:purchase_order_detail', pk=po.pk)
     else:
         form = PurchaseOrderForm()
 
@@ -651,14 +654,14 @@ def purchase_order_edit(request, pk):
 
     if po.status != 'draft':
         messages.error(request, 'Only draft orders can be edited.')
-        return redirect('inventory:purchase_order_detail', pk=pk)
+        return staff_redirect(request, 'inventory:purchase_order_detail', pk=pk)
 
     if request.method == 'POST':
         form = PurchaseOrderForm(request.POST, instance=po)
         if form.is_valid():
             form.save()
             messages.success(request, f'Purchase order {po.po_number} updated.')
-            return redirect('inventory:purchase_order_detail', pk=po.pk)
+            return staff_redirect(request, 'inventory:purchase_order_detail', pk=po.pk)
     else:
         form = PurchaseOrderForm(instance=po)
 
@@ -682,7 +685,7 @@ def purchase_order_submit(request, pk):
         po.save()
         messages.success(request, f'Purchase order {po.po_number} submitted.')
 
-    return redirect('inventory:purchase_order_detail', pk=pk)
+    return staff_redirect(request, 'inventory:purchase_order_detail', pk=pk)
 
 
 @staff_member_required
@@ -731,7 +734,7 @@ def purchase_order_receive(request, pk):
 
         if received_any:
             messages.success(request, 'Items received successfully.')
-        return redirect('inventory:purchase_order_detail', pk=pk)
+        return staff_redirect(request, 'inventory:purchase_order_detail', pk=pk)
 
     context = {
         'order': po,
@@ -780,7 +783,7 @@ def stock_count_create(request):
                 counted_by=request.user
             )
             messages.success(request, 'Stock count started. Enter your counts.')
-            return redirect('inventory:stock_count_entry', pk=stock_count.pk)
+            return staff_redirect(request, 'inventory:stock_count_entry', pk=stock_count.pk)
     else:
         form = StockCountForm()
 
@@ -818,7 +821,7 @@ def stock_count_entry(request, pk):
 
     if count.status not in ['draft']:
         messages.error(request, 'This count is no longer editable.')
-        return redirect('inventory:stock_count_detail', pk=pk)
+        return staff_redirect(request, 'inventory:stock_count_detail', pk=pk)
 
     lines = count.lines.select_related('product')
 
@@ -845,9 +848,9 @@ def stock_count_entry(request, pk):
         if 'submit_for_review' in request.POST:
             count.status = 'submitted'
             count.save()
-            return redirect('inventory:stock_count_detail', pk=pk)
+            return staff_redirect(request, 'inventory:stock_count_detail', pk=pk)
 
-        return redirect('inventory:stock_count_entry', pk=pk)
+        return staff_redirect(request, 'inventory:stock_count_entry', pk=pk)
 
     context = {
         'count': count,
@@ -866,13 +869,13 @@ def stock_count_approve(request, pk):
 
     if count.status not in ['submitted', 'approved']:
         messages.error(request, 'This count cannot be approved yet.')
-        return redirect('inventory:stock_count_detail', pk=pk)
+        return staff_redirect(request, 'inventory:stock_count_detail', pk=pk)
 
     if request.method == 'POST':
         post_count_adjustments(count, approved_by=request.user)
         messages.success(request, 'Stock count adjustments posted.')
 
-    return redirect('inventory:stock_count_detail', pk=pk)
+    return staff_redirect(request, 'inventory:stock_count_detail', pk=pk)
 
 
 # =============================================================================
@@ -910,7 +913,7 @@ def transfer_create(request):
                 update_batch_quantity(movement_out)
 
             messages.success(request, 'Stock transfer completed.')
-            return redirect('inventory:movements')
+            return staff_redirect(request, 'inventory:movements')
     else:
         form = StockTransferForm()
 
@@ -934,7 +937,7 @@ def po_line_add(request, po_pk):
 
     if po.status != 'draft':
         messages.error(request, 'Can only add lines to draft orders.')
-        return redirect('inventory:purchase_order_detail', pk=po_pk)
+        return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
 
     if request.method == 'POST':
         form = PurchaseOrderLineForm(request.POST)
@@ -945,7 +948,7 @@ def po_line_add(request, po_pk):
             # Update PO totals
             po.update_totals()
             messages.success(request, 'Line item added.')
-            return redirect('inventory:purchase_order_detail', pk=po_pk)
+            return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
     else:
         form = PurchaseOrderLineForm()
 
@@ -967,7 +970,7 @@ def po_line_edit(request, po_pk, pk):
 
     if po.status != 'draft':
         messages.error(request, 'Can only edit lines on draft orders.')
-        return redirect('inventory:purchase_order_detail', pk=po_pk)
+        return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
 
     if request.method == 'POST':
         form = PurchaseOrderLineForm(request.POST, instance=line)
@@ -975,7 +978,7 @@ def po_line_edit(request, po_pk, pk):
             form.save()
             po.update_totals()
             messages.success(request, 'Line item updated.')
-            return redirect('inventory:purchase_order_detail', pk=po_pk)
+            return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
     else:
         form = PurchaseOrderLineForm(instance=line)
 
@@ -997,14 +1000,14 @@ def po_line_delete(request, po_pk, pk):
 
     if po.status != 'draft':
         messages.error(request, 'Can only delete lines from draft orders.')
-        return redirect('inventory:purchase_order_detail', pk=po_pk)
+        return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
 
     if request.method == 'POST':
         line.delete()
         po.update_totals()
         messages.success(request, 'Line item deleted.')
 
-    return redirect('inventory:purchase_order_detail', pk=po_pk)
+    return staff_redirect(request, 'inventory:purchase_order_detail', pk=po_pk)
 
 
 # =============================================================================
@@ -1036,7 +1039,7 @@ def reorder_rule_create(request):
         if form.is_valid():
             rule = form.save()
             messages.success(request, f'Reorder rule for {rule.product.name} created.')
-            return redirect('inventory:reorder_rules')
+            return staff_redirect(request, 'inventory:reorder_rules')
     else:
         form = ReorderRuleForm()
 
@@ -1059,7 +1062,7 @@ def reorder_rule_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Reorder rule for {rule.product.name} updated.')
-            return redirect('inventory:reorder_rules')
+            return staff_redirect(request, 'inventory:reorder_rules')
     else:
         form = ReorderRuleForm(instance=rule)
 
@@ -1099,7 +1102,7 @@ def product_supplier_create(request):
         if form.is_valid():
             link = form.save()
             messages.success(request, f'Link created: {link.product.name} - {link.supplier.name}')
-            return redirect('inventory:product_suppliers')
+            return staff_redirect(request, 'inventory:product_suppliers')
     else:
         form = ProductSupplierForm()
 
@@ -1122,7 +1125,7 @@ def product_supplier_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Link updated: {link.product.name} - {link.supplier.name}')
-            return redirect('inventory:product_suppliers')
+            return staff_redirect(request, 'inventory:product_suppliers')
     else:
         form = ProductSupplierForm(instance=link)
 
@@ -1147,7 +1150,7 @@ def batch_create(request):
         if form.is_valid():
             batch = form.save()
             messages.success(request, f'Batch {batch.batch_number} created.')
-            return redirect('inventory:batches')
+            return staff_redirect(request, 'inventory:batches')
     else:
         form = StockBatchForm()
 
@@ -1169,7 +1172,7 @@ def batch_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Batch {batch.batch_number} updated.')
-            return redirect('inventory:batches')
+            return staff_redirect(request, 'inventory:batches')
     else:
         form = StockBatchForm(instance=batch)
 
@@ -1194,7 +1197,7 @@ def stock_level_create(request):
         if form.is_valid():
             level = form.save()
             messages.success(request, f'Stock level for {level.product.name} at {level.location.name} created.')
-            return redirect('inventory:stock')
+            return staff_redirect(request, 'inventory:stock')
     else:
         form = StockLevelForm()
 
@@ -1216,7 +1219,7 @@ def stock_level_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Stock level updated.')
-            return redirect('inventory:stock')
+            return staff_redirect(request, 'inventory:stock')
     else:
         form = StockLevelForm(instance=stock_level)
 
@@ -1241,11 +1244,11 @@ def stock_level_adjust(request, pk):
         if form.is_valid():
             adjustment = form.cleaned_data['adjustment']
             reason = form.cleaned_data['reason']
-            
+
             # Update stock level
             stock_level.quantity += adjustment
             stock_level.save()
-            
+
             # Create movement record
             movement_type = 'adjustment_add' if adjustment > 0 else 'adjustment_remove'
             StockMovement.objects.create(
@@ -1257,9 +1260,9 @@ def stock_level_adjust(request, pk):
                 reason=reason,
                 recorded_by=request.user
             )
-            
+
             messages.success(request, f'Stock level adjusted by {adjustment}.')
-            return redirect('inventory:stock')
+            return staff_redirect(request, 'inventory:stock')
     else:
         form = StockLevelAdjustmentForm()
 
@@ -1268,3 +1271,97 @@ def stock_level_adjust(request, pk):
         'stock_level': stock_level,
     }
     return render(request, 'inventory/stock_level_adjust.html', context)
+
+
+# =============================================================================
+# Inventory Item CRUD Views
+# =============================================================================
+
+@staff_member_required
+def inventory_item_list(request):
+    """List all inventory items with filtering."""
+    item_type = request.GET.get('item_type', '')
+    search = request.GET.get('search', '')
+
+    items = InventoryItem.objects.select_related(
+        'sat_product_code', 'sat_unit_code', 'tax_rate'
+    )
+
+    if item_type:
+        items = items.filter(item_type=item_type)
+
+    if search:
+        items = items.filter(
+            Q(name__icontains=search) |
+            Q(sku__icontains=search) |
+            Q(description__icontains=search)
+        )
+
+    items = items.order_by('name')
+
+    context = {
+        'items': items,
+        'current_type': item_type,
+        'search': search,
+        'item_type_choices': InventoryItem.ITEM_TYPE_CHOICES,
+    }
+    return render(request, 'inventory/item_list.html', context)
+
+
+@staff_member_required
+def inventory_item_create(request):
+    """Create a new inventory item."""
+    from apps.inventory.forms import InventoryItemForm
+
+    if request.method == 'POST':
+        form = InventoryItemForm(request.POST)
+        if form.is_valid():
+            item = form.save()
+            messages.success(request, f'Inventory item "{item.name}" created.')
+            return staff_redirect(request, 'inventory:item_detail', pk=item.pk)
+    else:
+        form = InventoryItemForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'inventory/item_form.html', context)
+
+
+@staff_member_required
+def inventory_item_detail(request, pk):
+    """View inventory item details."""
+    item = get_object_or_404(
+        InventoryItem.objects.select_related(
+            'sat_product_code', 'sat_unit_code', 'tax_rate'
+        ),
+        pk=pk
+    )
+
+    context = {
+        'item': item,
+    }
+    return render(request, 'inventory/item_detail.html', context)
+
+
+@staff_member_required
+def inventory_item_edit(request, pk):
+    """Edit an inventory item."""
+    from apps.inventory.forms import InventoryItemForm
+
+    item = get_object_or_404(InventoryItem, pk=pk)
+
+    if request.method == 'POST':
+        form = InventoryItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Inventory item "{item.name}" updated.')
+            return staff_redirect(request, 'inventory:item_detail', pk=item.pk)
+    else:
+        form = InventoryItemForm(instance=item)
+
+    context = {
+        'form': form,
+        'item': item,
+    }
+    return render(request, 'inventory/item_form.html', context)

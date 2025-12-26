@@ -1,0 +1,219 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if item %}{% trans "Edit Item" %}{% else %}{% trans "Add Item" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if item %}{% trans "Edit Item" %}{% else %}{% trans "Add Inventory Item" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/items/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Items" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Basic Information -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">{% trans "Basic Information" %}</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- SKU -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "SKU" %} *</label>
+                        <input type="text" name="sku" value="{{ form.sku.value|default:'' }}" required
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono"
+                               placeholder="e.g., PROD-001">
+                        {% if form.sku.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.sku.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Item Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Item Type" %} *</label>
+                        <select name="item_type" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">{% trans "Select type..." %}</option>
+                            <option value="resale" {% if form.item_type.value == 'resale' %}selected{% endif %}>{% trans "Resale Product" %}</option>
+                            <option value="supply" {% if form.item_type.value == 'supply' %}selected{% endif %}>{% trans "Operational Supply" %}</option>
+                            <option value="consumable" {% if form.item_type.value == 'consumable' %}selected{% endif %}>{% trans "Consumable" %}</option>
+                            <option value="equipment" {% if form.item_type.value == 'equipment' %}selected{% endif %}>{% trans "Equipment/Asset" %}</option>
+                            <option value="raw_material" {% if form.item_type.value == 'raw_material' %}selected{% endif %}>{% trans "Raw Material" %}</option>
+                        </select>
+                        {% if form.item_type.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.item_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Name" %} *</label>
+                    <input type="text" name="name" value="{{ form.name.value|default:'' }}" required
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Description" %}</label>
+                    <textarea name="description" rows="3"
+                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SAT Tax Compliance -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">{% trans "Mexico SAT Compliance" %}</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- SAT Product Code -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "SAT Product Code" %} *</label>
+                        <input type="text" name="sat_product_code" value="{{ form.sat_product_code.value|default:'' }}" required
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono"
+                               placeholder="e.g., 50112001">
+                        <p class="text-gray-500 text-xs mt-1">{% trans "8-digit SAT Clave de Producto" %}</p>
+                        {% if form.sat_product_code.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.sat_product_code.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- SAT Unit Code -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "SAT Unit Code" %} *</label>
+                        <input type="text" name="sat_unit_code" value="{{ form.sat_unit_code.value|default:'' }}" required
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono"
+                               placeholder="e.g., H87">
+                        <p class="text-gray-500 text-xs mt-1">{% trans "SAT Clave de Unidad (H87=Piece, E48=Service)" %}</p>
+                        {% if form.sat_unit_code.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.sat_unit_code.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Tax Rate -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Tax Rate" %} *</label>
+                    <select name="tax_rate" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">{% trans "Select tax rate..." %}</option>
+                        {% for rate in form.tax_rate.field.queryset %}
+                        <option value="{{ rate.pk }}" {% if form.tax_rate.value|stringformat:"i" == rate.pk|stringformat:"i" %}selected{% endif %}>
+                            {{ rate.name }} ({{ rate.rate|floatformat:2 }}%)
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.tax_rate.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.tax_rate.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">{% trans "Pricing" %}</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Cost Price -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Cost Price" %} *</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-500">$</span>
+                        <input type="number" name="cost_price" value="{{ form.cost_price.value|default:'0.00' }}" step="0.01" min="0" required
+                               class="w-full border border-gray-300 rounded-lg pl-7 pr-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    {% if form.cost_price.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.cost_price.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Sale Price -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Sale Price" %}</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-500">$</span>
+                        <input type="number" name="sale_price" value="{{ form.sale_price.value|default:'' }}" step="0.01" min="0"
+                               class="w-full border border-gray-300 rounded-lg pl-7 pr-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <p class="text-gray-500 text-xs mt-1">{% trans "Required for resale items" %}</p>
+                    {% if form.sale_price.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.sale_price.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory & Equipment Settings -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">{% trans "Settings" %}</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Track Inventory -->
+                    <div class="flex items-center">
+                        <input type="checkbox" name="track_inventory" id="track_inventory" value="true"
+                               {% if form.track_inventory.value or not item %}checked{% endif %}
+                               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <label for="track_inventory" class="ml-2 text-sm text-gray-700">{% trans "Track inventory levels" %}</label>
+                    </div>
+
+                    <!-- Is Active -->
+                    <div class="flex items-center">
+                        <input type="checkbox" name="is_active" id="is_active" value="true"
+                               {% if form.is_active.value or not item %}checked{% endif %}
+                               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <label for="is_active" class="ml-2 text-sm text-gray-700">{% trans "Active item" %}</label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Is Depreciable -->
+                    <div class="flex items-center">
+                        <input type="checkbox" name="is_depreciable" id="is_depreciable" value="true"
+                               {% if form.is_depreciable.value %}checked{% endif %}
+                               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <label for="is_depreciable" class="ml-2 text-sm text-gray-700">{% trans "Depreciable asset" %}</label>
+                        <span class="ml-1 text-gray-400 text-xs">({% trans "equipment only" %})</span>
+                    </div>
+
+                    <!-- Useful Life Months -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Useful Life (Months)" %}</label>
+                        <input type="number" name="useful_life_months" value="{{ form.useful_life_months.value|default:'' }}" min="1"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        {% if form.useful_life_months.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.useful_life_months.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if item %}{% trans "Save Changes" %}{% else %}{% trans "Create Item" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/items/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

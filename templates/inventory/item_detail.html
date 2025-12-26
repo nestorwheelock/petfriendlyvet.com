@@ -1,0 +1,173 @@
+{% extends "base_staff.html" %}
+{% load i18n humanize %}
+
+{% block title %}{{ item.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="/staff-{{ staff_token }}/operations/inventory/items/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Items" %}
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/inventory/items/{{ item.pk }}/edit/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+            {% trans "Edit Item" %}
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-2xl font-bold text-gray-900">{{ item.name }}</h1>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if item.item_type == 'resale' %}bg-green-100 text-green-800
+                            {% elif item.item_type == 'supply' %}bg-blue-100 text-blue-800
+                            {% elif item.item_type == 'consumable' %}bg-yellow-100 text-yellow-800
+                            {% elif item.item_type == 'equipment' %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ item.get_item_type_display }}
+                        </span>
+                    </div>
+                    <p class="text-gray-500 font-mono mt-1">{{ item.sku }}</p>
+                </div>
+                {% if item.is_active %}
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                    {% trans "Active" %}
+                </span>
+                {% else %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
+                    {% trans "Inactive" %}
+                </span>
+                {% endif %}
+            </div>
+            {% if item.description %}
+            <p class="text-gray-600 mt-4">{{ item.description }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Details Grid -->
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Pricing -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Pricing" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Cost Price" %}</dt>
+                        <dd class="font-medium text-lg">${{ item.cost_price|floatformat:2|intcomma }}</dd>
+                    </div>
+                    {% if item.sale_price %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Sale Price" %}</dt>
+                        <dd class="font-medium text-lg text-green-600">${{ item.sale_price|floatformat:2|intcomma }}</dd>
+                    </div>
+                    {% if item.cost_price and item.sale_price %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Margin" %}</dt>
+                        {% with margin=item.sale_price|add:"-"|add:item.cost_price %}
+                        <dd class="font-medium">${{ margin|floatformat:2|intcomma }}</dd>
+                        {% endwith %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </dl>
+            </div>
+
+            <!-- Tax Information -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Tax & SAT Compliance" %}</h3>
+                <dl class="space-y-2">
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Tax Rate" %}</dt>
+                        <dd class="font-medium">{{ item.tax_rate.name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "SAT Product Code" %}</dt>
+                        <dd class="font-mono">{{ item.sat_product_code.code }}</dd>
+                        <dd class="text-sm text-gray-500">{{ item.sat_product_code.description }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "SAT Unit Code" %}</dt>
+                        <dd class="font-mono">{{ item.sat_unit_code.code }} - {{ item.sat_unit_code.name }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Inventory Settings -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Inventory Settings" %}</h3>
+                <dl class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        {% if item.track_inventory %}
+                        <span class="text-green-600">✓</span>
+                        <span>{% trans "Inventory tracking enabled" %}</span>
+                        {% else %}
+                        <span class="text-gray-400">✗</span>
+                        <span class="text-gray-500">{% trans "Inventory tracking disabled" %}</span>
+                        {% endif %}
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Equipment Settings (if applicable) -->
+            {% if item.item_type == 'equipment' %}
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">{% trans "Equipment Details" %}</h3>
+                <dl class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        {% if item.is_depreciable %}
+                        <span class="text-green-600">✓</span>
+                        <span>{% trans "Depreciable asset" %}</span>
+                        {% else %}
+                        <span class="text-gray-400">✗</span>
+                        <span class="text-gray-500">{% trans "Not depreciable" %}</span>
+                        {% endif %}
+                    </div>
+                    {% if item.useful_life_months %}
+                    <div>
+                        <dt class="text-gray-600 text-sm">{% trans "Useful Life" %}</dt>
+                        <dd class="font-medium">{{ item.useful_life_months }} {% trans "months" %}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Timestamps -->
+        <div class="px-6 pb-6 border-t border-gray-200 pt-4">
+            <div class="flex gap-6 text-sm text-gray-500">
+                <div>
+                    <span class="font-medium">{% trans "Created:" %}</span>
+                    {{ item.created_at|date:"M d, Y H:i" }}
+                </div>
+                <div>
+                    <span class="font-medium">{% trans "Updated:" %}</span>
+                    {{ item.updated_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Store Product (if linked) -->
+    {% if item.store_product %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Linked Store Product" %}</h2>
+        </div>
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-gray-900">{{ item.store_product.name }}</p>
+                    <p class="text-sm text-gray-500">{% trans "Store Price:" %} ${{ item.store_product.price|floatformat:2|intcomma }}</p>
+                </div>
+                <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">
+                    {% trans "View in Store" %} →
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

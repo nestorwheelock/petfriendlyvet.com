@@ -77,4 +77,10 @@ urlpatterns = [
     # Alerts
     path('alerts/', views.alerts, name='alerts'),
     path('expiring/', views.expiring_items, name='expiring'),
+
+    # Inventory Items
+    path('items/', views.inventory_item_list, name='items'),
+    path('items/add/', views.inventory_item_create, name='item_create'),
+    path('items/<int:pk>/', views.inventory_item_detail, name='item_detail'),
+    path('items/<int:pk>/edit/', views.inventory_item_edit, name='item_edit'),
 ]

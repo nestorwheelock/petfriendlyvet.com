@@ -13,11 +13,12 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
 from apps.inventory.models import (
-    LocationType, StockLocation, StockLevel, StockBatch, StockMovement,
+    InventoryItem, LocationType, StockLocation, StockLevel, StockBatch, StockMovement,
     Supplier, PurchaseOrder, PurchaseOrderLine, StockCount, StockCountLine,
     ReorderRule, ProductSupplier
 )
 from apps.store.models import Product
+from apps.billing.models import TaxRate, SATProductCode, SATUnitCode
 
 
 # Movement types that are inbound (increase stock)
@@ -416,3 +417,100 @@ class StockLevelAdjustmentForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 2}),
         required=True
     )
+
+
+class InventoryItemForm(forms.ModelForm):
+    """Form for creating/editing inventory items."""
+
+    sat_product_code = forms.CharField(
+        label=_('SAT Product Code'),
+        max_length=8,
+        help_text=_('8-digit SAT Clave de Producto')
+    )
+    sat_unit_code = forms.CharField(
+        label=_('SAT Unit Code'),
+        max_length=5,
+        help_text=_('SAT Clave de Unidad (e.g., H87 for Piece)')
+    )
+
+    class Meta:
+        model = InventoryItem
+        fields = [
+            'sku', 'name', 'description', 'item_type',
+            'sat_product_code', 'sat_unit_code', 'tax_rate',
+            'cost_price', 'sale_price',
+            'track_inventory', 'is_depreciable', 'useful_life_months',
+            'is_active'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['description'].required = False
+        self.fields['sale_price'].required = False
+        self.fields['is_depreciable'].required = False
+        self.fields['useful_life_months'].required = False
+
+        # Populate SAT code values if editing existing item
+        if self.instance.pk:
+            if self.instance.sat_product_code:
+                self.fields['sat_product_code'].initial = self.instance.sat_product_code.code
+            if self.instance.sat_unit_code:
+                self.fields['sat_unit_code'].initial = self.instance.sat_unit_code.code
+
+        # Limit tax rate choices to active ones
+        self.fields['tax_rate'].queryset = TaxRate.objects.filter(is_active=True)
+
+    def clean_sat_product_code(self):
+        """Validate and convert SAT product code."""
+        code = self.cleaned_data.get('sat_product_code')
+        if code:
+            try:
+                sat_code = SATProductCode.objects.get(code=code)
+                return sat_code
+            except SATProductCode.DoesNotExist:
+                raise forms.ValidationError(
+                    _('Invalid SAT product code. Code must exist in SAT catalog.')
+                )
+        return None
+
+    def clean_sat_unit_code(self):
+        """Validate and convert SAT unit code."""
+        code = self.cleaned_data.get('sat_unit_code')
+        if code:
+            try:
+                sat_code = SATUnitCode.objects.get(code=code)
+                return sat_code
+            except SATUnitCode.DoesNotExist:
+                raise forms.ValidationError(
+                    _('Invalid SAT unit code. Code must exist in SAT catalog.')
+                )
+        return None
+
+    def clean(self):
+        """Validate item type specific fields."""
+        cleaned_data = super().clean()
+        item_type = cleaned_data.get('item_type')
+        sale_price = cleaned_data.get('sale_price')
+        is_depreciable = cleaned_data.get('is_depreciable')
+
+        # Resale items should have a sale price
+        if item_type == 'resale' and not sale_price:
+            self.add_error('sale_price', _('Resale items should have a sale price.'))
+
+        # Only equipment should be depreciable
+        if is_depreciable and item_type != 'equipment':
+            self.add_error('is_depreciable', _('Only equipment items can be depreciable.'))
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        """Save with converted SAT codes."""
+        instance = super().save(commit=False)
+        instance.sat_product_code = self.cleaned_data['sat_product_code']
+        instance.sat_unit_code = self.cleaned_data['sat_unit_code']
+        if commit:
+            instance.save()
+        return instance
