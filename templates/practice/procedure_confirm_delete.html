@@ -1,0 +1,42 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Procedure" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Delete Procedure" %}</h1>
+
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-red-800">
+                {% blocktrans with name=procedure.name %}
+                Are you sure you want to delete the procedure "{{ name }}"? This action cannot be undone.
+                {% endblocktrans %}
+            </p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-medium text-gray-900 mb-2">{% trans "Procedure Details" %}</h3>
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-500">{% trans "Code" %}:</dt>
+                <dd class="text-gray-900">{{ procedure.code }}</dd>
+                <dt class="text-gray-500">{% trans "Category" %}:</dt>
+                <dd class="text-gray-900">{{ procedure.category.name }}</dd>
+                <dt class="text-gray-500">{% trans "Price" %}:</dt>
+                <dd class="text-gray-900">${{ procedure.base_price }}</dd>
+            </dl>
+        </div>
+
+        <form method="post" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <a href="{% url 'practice:procedure_list' %}" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-error">
+                {% trans "Delete Procedure" %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

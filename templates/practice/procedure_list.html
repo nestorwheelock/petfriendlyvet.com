@@ -1,0 +1,116 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Veterinary Procedures" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Veterinary Procedures" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Manage services offered by the clinic" %}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'practice:category_list' %}" class="btn btn-outline">
+                {% trans "Categories" %}
+            </a>
+            <a href="{% url 'practice:procedure_create' %}" class="btn btn-primary">
+                + {% trans "Add Procedure" %}
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filter by Category -->
+    <div class="mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'practice:procedure_list' %}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if not current_category %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                {% trans "All" %}
+            </a>
+            {% for cat in categories %}
+            <a href="?category={{ cat.id }}"
+               class="px-4 py-2 rounded-lg text-sm font-medium {% if current_category == cat.id|stringformat:'s' %}bg-primary-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Procedures Table -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Code" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Name" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Category" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Price" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Duration" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for proc in procedures %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm text-gray-900">{{ proc.code }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">{{ proc.name }}</div>
+                        {% if proc.description %}
+                        <div class="text-sm text-gray-500 truncate max-w-xs">{{ proc.description }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                            {{ proc.category.name }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${{ proc.base_price }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ proc.duration_minutes }} min
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if proc.is_active %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'practice:procedure_edit' proc.pk %}" class="text-primary-600 hover:text-primary-900 mr-3">
+                            {% trans "Edit" %}
+                        </a>
+                        <a href="{% url 'practice:procedure_delete' proc.pk %}" class="text-red-600 hover:text-red-900">
+                            {% trans "Delete" %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        {% trans "No procedures found." %}
+                        <a href="{% url 'practice:procedure_create' %}" class="text-primary-600 hover:underline">
+                            {% trans "Add one now" %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

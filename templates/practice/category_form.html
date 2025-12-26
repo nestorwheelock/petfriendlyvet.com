@@ -1,0 +1,104 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Category" %}{% else %}{% trans "Add Category" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if editing %}{% trans "Edit Category" %}{% else %}{% trans "Add Category" %}{% endif %}
+        </h1>
+        <p class="text-gray-600 mt-1">
+            {% if editing %}{% trans "Update category details" %}{% else %}{% trans "Create a new procedure category" %}{% endif %}
+        </p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6 space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="code" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Category Code" %} *
+                </label>
+                <input type="text" name="code" id="code" required
+                       value="{% if category %}{{ category.code }}{% endif %}"
+                       placeholder="e.g., surgery"
+                       class="input input-bordered w-full lowercase">
+                <p class="text-xs text-gray-500 mt-1">{% trans "Unique identifier (lowercase)" %}</p>
+            </div>
+            <div>
+                <label for="sort_order" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Sort Order" %}
+                </label>
+                <input type="number" name="sort_order" id="sort_order" min="0"
+                       value="{% if category %}{{ category.sort_order }}{% else %}{{ max_sort_order }}{% endif %}"
+                       class="input input-bordered w-full">
+            </div>
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Name (English)" %} *
+                </label>
+                <input type="text" name="name" id="name" required
+                       value="{% if category %}{{ category.name }}{% endif %}"
+                       class="input input-bordered w-full">
+            </div>
+            <div>
+                <label for="name_es" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Name (Spanish)" %}
+                </label>
+                <input type="text" name="name_es" id="name_es"
+                       value="{% if category %}{{ category.name_es }}{% endif %}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="md:col-span-2">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Description" %}
+                </label>
+                <textarea name="description" id="description" rows="2"
+                          class="textarea textarea-bordered w-full">{% if category %}{{ category.description }}{% endif %}</textarea>
+            </div>
+            <div>
+                <label for="icon" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Icon" %}
+                </label>
+                <input type="text" name="icon" id="icon"
+                       value="{% if category %}{{ category.icon }}{% endif %}"
+                       placeholder="e.g., stethoscope"
+                       class="input input-bordered w-full">
+                <p class="text-xs text-gray-500 mt-1">{% trans "Icon name for display" %}</p>
+            </div>
+            {% if editing %}
+            <div class="flex items-center">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_active"
+                           {% if category.is_active %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Active" %}</span>
+                </label>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="{% url 'practice:category_list' %}" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Category" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

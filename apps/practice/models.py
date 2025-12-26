@@ -365,6 +365,14 @@ class VetProcedure(models.Model):
         related_name='procedures'
     )
 
+    # Qualified providers who can perform this procedure
+    qualified_providers = models.ManyToManyField(
+        StaffProfile,
+        blank=True,
+        related_name='qualified_procedures',
+        help_text="Staff members qualified to perform this procedure"
+    )
+
     # Pricing
     base_price = models.DecimalField(
         max_digits=10,
@@ -425,3 +433,66 @@ class VetProcedure(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def total_consumable_cost(self):
+        """Calculate total cost of consumable items."""
+        total = Decimal('0.00')
+        for consumable in self.consumables.all():
+            if consumable.inventory_item and consumable.inventory_item.cost_price:
+                total += consumable.inventory_item.cost_price * consumable.quantity
+        return total
+
+
+class ProcedureConsumable(models.Model):
+    """Inventory items consumed when performing a procedure.
+
+    Tracks what items are used (vaccines, syringes, needles, towels, etc.)
+    and the quantity consumed per procedure.
+    """
+
+    procedure = models.ForeignKey(
+        VetProcedure,
+        on_delete=models.CASCADE,
+        related_name='consumables'
+    )
+    inventory_item = models.ForeignKey(
+        'inventory.InventoryItem',
+        on_delete=models.PROTECT,
+        related_name='procedure_uses',
+        help_text="Inventory item consumed during this procedure"
+    )
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('1.00'),
+        help_text="Quantity consumed per procedure"
+    )
+    is_required = models.BooleanField(
+        default=True,
+        help_text="If true, procedure cannot be performed without this item in stock"
+    )
+    notes = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional notes (e.g., 'Use 3ml syringe for small dogs')"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['procedure', 'inventory_item']
+        unique_together = ['procedure', 'inventory_item']
+        verbose_name = 'Procedure Consumable'
+        verbose_name_plural = 'Procedure Consumables'
+
+    def __str__(self):
+        return f"{self.procedure.name}: {self.quantity} x {self.inventory_item.name}"
+
+    @property
+    def unit_cost(self):
+        """Get the cost of this consumable."""
+        if self.inventory_item and self.inventory_item.cost_price:
+            return self.inventory_item.cost_price * self.quantity
+        return Decimal('0.00')

@@ -1,0 +1,205 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Procedure" %}{% else %}{% trans "Add Procedure" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if editing %}{% trans "Edit Procedure" %}{% else %}{% trans "Add Procedure" %}{% endif %}
+        </h1>
+        <p class="text-gray-600 mt-1">
+            {% if editing %}{% trans "Update procedure details" %}{% else %}{% trans "Create a new veterinary procedure" %}{% endif %}
+        </p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6 space-y-6">
+        {% csrf_token %}
+
+        <!-- Basic Info -->
+        <div class="border-b pb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Basic Information" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="code" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Procedure Code" %} *
+                    </label>
+                    <input type="text" name="code" id="code" required
+                           value="{% if procedure %}{{ procedure.code }}{% endif %}"
+                           placeholder="e.g., CONSULT-GEN"
+                           class="input input-bordered w-full uppercase">
+                    <p class="text-xs text-gray-500 mt-1">{% trans "Unique internal code" %}</p>
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Category" %} *
+                    </label>
+                    <select name="category" id="category" required class="select select-bordered w-full">
+                        <option value="">{% trans "Select category..." %}</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if procedure and procedure.category_id == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Name (English)" %} *
+                    </label>
+                    <input type="text" name="name" id="name" required
+                           value="{% if procedure %}{{ procedure.name }}{% endif %}"
+                           class="input input-bordered w-full">
+                </div>
+                <div>
+                    <label for="name_es" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Name (Spanish)" %}
+                    </label>
+                    <input type="text" name="name_es" id="name_es"
+                           value="{% if procedure %}{{ procedure.name_es }}{% endif %}"
+                           class="input input-bordered w-full">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Description" %}
+                    </label>
+                    <textarea name="description" id="description" rows="3"
+                              class="textarea textarea-bordered w-full">{% if procedure %}{{ procedure.description }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing & Duration -->
+        <div class="border-b pb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Pricing & Duration" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="base_price" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Base Price (MXN)" %}
+                    </label>
+                    <input type="number" name="base_price" id="base_price" step="0.01" min="0"
+                           value="{% if procedure %}{{ procedure.base_price }}{% else %}0.00{% endif %}"
+                           class="input input-bordered w-full">
+                </div>
+                <div>
+                    <label for="duration_minutes" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Duration (minutes)" %}
+                    </label>
+                    <input type="number" name="duration_minutes" id="duration_minutes" min="1"
+                           value="{% if procedure %}{{ procedure.duration_minutes }}{% else %}30{% endif %}"
+                           class="input input-bordered w-full">
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements -->
+        <div class="border-b pb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Requirements" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="requires_appointment"
+                           {% if procedure and procedure.requires_appointment %}checked{% elif not procedure %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Requires Appointment" %}</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="requires_vet_license"
+                           {% if procedure and procedure.requires_vet_license %}checked{% elif not procedure %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Requires Licensed Veterinarian" %}</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="requires_anesthesia"
+                           {% if procedure and procedure.requires_anesthesia %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Requires Anesthesia" %}</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="requires_hospitalization"
+                           {% if procedure and procedure.requires_hospitalization %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Requires Hospitalization" %}</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Visibility -->
+        <div class="border-b pb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Visibility" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_visible_online"
+                           {% if procedure and procedure.is_visible_online %}checked{% elif not procedure %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Visible for Online Booking" %}</span>
+                </label>
+                {% if editing %}
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_active"
+                           {% if procedure.is_active %}checked{% endif %}
+                           class="checkbox checkbox-primary">
+                    <span class="text-sm text-gray-700">{% trans "Active" %}</span>
+                </label>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SAT Codes (for Mexican tax compliance) -->
+        <div class="border-b pb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Tax Codes (SAT)" %}</h2>
+            <p class="text-sm text-gray-500 mb-4">{% trans "Required for CFDI invoicing in Mexico" %}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="sat_product_code" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "SAT Product Code" %}
+                    </label>
+                    <select name="sat_product_code" id="sat_product_code" class="select select-bordered w-full">
+                        <option value="">{% trans "Select code..." %}</option>
+                        {% for code in sat_product_codes %}
+                        <option value="{{ code.id }}"
+                                {% if procedure and procedure.sat_product_code_id == code.id %}selected{% endif %}>
+                            {{ code.code }} - {{ code.description }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="sat_unit_code" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "SAT Unit Code" %}
+                    </label>
+                    <select name="sat_unit_code" id="sat_unit_code" class="select select-bordered w-full">
+                        <option value="">{% trans "Select code..." %}</option>
+                        {% for code in sat_unit_codes %}
+                        <option value="{{ code.id }}"
+                                {% if procedure and procedure.sat_unit_code_id == code.id %}selected{% endif %}>
+                            {{ code.code }} - {{ code.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'practice:procedure_list' %}" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Procedure" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

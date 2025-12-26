@@ -1,11 +1,17 @@
 """Practice management views."""
 from datetime import date, timedelta
+from decimal import Decimal
 
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, Q
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
-from .models import StaffProfile, Shift, TimeEntry, Task, ClinicSettings
+from apps.billing.models import SATProductCode, SATUnitCode
+from .models import (
+    StaffProfile, Shift, TimeEntry, Task, ClinicSettings,
+    ProcedureCategory, VetProcedure
+)
 
 
 @staff_member_required
@@ -232,3 +238,268 @@ def clinic_settings(request):
         'settings': settings,
     }
     return render(request, 'practice/clinic_settings.html', context)
+
+
+# ============================================
+# Procedure Category Views
+# ============================================
+
+@staff_member_required
+def category_list(request):
+    """List all procedure categories."""
+    categories = ProcedureCategory.objects.annotate(
+        procedure_count=Count('procedures')
+    ).order_by('sort_order', 'name')
+
+    context = {
+        'categories': categories,
+    }
+    return render(request, 'practice/category_list.html', context)
+
+
+@staff_member_required
+def category_create(request):
+    """Create a new procedure category."""
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip().lower().replace(' ', '-')
+        name = request.POST.get('name', '').strip()
+        name_es = request.POST.get('name_es', '').strip()
+        description = request.POST.get('description', '').strip()
+        icon = request.POST.get('icon', '').strip()
+        sort_order = int(request.POST.get('sort_order', 0))
+
+        if not code or not name:
+            messages.error(request, 'Code and name are required.')
+            return redirect('practice:category_create')
+
+        if ProcedureCategory.objects.filter(code=code).exists():
+            messages.error(request, f'Category with code "{code}" already exists.')
+            return redirect('practice:category_create')
+
+        ProcedureCategory.objects.create(
+            code=code,
+            name=name,
+            name_es=name_es or name,
+            description=description,
+            icon=icon,
+            sort_order=sort_order,
+        )
+        messages.success(request, f'Category "{name}" created successfully.')
+        return redirect('practice:category_list')
+
+    context = {
+        'max_sort_order': ProcedureCategory.objects.count(),
+    }
+    return render(request, 'practice/category_form.html', context)
+
+
+@staff_member_required
+def category_edit(request, pk):
+    """Edit a procedure category."""
+    category = get_object_or_404(ProcedureCategory, pk=pk)
+
+    if request.method == 'POST':
+        category.code = request.POST.get('code', '').strip().lower().replace(' ', '-')
+        category.name = request.POST.get('name', '').strip()
+        category.name_es = request.POST.get('name_es', '').strip()
+        category.description = request.POST.get('description', '').strip()
+        category.icon = request.POST.get('icon', '').strip()
+        category.sort_order = int(request.POST.get('sort_order', 0))
+        category.is_active = request.POST.get('is_active') == 'on'
+
+        if not category.code or not category.name:
+            messages.error(request, 'Code and name are required.')
+            return redirect('practice:category_edit', pk=pk)
+
+        category.save()
+        messages.success(request, f'Category "{category.name}" updated successfully.')
+        return redirect('practice:category_list')
+
+    context = {
+        'category': category,
+        'editing': True,
+    }
+    return render(request, 'practice/category_form.html', context)
+
+
+@staff_member_required
+def category_delete(request, pk):
+    """Delete a procedure category."""
+    category = get_object_or_404(ProcedureCategory, pk=pk)
+
+    if request.method == 'POST':
+        if category.procedures.exists():
+            messages.error(
+                request,
+                f'Cannot delete "{category.name}" - it has {category.procedures.count()} procedures.'
+            )
+            return redirect('practice:category_list')
+
+        name = category.name
+        category.delete()
+        messages.success(request, f'Category "{name}" deleted successfully.')
+        return redirect('practice:category_list')
+
+    context = {
+        'category': category,
+    }
+    return render(request, 'practice/category_confirm_delete.html', context)
+
+
+# ============================================
+# VetProcedure Views
+# ============================================
+
+@staff_member_required
+def procedure_list(request):
+    """List all veterinary procedures."""
+    category_id = request.GET.get('category', '')
+
+    procedures = VetProcedure.objects.select_related('category').order_by(
+        'category__sort_order', 'name'
+    )
+
+    if category_id:
+        procedures = procedures.filter(category_id=category_id)
+
+    categories = ProcedureCategory.objects.order_by('sort_order', 'name')
+
+    context = {
+        'procedures': procedures,
+        'categories': categories,
+        'current_category': category_id,
+    }
+    return render(request, 'practice/procedure_list.html', context)
+
+
+@staff_member_required
+def procedure_create(request):
+    """Create a new veterinary procedure."""
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip().upper().replace(' ', '-')
+        name = request.POST.get('name', '').strip()
+        name_es = request.POST.get('name_es', '').strip()
+        description = request.POST.get('description', '').strip()
+        category_id = request.POST.get('category')
+        base_price = Decimal(request.POST.get('base_price', '0') or '0')
+        duration_minutes = int(request.POST.get('duration_minutes', '30') or '30')
+
+        # Boolean fields
+        requires_appointment = request.POST.get('requires_appointment') == 'on'
+        requires_hospitalization = request.POST.get('requires_hospitalization') == 'on'
+        requires_anesthesia = request.POST.get('requires_anesthesia') == 'on'
+        requires_vet_license = request.POST.get('requires_vet_license') == 'on'
+        is_visible_online = request.POST.get('is_visible_online') == 'on'
+
+        # SAT codes
+        sat_product_code_id = request.POST.get('sat_product_code') or None
+        sat_unit_code_id = request.POST.get('sat_unit_code') or None
+
+        if not code or not name or not category_id:
+            messages.error(request, 'Code, name, and category are required.')
+            return redirect('practice:procedure_create')
+
+        if VetProcedure.objects.filter(code=code).exists():
+            messages.error(request, f'Procedure with code "{code}" already exists.')
+            return redirect('practice:procedure_create')
+
+        VetProcedure.objects.create(
+            code=code,
+            name=name,
+            name_es=name_es or name,
+            description=description,
+            category_id=category_id,
+            base_price=base_price,
+            duration_minutes=duration_minutes,
+            requires_appointment=requires_appointment,
+            requires_hospitalization=requires_hospitalization,
+            requires_anesthesia=requires_anesthesia,
+            requires_vet_license=requires_vet_license,
+            is_visible_online=is_visible_online,
+            sat_product_code_id=sat_product_code_id,
+            sat_unit_code_id=sat_unit_code_id,
+        )
+        messages.success(request, f'Procedure "{name}" created successfully.')
+        return redirect('practice:procedure_list')
+
+    categories = ProcedureCategory.objects.filter(is_active=True).order_by('sort_order')
+    sat_product_codes = SATProductCode.objects.filter(
+        code__startswith='851'  # Healthcare services
+    ).order_by('code')
+    sat_unit_codes = SATUnitCode.objects.all().order_by('code')
+
+    context = {
+        'categories': categories,
+        'sat_product_codes': sat_product_codes,
+        'sat_unit_codes': sat_unit_codes,
+    }
+    return render(request, 'practice/procedure_form.html', context)
+
+
+@staff_member_required
+def procedure_edit(request, pk):
+    """Edit a veterinary procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    if request.method == 'POST':
+        procedure.code = request.POST.get('code', '').strip().upper().replace(' ', '-')
+        procedure.name = request.POST.get('name', '').strip()
+        procedure.name_es = request.POST.get('name_es', '').strip()
+        procedure.description = request.POST.get('description', '').strip()
+        procedure.category_id = request.POST.get('category')
+        procedure.base_price = Decimal(request.POST.get('base_price', '0') or '0')
+        procedure.duration_minutes = int(request.POST.get('duration_minutes', '30') or '30')
+
+        # Boolean fields
+        procedure.requires_appointment = request.POST.get('requires_appointment') == 'on'
+        procedure.requires_hospitalization = request.POST.get('requires_hospitalization') == 'on'
+        procedure.requires_anesthesia = request.POST.get('requires_anesthesia') == 'on'
+        procedure.requires_vet_license = request.POST.get('requires_vet_license') == 'on'
+        procedure.is_visible_online = request.POST.get('is_visible_online') == 'on'
+        procedure.is_active = request.POST.get('is_active') == 'on'
+
+        # SAT codes
+        sat_product_code_id = request.POST.get('sat_product_code') or None
+        sat_unit_code_id = request.POST.get('sat_unit_code') or None
+        procedure.sat_product_code_id = sat_product_code_id
+        procedure.sat_unit_code_id = sat_unit_code_id
+
+        if not procedure.code or not procedure.name or not procedure.category_id:
+            messages.error(request, 'Code, name, and category are required.')
+            return redirect('practice:procedure_edit', pk=pk)
+
+        procedure.save()
+        messages.success(request, f'Procedure "{procedure.name}" updated successfully.')
+        return redirect('practice:procedure_list')
+
+    categories = ProcedureCategory.objects.filter(is_active=True).order_by('sort_order')
+    sat_product_codes = SATProductCode.objects.filter(
+        code__startswith='851'  # Healthcare services
+    ).order_by('code')
+    sat_unit_codes = SATUnitCode.objects.all().order_by('code')
+
+    context = {
+        'procedure': procedure,
+        'categories': categories,
+        'sat_product_codes': sat_product_codes,
+        'sat_unit_codes': sat_unit_codes,
+        'editing': True,
+    }
+    return render(request, 'practice/procedure_form.html', context)
+
+
+@staff_member_required
+def procedure_delete(request, pk):
+    """Delete a veterinary procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    if request.method == 'POST':
+        name = procedure.name
+        procedure.delete()
+        messages.success(request, f'Procedure "{name}" deleted successfully.')
+        return redirect('practice:procedure_list')
+
+    context = {
+        'procedure': procedure,
+    }
+    return render(request, 'practice/procedure_confirm_delete.html', context)
