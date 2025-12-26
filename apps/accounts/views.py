@@ -159,9 +159,17 @@ class LoginView(auth_views.LoginView):
 
 
 class LogoutView(auth_views.LogoutView):
-    """Custom logout view."""
+    """Custom logout view.
 
-    pass
+    Allows GET requests for logout (Django 4.1+ defaults to POST-only).
+    This is safe for this app since it's internal/authenticated.
+    """
+
+    http_method_names = ['get', 'post', 'options']
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET request same as POST."""
+        return self.post(request, *args, **kwargs)
 
 
 class RegisterView(CreateView):

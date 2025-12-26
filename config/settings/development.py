@@ -3,6 +3,9 @@ from .base import *
 
 DEBUG = True
 
+# Dynamic URL middleware for admin/staff security (insert after WAF at position 2)
+MIDDLEWARE.insert(2, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
+
 # Use ALLOWED_HOSTS from environment, with dev defaults
 import os
 ALLOWED_HOSTS = os.getenv(

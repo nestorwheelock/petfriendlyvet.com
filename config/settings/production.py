@@ -4,6 +4,19 @@ from .base import *
 
 DEBUG = False
 
+# Dynamic URL middleware for admin/staff security (insert after WAF)
+# WAF is already in base.py, add DynamicURLMiddleware after it
+MIDDLEWARE.insert(2, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
+
+# WAF settings for production
+WAF_ENABLED = True
+WAF_RATE_LIMIT = 100  # requests per minute
+WAF_RATE_LIMIT_WINDOW = 60  # seconds
+WAF_BAN_THRESHOLD = 5  # strikes before ban
+WAF_BAN_DURATION = 3600  # 1 hour ban
+WAF_DATA_LEAK_DETECTION = True
+WAF_GEO_BLOCKING_ENABLED = False  # Enable via superadmin when needed
+
 # Subdirectory deployment support (e.g., petfriendlyvet.com/dev)
 # Set SCRIPT_NAME environment variable to deploy under a URL prefix
 SCRIPT_NAME = os.getenv('SCRIPT_NAME', '')
