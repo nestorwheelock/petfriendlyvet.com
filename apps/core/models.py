@@ -1,6 +1,7 @@
 """Base models for all apps."""
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -118,3 +119,144 @@ class ContactSubmission(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} - {self.subject} ({self.created_at.strftime('%Y-%m-%d')})"
+
+
+class ModuleConfigManager(models.Manager):
+    """Manager for ModuleConfig with convenience methods."""
+
+    def enabled(self):
+        """Return only enabled modules."""
+        return self.filter(is_enabled=True)
+
+    def disabled(self):
+        """Return only disabled modules."""
+        return self.filter(is_enabled=False)
+
+    def by_section(self, section):
+        """Return modules in a specific section."""
+        return self.filter(section=section)
+
+
+class ModuleConfig(TimeStampedModel):
+    """Configuration for application modules (apps).
+
+    Controls whether entire Django apps are enabled/disabled.
+    Disabled modules return 404 for all their URLs.
+    """
+
+    SECTION_CHOICES = [
+        ('operations', 'Operations'),
+        ('customers', 'Customers'),
+        ('finance', 'Finance'),
+        ('admin', 'Admin'),
+        ('system', 'System'),
+    ]
+
+    app_name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text='Django app name (e.g., "appointments")',
+    )
+    display_name = models.CharField(
+        max_length=100,
+        help_text='Human-readable name for the module',
+    )
+    section = models.CharField(
+        max_length=50,
+        choices=SECTION_CHOICES,
+        default='operations',
+        help_text='Navigation section this module belongs to',
+    )
+    is_enabled = models.BooleanField(
+        default=True,
+        help_text='Whether this module is active',
+    )
+    disabled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the module was disabled',
+    )
+    disabled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='disabled_modules',
+        help_text='User who disabled this module',
+    )
+    icon = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text='Icon name for navigation (e.g., "calendar")',
+    )
+    url_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='URL pattern name (e.g., "appointments:list")',
+    )
+    sort_order = models.PositiveIntegerField(
+        default=0,
+        help_text='Order in navigation menu',
+    )
+
+    objects = ModuleConfigManager()
+
+    class Meta:
+        ordering = ['section', 'sort_order', 'display_name']
+        verbose_name = 'Module Configuration'
+        verbose_name_plural = 'Module Configurations'
+
+    def __str__(self):
+        return f'{self.display_name} ({self.app_name})'
+
+    def disable(self, user=None):
+        """Disable this module."""
+        self.is_enabled = False
+        self.disabled_at = timezone.now()
+        self.disabled_by = user
+        self.save(update_fields=['is_enabled', 'disabled_at', 'disabled_by', 'updated_at'])
+
+    def enable(self):
+        """Enable this module."""
+        self.is_enabled = True
+        self.disabled_at = None
+        self.disabled_by = None
+        self.save(update_fields=['is_enabled', 'disabled_at', 'disabled_by', 'updated_at'])
+
+
+class FeatureFlag(TimeStampedModel):
+    """Feature flags for granular control within modules.
+
+    Feature flags allow enabling/disabling specific features
+    without affecting entire modules.
+    """
+
+    key = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text='Unique identifier (e.g., "appointments.online_booking")',
+    )
+    description = models.TextField(
+        blank=True,
+        help_text='What this feature flag controls',
+    )
+    is_enabled = models.BooleanField(
+        default=True,
+        help_text='Whether this feature is active',
+    )
+    module = models.ForeignKey(
+        ModuleConfig,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='feature_flags',
+        help_text='Parent module (null for global flags)',
+    )
+
+    class Meta:
+        ordering = ['key']
+        verbose_name = 'Feature Flag'
+        verbose_name_plural = 'Feature Flags'
+
+    def __str__(self):
+        return self.key

@@ -3,7 +3,10 @@ Context processors for core application.
 Provides navigation data for staff and customer portals.
 """
 
+from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
+
+from apps.core.middleware.dynamic_urls import get_admin_token, get_staff_token
 
 
 # Staff navigation modules - all 10 staff backend sections
@@ -44,6 +47,7 @@ SUPERADMIN_NAV = [
     {'id': 'superadmin_dashboard', 'icon': 'home', 'label': _('Dashboard'), 'url': 'superadmin:dashboard', 'section': 'System Admin'},
     {'id': 'users', 'icon': 'users', 'label': _('Users'), 'url': 'superadmin:user_list', 'section': 'System Admin'},
     {'id': 'roles', 'icon': 'key', 'label': _('Roles'), 'url': 'superadmin:role_list', 'section': 'System Admin'},
+    {'id': 'modules', 'icon': 'grid', 'label': _('Modules'), 'url': 'superadmin:module_list', 'section': 'System Admin'},
     {'id': 'settings', 'icon': 'settings', 'label': _('Settings'), 'url': 'superadmin:settings', 'section': 'System Admin'},
     {'id': 'audit_dashboard', 'icon': 'eye', 'label': _('Audit Logs'), 'url': 'superadmin:audit_dashboard', 'section': 'System Admin'},
     {'id': 'monitoring', 'icon': 'activity', 'label': _('Monitoring'), 'url': 'superadmin:monitoring', 'section': 'System Admin'},
@@ -57,12 +61,42 @@ NAMESPACE_MAPPING = {
 }
 
 
+def get_enabled_modules():
+    """Get set of enabled module app names, cached."""
+    cache_key = 'enabled_modules'
+    enabled = cache.get(cache_key)
+    if enabled is not None:
+        return enabled
+
+    # Import here to avoid circular import
+    from apps.core.models import ModuleConfig
+
+    enabled = set(
+        ModuleConfig.objects.filter(is_enabled=True).values_list('app_name', flat=True)
+    )
+    cache.set(cache_key, enabled, 60)  # Cache for 1 minute
+    return enabled
+
+
+def filter_nav_by_enabled_modules(nav_items):
+    """Filter navigation items to only show enabled modules."""
+    enabled = get_enabled_modules()
+
+    # If no modules are configured, show all (backwards compatibility)
+    if not enabled:
+        return nav_items
+
+    # Filter to only enabled modules
+    return [item for item in nav_items if item['id'] in enabled]
+
+
 def navigation(request):
     """
     Context processor that provides navigation data for templates.
 
     Returns:
-        dict: Contains staff_nav, portal_nav, superadmin_nav, active_nav, and is_superadmin
+        dict: Contains staff_nav, portal_nav, superadmin_nav, active_nav,
+              is_superadmin, admin_token, and staff_token
     """
     user = getattr(request, 'user', None)
 
@@ -74,6 +108,8 @@ def navigation(request):
             'superadmin_nav': [],
             'active_nav': '',
             'is_superadmin': False,
+            'admin_token': None,
+            'staff_token': None,
         }
 
     # Determine active navigation from URL namespace
@@ -91,24 +127,28 @@ def navigation(request):
         else:
             active_nav = namespace
 
-    # Superusers get superadmin navigation + all staff navigation
+    # Superusers get superadmin navigation + all staff navigation (unfiltered)
     if user.is_superuser:
         return {
             'superadmin_nav': list(SUPERADMIN_NAV),
-            'staff_nav': list(STAFF_NAV),
+            'staff_nav': list(STAFF_NAV),  # Superadmins see all modules
             'portal_nav': [],
             'active_nav': active_nav,
             'is_superadmin': True,
+            'admin_token': get_admin_token(request),
+            'staff_token': get_staff_token(request),
         }
 
-    # Staff users get staff navigation only
+    # Staff users get filtered staff navigation only
     if user.is_staff:
         return {
             'superadmin_nav': [],
-            'staff_nav': list(STAFF_NAV),
+            'staff_nav': filter_nav_by_enabled_modules(list(STAFF_NAV)),
             'portal_nav': [],
             'active_nav': active_nav,
             'is_superadmin': False,
+            'admin_token': None,
+            'staff_token': get_staff_token(request),
         }
 
     # Regular authenticated users get portal navigation
@@ -118,4 +158,6 @@ def navigation(request):
         'portal_nav': list(PORTAL_NAV),
         'active_nav': active_nav,
         'is_superadmin': False,
+        'admin_token': None,
+        'staff_token': None,
     }

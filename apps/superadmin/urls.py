@@ -19,6 +19,14 @@ urlpatterns = [
     # Roles
     path('roles/', views.RoleListView.as_view(), name='role_list'),
 
+    # Module Management
+    path('modules/', views.ModuleListView.as_view(), name='module_list'),
+    path('modules/<int:pk>/toggle/', views.ModuleToggleView.as_view(), name='module_toggle'),
+    path('modules/<int:pk>/features/', views.ModuleFeaturesView.as_view(), name='module_features'),
+
+    # Feature Flags
+    path('features/<int:pk>/toggle/', views.FeatureToggleView.as_view(), name='feature_toggle'),
+
     # Settings
     path('settings/', views.SettingsView.as_view(), name='settings'),
 

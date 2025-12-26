@@ -1,0 +1,38 @@
+{% load i18n %}
+<td>
+    <div class="font-bold">{{ module.display_name }}</div>
+    <div class="text-sm text-base-content/60">{{ module.app_name }}</div>
+</td>
+<td class="text-sm text-base-content/60">
+    {{ module.description|default:"-" }}
+</td>
+<td>
+    {% if module.is_enabled %}
+    <span class="badge badge-success badge-sm">{% trans "Enabled" %}</span>
+    {% else %}
+    <span class="badge badge-error badge-sm">{% trans "Disabled" %}</span>
+    {% endif %}
+</td>
+<td>
+    <div class="flex gap-2">
+        <button
+            hx-post="{% url 'superadmin:module_toggle' pk=module.pk %}"
+            hx-target="#module-{{ module.pk }}"
+            hx-swap="innerHTML"
+            class="btn btn-ghost btn-xs {% if module.is_enabled %}text-error{% else %}text-success{% endif %}">
+            {% if module.is_enabled %}{% trans "Disable" %}{% else %}{% trans "Enable" %}{% endif %}
+        </button>
+        <a href="{% url 'superadmin:module_features' pk=module.pk %}" class="btn btn-ghost btn-xs">
+            {% trans "Features" %}
+        </a>
+    </div>
+</td>
+{% if message %}
+<script>
+    setTimeout(function() {
+        document.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { message: '{{ message|escapejs }}', type: 'success' }
+        }));
+    }, 100);
+</script>
+{% endif %}

@@ -1,0 +1,54 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Module Management" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-base-content">{% trans "Module Management" %}</h1>
+            <p class="text-base-content/60">{% trans "Enable or disable application modules" %}</p>
+        </div>
+    </div>
+
+    {% for section, data in modules_by_section.items %}
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-lg">{{ data.name }}</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Module" %}</th>
+                            <th>{% trans "Description" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for module in data.modules %}
+                        <tr id="module-{{ module.pk }}" class="hover">
+                            {% include "superadmin/partials/module_row.html" with module=module %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-base-content/60">
+                                {% trans "No modules in this section" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body text-center py-8 text-base-content/60">
+            {% trans "No modules configured" %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

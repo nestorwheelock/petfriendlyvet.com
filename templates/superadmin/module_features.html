@@ -1,0 +1,67 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{{ module.display_name }} {% trans "Features" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <div class="text-sm breadcrumbs">
+                <ul>
+                    <li><a href="{% url 'superadmin:module_list' %}">{% trans "Modules" %}</a></li>
+                    <li>{{ module.display_name }}</li>
+                </ul>
+            </div>
+            <h1 class="text-2xl font-bold text-base-content">{{ module.display_name }} {% trans "Features" %}</h1>
+            <p class="text-base-content/60">{% trans "Toggle individual features for this module" %}</p>
+        </div>
+        <a href="{% url 'superadmin:module_list' %}" class="btn btn-ghost">
+            {% trans "Back to Modules" %}
+        </a>
+    </div>
+
+    <!-- Module Status -->
+    <div class="alert {% if module.is_enabled %}alert-success{% else %}alert-warning{% endif %}">
+        <div>
+            {% if module.is_enabled %}
+            <span>{% trans "This module is currently enabled." %}</span>
+            {% else %}
+            <span>{% trans "This module is disabled. Feature flags will have no effect until the module is enabled." %}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Feature Flags -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-lg">{% trans "Feature Flags" %}</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Feature" %}</th>
+                            <th>{% trans "Description" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature in features %}
+                        <tr id="feature-{{ feature.pk }}" class="hover">
+                            {% include "superadmin/partials/feature_row.html" with feature=feature %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-8 text-base-content/60">
+                                {% trans "No feature flags configured for this module" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

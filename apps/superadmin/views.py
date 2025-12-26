@@ -1,15 +1,20 @@
 """Views for superadmin control panel."""
 
+from collections import defaultdict
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 
 from apps.audit.models import AuditLog
+from apps.core.models import ModuleConfig, FeatureFlag
 from apps.practice.models import ClinicSettings
 
 from .forms import UserForm, UserCreateForm, ClinicSettingsForm
@@ -344,3 +349,159 @@ class MonitoringView(SuperuserRequiredMixin, TemplateView):
                 created_at__date__gte=last_30_days
             ).count(),
         }
+
+
+class ModuleListView(SuperuserRequiredMixin, ListView):
+    """List all modules grouped by section with toggle controls."""
+
+    model = ModuleConfig
+    template_name = 'superadmin/module_list.html'
+    context_object_name = 'modules'
+
+    def get_queryset(self):
+        return ModuleConfig.objects.all().order_by('section', 'display_name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Group modules by section
+        modules_by_section = defaultdict(list)
+        for module in context['modules']:
+            modules_by_section[module.section].append(module)
+
+        # Convert to ordered dict with section display names
+        section_names = dict(ModuleConfig.SECTION_CHOICES)
+        context['modules_by_section'] = {
+            section: {
+                'name': section_names.get(section, section.title()),
+                'modules': modules,
+            }
+            for section, modules in modules_by_section.items()
+        }
+        context['sections'] = list(modules_by_section.keys())
+
+        return context
+
+
+class ModuleToggleView(SuperuserRequiredMixin, View):
+    """Toggle module enabled/disabled status (HTMX endpoint)."""
+
+    def post(self, request, pk):
+        module = get_object_or_404(ModuleConfig, pk=pk)
+
+        # Toggle the status
+        if module.is_enabled:
+            module.disable(user=request.user)
+            action = 'module_disabled'
+            message = f"Module '{module.display_name}' disabled."
+        else:
+            module.enable()
+            action = 'module_enabled'
+            message = f"Module '{module.display_name}' enabled."
+
+        # Create audit log
+        AuditLog.objects.create(
+            user=request.user,
+            action=action,
+            resource_type='ModuleConfig',
+            resource_id=str(module.pk),
+            resource_repr=module.display_name,
+            extra_data={
+                'module_id': module.pk,
+                'module_name': module.app_name,
+                'display_name': module.display_name,
+                'new_status': module.is_enabled,
+            },
+            ip_address=self._get_client_ip(request),
+        )
+
+        # Return partial for HTMX or redirect
+        if request.headers.get('HX-Request'):
+            return self._render_module_row(request, module, message)
+
+        messages.success(request, message)
+        return HttpResponseRedirect(reverse_lazy('superadmin:module_list'))
+
+    def _get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+    def _render_module_row(self, request, module, message):
+        from django.template.loader import render_to_string
+        html = render_to_string(
+            'superadmin/partials/module_row.html',
+            {'module': module, 'message': message},
+            request=request,
+        )
+        return HttpResponse(html)
+
+
+class ModuleFeaturesView(SuperuserRequiredMixin, TemplateView):
+    """List features for a specific module."""
+
+    template_name = 'superadmin/module_features.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        module = get_object_or_404(ModuleConfig, pk=self.kwargs['pk'])
+        context['module'] = module
+        context['features'] = FeatureFlag.objects.filter(module=module).order_by('key')
+        return context
+
+
+class FeatureToggleView(SuperuserRequiredMixin, View):
+    """Toggle feature flag enabled/disabled status (HTMX endpoint)."""
+
+    def post(self, request, pk):
+        feature = get_object_or_404(FeatureFlag, pk=pk)
+
+        # Toggle the status
+        feature.is_enabled = not feature.is_enabled
+        feature.save(update_fields=['is_enabled', 'updated_at'])
+
+        action = 'feature_enabled' if feature.is_enabled else 'feature_disabled'
+        message = f"Feature '{feature.key}' {'enabled' if feature.is_enabled else 'disabled'}."
+
+        # Create audit log
+        AuditLog.objects.create(
+            user=request.user,
+            action=action,
+            resource_type='FeatureFlag',
+            resource_id=str(feature.pk),
+            resource_repr=feature.key,
+            extra_data={
+                'feature_id': feature.pk,
+                'feature_key': feature.key,
+                'module_id': feature.module_id,
+                'new_status': feature.is_enabled,
+            },
+            ip_address=self._get_client_ip(request),
+        )
+
+        # Return partial for HTMX or redirect
+        if request.headers.get('HX-Request'):
+            return self._render_feature_row(request, feature, message)
+
+        messages.success(request, message)
+        if feature.module:
+            return HttpResponseRedirect(
+                reverse_lazy('superadmin:module_features', kwargs={'pk': feature.module.pk})
+            )
+        return HttpResponseRedirect(reverse_lazy('superadmin:module_list'))
+
+    def _get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+    def _render_feature_row(self, request, feature, message):
+        from django.template.loader import render_to_string
+        html = render_to_string(
+            'superadmin/partials/feature_row.html',
+            {'feature': feature, 'message': message},
+            request=request,
+        )
+        return HttpResponse(html)

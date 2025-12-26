@@ -1,0 +1,32 @@
+{% load i18n %}
+<td>
+    <div class="font-bold">{{ feature.key }}</div>
+</td>
+<td class="text-sm text-base-content/60">
+    {{ feature.description|default:"-" }}
+</td>
+<td>
+    {% if feature.is_enabled %}
+    <span class="badge badge-success badge-sm">{% trans "Enabled" %}</span>
+    {% else %}
+    <span class="badge badge-error badge-sm">{% trans "Disabled" %}</span>
+    {% endif %}
+</td>
+<td>
+    <button
+        hx-post="{% url 'superadmin:feature_toggle' pk=feature.pk %}"
+        hx-target="#feature-{{ feature.pk }}"
+        hx-swap="innerHTML"
+        class="btn btn-ghost btn-xs {% if feature.is_enabled %}text-error{% else %}text-success{% endif %}">
+        {% if feature.is_enabled %}{% trans "Disable" %}{% else %}{% trans "Enable" %}{% endif %}
+    </button>
+</td>
+{% if message %}
+<script>
+    setTimeout(function() {
+        document.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { message: '{{ message|escapejs }}', type: 'success' }
+        }));
+    }, 100);
+</script>
+{% endif %}
