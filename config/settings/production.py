@@ -4,9 +4,11 @@ from .base import *
 
 DEBUG = False
 
-# Dynamic URL middleware for admin/staff security (insert after WAF)
-# WAF is already in base.py, add DynamicURLMiddleware after it
-MIDDLEWARE.insert(2, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
+# Dynamic URL middleware for admin/staff security
+# Must run AFTER SessionMiddleware and AuthenticationMiddleware
+# Insert after AuthenticationMiddleware (finds its position dynamically)
+_auth_middleware_index = MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware')
+MIDDLEWARE.insert(_auth_middleware_index + 1, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
 
 # WAF settings for production
 WAF_ENABLED = True

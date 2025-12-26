@@ -63,12 +63,13 @@ PUBLIC_PATHS = [
     '/password-reset/',
 ]
 
-# Static/media paths
+# Static/media and auth paths (always accessible)
 STATIC_PREFIXES = [
     '/static/',
     '/media/',
     '/__reload__/',
     '/_allauth/',
+    '/accounts/',  # Auth URLs (login, logout, register, password reset)
 ]
 
 

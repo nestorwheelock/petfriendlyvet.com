@@ -3,8 +3,11 @@ from .base import *
 
 DEBUG = True
 
-# Dynamic URL middleware for admin/staff security (insert after WAF at position 2)
-MIDDLEWARE.insert(2, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
+# Dynamic URL middleware for admin/staff security
+# Must run AFTER SessionMiddleware and AuthenticationMiddleware
+# Insert after AuthenticationMiddleware (finds its position dynamically)
+_auth_middleware_index = MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware')
+MIDDLEWARE.insert(_auth_middleware_index + 1, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
 
 # Use ALLOWED_HOSTS from environment, with dev defaults
 import os
