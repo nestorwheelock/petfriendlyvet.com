@@ -36,10 +36,14 @@
     </a>
 
     <!-- Header -->
+    {% block header %}
     {% include "components/header.html" %}
+    {% endblock %}
 
     <!-- Flash Messages -->
+    {% block messages %}
     {% include "components/messages.html" %}
+    {% endblock %}
 
     <!-- Main Content -->
     <main id="main-content" class="flex-grow">
