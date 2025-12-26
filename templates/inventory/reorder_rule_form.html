@@ -1,0 +1,137 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if rule %}{% trans "Edit Reorder Rule" %}{% else %}{% trans "Add Reorder Rule" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if rule %}{% trans "Edit Reorder Rule" %}{% else %}{% trans "Add Reorder Rule" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/reorder-rules/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Rules" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Product -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Product" %} *</label>
+                <select name="product" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select product..." %}</option>
+                    {% for product in form.fields.product.queryset %}
+                    <option value="{{ product.pk }}" {% if form.product.value|stringformat:"i" == product.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ product.name }} ({{ product.sku }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.product.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.product.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Location" %}</label>
+                <select name="location" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "All Locations" %}</option>
+                    {% for location in form.fields.location.queryset %}
+                    <option value="{{ location.pk }}" {% if form.location.value|stringformat:"i" == location.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Leave blank to apply to all locations" %}</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+                <!-- Min Level -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Min Level" %} *</label>
+                    <input type="number" name="min_level" step="0.01" min="0" required
+                           value="{{ form.min_level.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.min_level.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.min_level.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Reorder Point -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Reorder Point" %} *</label>
+                    <input type="number" name="reorder_point" step="0.01" min="0" required
+                           value="{{ form.reorder_point.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.reorder_point.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.reorder_point.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Reorder Quantity -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Reorder Qty" %} *</label>
+                    <input type="number" name="reorder_quantity" step="0.01" min="0" required
+                           value="{{ form.reorder_quantity.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.reorder_quantity.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.reorder_quantity.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Preferred Supplier -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Preferred Supplier" %}</label>
+                <select name="preferred_supplier" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "None" %}</option>
+                    {% for supplier in form.fields.preferred_supplier.queryset %}
+                    <option value="{{ supplier.pk }}" {% if form.preferred_supplier.value|stringformat:"i" == supplier.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ supplier.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="space-y-3">
+                <div class="flex items-center">
+                    <input type="checkbox" name="auto_create_po" id="auto_create_po" value="true"
+                           {% if form.auto_create_po.value %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="auto_create_po" class="ml-2 text-sm text-gray-700">
+                        {% trans "Automatically create purchase orders when below reorder point" %}
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_active" id="is_active" value="true"
+                           {% if form.is_active.value or not rule %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="is_active" class="ml-2 text-sm text-gray-700">{% trans "Active rule" %}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if rule %}{% trans "Save Changes" %}{% else %}{% trans "Create Rule" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/reorder-rules/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

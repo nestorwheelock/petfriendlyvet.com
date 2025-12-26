@@ -6,9 +6,26 @@
 {% block staff_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
-        <a href="{% url 'inventory:purchase_orders' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Back to Purchase Orders" %}
         </a>
+        <div class="flex gap-2">
+            {% if order.status == 'draft' %}
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/edit/" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700">
+                {% trans "Edit PO" %}
+            </a>
+            <form method="post" action="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/submit/" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    {% trans "Submit PO" %}
+                </button>
+            </form>
+            {% elif order.status in 'confirmed,shipped' %}
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/receive/" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">
+                {% trans "Receive Items" %}
+            </a>
+            {% endif %}
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
@@ -16,7 +33,9 @@
             <div class="flex items-start justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">{{ order.po_number }}</h1>
-                    <p class="text-gray-500">{{ order.supplier.name }}</p>
+                    <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/{{ order.supplier.pk }}/" class="text-primary-600 hover:text-primary-700">
+                        {{ order.supplier.name }}
+                    </a>
                 </div>
                 <span class="px-3 py-1 text-sm font-medium rounded-full
                     {% if order.status == 'received' %}bg-green-100 text-green-800
@@ -50,8 +69,13 @@
 
     <!-- Order Lines -->
     <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 class="font-semibold text-gray-900">{% trans "Order Items" %}</h2>
+            {% if order.status == 'draft' %}
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/lines/add/" class="bg-primary-600 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-primary-700">
+                + {% trans "Add Item" %}
+            </a>
+            {% endif %}
         </div>
         {% if lines %}
         <div class="overflow-x-auto">
@@ -63,6 +87,9 @@
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Received" %}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Unit Cost" %}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Total" %}</th>
+                        {% if order.status == 'draft' %}
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -83,6 +110,19 @@
                         </td>
                         <td class="px-6 py-4 text-right">${{ line.unit_cost }}</td>
                         <td class="px-6 py-4 text-right font-medium">${{ line.line_total|intcomma }}</td>
+                        {% if order.status == 'draft' %}
+                        <td class="px-6 py-4 text-right">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/lines/{{ line.pk }}/edit/" class="text-primary-600 hover:text-primary-700 text-sm mr-2">
+                                {% trans "Edit" %}
+                            </a>
+                            <form method="post" action="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/lines/{{ line.pk }}/delete/" class="inline" onsubmit="return confirm('{% trans "Delete this line?" %}')">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-700 text-sm">
+                                    {% trans "Delete" %}
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -91,6 +131,12 @@
         {% else %}
         <div class="p-8 text-center text-gray-500">
             {% trans "No items on this order" %}
+            {% if order.status == 'draft' %}
+            <br>
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/lines/add/" class="text-primary-600 hover:text-primary-700 text-sm">
+                {% trans "Add the first item" %}
+            </a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

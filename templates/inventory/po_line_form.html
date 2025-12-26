@@ -1,0 +1,100 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if line %}{% trans "Edit Line Item" %}{% else %}{% trans "Add Line Item" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if line %}{% trans "Edit Line Item" %}{% else %}{% trans "Add Line Item" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to PO" %}
+        </a>
+    </div>
+
+    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <p class="text-sm text-gray-600">{% trans "Purchase Order" %}: <span class="font-semibold">{{ order.po_number }}</span></p>
+        <p class="text-sm text-gray-600">{% trans "Supplier" %}: <span class="font-semibold">{{ order.supplier.name }}</span></p>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Product -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Product" %} *</label>
+                <select name="product" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select product..." %}</option>
+                    {% for product in form.fields.product.queryset %}
+                    <option value="{{ product.pk }}" {% if form.product.value|stringformat:"i" == product.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ product.name }} ({{ product.sku }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.product.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.product.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Quantity -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Quantity" %} *</label>
+                    <input type="number" name="quantity_ordered" step="0.01" min="0.01" required
+                           value="{{ form.quantity_ordered.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.quantity_ordered.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.quantity_ordered.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Unit Cost -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Unit Cost" %} *</label>
+                    <input type="number" name="unit_cost" step="0.01" min="0" required
+                           value="{{ form.unit_cost.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.unit_cost.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.unit_cost.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Supplier SKU -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Supplier SKU" %}</label>
+                <input type="text" name="supplier_sku" value="{{ form.supplier_sku.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                       placeholder="{% trans 'Optional supplier product code' %}">
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Notes" %}</label>
+                <textarea name="notes" rows="2"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if line %}{% trans "Save Changes" %}{% else %}{% trans "Add Line Item" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

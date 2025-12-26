@@ -1,0 +1,130 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Count" %} - {{ count.location.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Stock Counts" %}
+        </a>
+    </div>
+
+    <!-- Count Header -->
+    <div class="bg-white rounded-xl shadow overflow-hidden mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ count.location.name }}</h1>
+                    <p class="text-gray-500">{{ count.get_count_type_display }} - {{ count.count_date|date:"M d, Y" }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if count.status == 'posted' %}bg-green-100 text-green-800
+                    {% elif count.status == 'draft' %}bg-gray-100 text-gray-800
+                    {% elif count.status == 'submitted' %}bg-blue-100 text-blue-800
+                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ count.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Counted By" %}</p>
+                <p class="font-medium">{{ count.counted_by.username|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Total Products" %}</p>
+                <p class="font-medium">{{ count.total_products|default:"0" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Products Counted" %}</p>
+                <p class="font-medium">{{ count.products_counted|default:"0" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Discrepancies" %}</p>
+                <p class="font-medium {% if count.discrepancies_found %}text-orange-600{% endif %}">
+                    {{ count.discrepancies_found|default:"0" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="px-6 pb-6 flex gap-4">
+            {% if count.status == 'draft' %}
+            <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/entry/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+                {% trans "Continue Counting" %}
+            </a>
+            {% elif count.status == 'submitted' %}
+            <form method="post" action="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/approve/" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">
+                    {% trans "Approve & Post" %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Count Lines -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="font-semibold text-gray-900">{% trans "Count Lines" %}</h2>
+        </div>
+
+        {% if lines %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "System Qty" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Counted Qty" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Discrepancy" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Reason" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for line in lines %}
+                    <tr class="{% if line.discrepancy and line.discrepancy != 0 %}bg-yellow-50{% endif %}">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ line.product.name }}</p>
+                            <p class="text-sm text-gray-500">{{ line.product.sku }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-right">{{ line.system_quantity }}</td>
+                        <td class="px-6 py-4 text-right">
+                            {% if line.counted_quantity is not None %}
+                            {{ line.counted_quantity }}
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right {% if line.discrepancy and line.discrepancy < 0 %}text-red-600{% elif line.discrepancy and line.discrepancy > 0 %}text-green-600{% endif %}">
+                            {% if line.discrepancy %}
+                            {% if line.discrepancy > 0 %}+{% endif %}{{ line.discrepancy }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 text-sm">{{ line.adjustment_reason|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No count lines" %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if count.notes %}
+    <div class="bg-white rounded-xl shadow mt-6 p-6">
+        <h3 class="font-semibold text-gray-900 mb-2">{% trans "Notes" %}</h3>
+        <p class="text-gray-600">{{ count.notes }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

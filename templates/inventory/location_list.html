@@ -1,0 +1,82 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Locations" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Locations" %}</h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/locations/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+            + {% trans "Add Location" %}
+        </a>
+    </div>
+
+    <!-- Locations List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if locations %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Name" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Type" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Temp Control" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Restricted" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for location in locations %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ location.name }}</p>
+                            {% if location.description %}
+                            <p class="text-sm text-gray-500">{{ location.description|truncatewords:10 }}</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{% if location.location_type %}{{ location.location_type.name }}{% else %}-{% endif %}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if location.requires_temperature_control %}
+                            <span class="text-blue-600">Yes</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if location.requires_restricted_access %}
+                            <span class="text-orange-600">Yes</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if location.is_active %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                {% trans "Active" %}
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                {% trans "Inactive" %}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/locations/{{ location.pk }}/edit/" class="text-primary-600 hover:text-primary-700 font-medium">
+                                {% trans "Edit" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No stock locations found. Create your first location to start managing inventory." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if supplier %}{% trans "Edit Supplier" %}{% else %}{% trans "Add Supplier" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if supplier %}{% trans "Edit Supplier" %}{% else %}{% trans "Add Supplier" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Suppliers" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Name (Required) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Supplier Name" %} *</label>
+                <input type="text" name="name" value="{{ form.name.value|default:'' }}" required
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                {% if form.name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Code -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Supplier Code" %}</label>
+                <input type="text" name="code" value="{{ form.code.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                       placeholder="e.g., SUP-001">
+                {% if form.code.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.code.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Contact Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Contact Name" %}</label>
+                <input type="text" name="contact_name" value="{{ form.contact_name.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                {% if form.contact_name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.contact_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Email" %}</label>
+                    <input type="email" name="email" value="{{ form.email.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Phone" %}</label>
+                    <input type="text" name="phone" value="{{ form.phone.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    {% if form.phone.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Address" %}</label>
+                <textarea name="address" rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">{{ form.address.value|default:'' }}</textarea>
+                {% if form.address.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.address.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Payment Terms -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Payment Terms" %}</label>
+                    <select name="payment_terms" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">{% trans "Select..." %}</option>
+                        <option value="prepaid" {% if form.payment_terms.value == 'prepaid' %}selected{% endif %}>{% trans "Prepaid" %}</option>
+                        <option value="cod" {% if form.payment_terms.value == 'cod' %}selected{% endif %}>{% trans "Cash on Delivery" %}</option>
+                        <option value="net15" {% if form.payment_terms.value == 'net15' %}selected{% endif %}>{% trans "Net 15" %}</option>
+                        <option value="net30" {% if form.payment_terms.value == 'net30' %}selected{% endif %}>{% trans "Net 30" %}</option>
+                        <option value="net45" {% if form.payment_terms.value == 'net45' %}selected{% endif %}>{% trans "Net 45" %}</option>
+                        <option value="net60" {% if form.payment_terms.value == 'net60' %}selected{% endif %}>{% trans "Net 60" %}</option>
+                    </select>
+                    {% if form.payment_terms.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.payment_terms.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Lead Time Days -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Lead Time (Days)" %}</label>
+                    <input type="number" name="lead_time_days" value="{{ form.lead_time_days.value|default:'' }}" min="0"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    {% if form.lead_time_days.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.lead_time_days.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Is Active -->
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="is_active" value="true"
+                       {% if form.is_active.value or not supplier %}checked{% endif %}
+                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="is_active" class="ml-2 text-sm text-gray-700">{% trans "Active supplier" %}</label>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if supplier %}{% trans "Save Changes" %}{% else %}{% trans "Create Supplier" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if location_type %}{% trans "Edit Location Type" %}{% else %}{% trans "Add Location Type" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if location_type %}{% trans "Edit Location Type" %}{% else %}{% trans "Add Location Type" %}{% endif %}
+        </h1>
+        <a href="{% url 'inventory:location_types' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            &larr; {% trans "Back to Types" %}
+        </a>
+    </div>
+
+    {% if location_type.source_module %}
+    <div class="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <div class="flex">
+            <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <h3 class="text-sm font-medium text-purple-800">{% trans "Module-Defined Type" %}</h3>
+                <p class="text-sm text-purple-600 mt-1">
+                    {% blocktrans with module=location_type.source_module %}This type was created by the {{ module }} module. Changes may affect module functionality.{% endblocktrans %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Name" %} *</label>
+                <input type="text" name="name" required value="{{ form.name.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                       placeholder="{% trans 'e.g., Warehouse, Pharmacy, Refrigerated' %}">
+                {% if form.name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Code -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Code" %} *</label>
+                <input type="text" name="code" required value="{{ form.code.value|default:'' }}"
+                       {% if location_type %}readonly{% endif %}
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 {% if location_type %}bg-gray-100{% endif %} focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                       placeholder="{% trans 'e.g., warehouse, pharmacy, refrigerated' %}">
+                <p class="text-gray-500 text-sm mt-1">{% trans "Unique identifier (lowercase, no spaces). Cannot be changed after creation." %}</p>
+                {% if form.code.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.code.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Description" %}</label>
+                <textarea name="description" rows="2"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="{% trans 'Optional description of this location type' %}">{{ form.description.value|default:'' }}</textarea>
+            </div>
+
+            <!-- Requirements -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-4">{% trans "Location Requirements" %}</h3>
+                <div class="space-y-4">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="requires_temperature_control"
+                               {% if form.requires_temperature_control.value %}checked{% endif %}
+                               class="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <span class="ml-3">
+                            <span class="block text-sm font-medium text-gray-700">{% trans "Requires Temperature Control" %}</span>
+                            <span class="block text-sm text-gray-500">{% trans "Locations of this type need temperature monitoring" %}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start">
+                        <input type="checkbox" name="requires_restricted_access"
+                               {% if form.requires_restricted_access.value %}checked{% endif %}
+                               class="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <span class="ml-3">
+                            <span class="block text-sm font-medium text-gray-700">{% trans "Requires Restricted Access" %}</span>
+                            <span class="block text-sm text-gray-500">{% trans "Locations of this type require special access permissions" %}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Active Status -->
+            <label class="flex items-center">
+                <input type="checkbox" name="is_active"
+                       {% if form.is_active.value or not location_type %}checked{% endif %}
+                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Active" %}</span>
+            </label>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if location_type %}{% trans "Save Changes" %}{% else %}{% trans "Create Type" %}{% endif %}
+            </button>
+            <a href="{% url 'inventory:location_types' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

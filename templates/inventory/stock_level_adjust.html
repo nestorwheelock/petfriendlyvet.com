@@ -1,0 +1,110 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Adjust Stock Level" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Adjust Stock Level" %}</h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/stock/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Stock" %}
+        </a>
+    </div>
+
+    <!-- Current Stock Info -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Current Stock" %}</h2>
+        <dl class="grid grid-cols-2 gap-4">
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Product" %}</dt>
+                <dd class="font-medium text-gray-900">{{ stock_level.product.name }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Location" %}</dt>
+                <dd class="font-medium text-gray-900">{{ stock_level.location.name }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Current Quantity" %}</dt>
+                <dd class="text-2xl font-bold text-primary-600">{{ stock_level.quantity }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Min/Max" %}</dt>
+                <dd class="font-medium text-gray-900">{{ stock_level.min_level|default:"-" }} / {{ stock_level.max_level|default:"-" }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for field in form %}
+                {% for error in field.errors %}
+                <p class="text-red-600 text-sm">{{ field.label }}: {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Adjustment -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Adjustment Amount" %} *</label>
+                <input type="number" name="adjustment" step="0.01" required
+                       value="{{ form.adjustment.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 text-lg"
+                       placeholder="{% trans 'e.g., +10 to add, -5 to subtract' %}">
+                <p class="text-sm text-gray-500 mt-1">{% trans "Enter a positive number to add stock, negative to subtract." %}</p>
+                {% if form.adjustment.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.adjustment.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Reason -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Reason" %} *</label>
+                <textarea name="reason" rows="3" required
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                          placeholder="{% trans 'Explain why this adjustment is being made...' %}">{{ form.reason.value|default:'' }}</textarea>
+                {% if form.reason.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.reason.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Quick adjustment buttons -->
+            <div>
+                <p class="text-sm font-medium text-gray-700 mb-2">{% trans "Quick Adjustments" %}</p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '-1'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">-1</button>
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '-5'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">-5</button>
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '-10'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">-10</button>
+                    <span class="border-l border-gray-300 mx-2"></span>
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '+1'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">+1</button>
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '+5'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">+5</button>
+                    <button type="button" onclick="document.querySelector('[name=adjustment]').value = '+10'"
+                            class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">+10</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% trans "Apply Adjustment" %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/stock/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

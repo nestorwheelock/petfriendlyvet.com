@@ -6,8 +6,11 @@
 {% block staff_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
-        <a href="{% url 'inventory:suppliers' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Back to Suppliers" %}
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/{{ supplier.pk }}/edit/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+            {% trans "Edit Supplier" %}
         </a>
     </div>
 
@@ -22,7 +25,7 @@
                 </div>
                 {% if supplier.is_preferred %}
                 <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-                    ⭐ {% trans "Preferred Supplier" %}
+                    {% trans "Preferred Supplier" %}
                 </span>
                 {% endif %}
             </div>
@@ -101,7 +104,7 @@
         <ul class="divide-y divide-gray-200">
             {% for order in orders %}
             <li class="p-4 hover:bg-gray-50">
-                <a href="{% url 'inventory:purchase_order_detail' order.pk %}" class="flex items-center justify-between">
+                <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ order.pk }}/" class="flex items-center justify-between">
                     <div>
                         <p class="font-medium text-gray-900">{{ order.po_number }}</p>
                         <p class="text-sm text-gray-500">{{ order.order_date|date:"M d, Y" }}</p>

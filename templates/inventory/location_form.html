@@ -1,0 +1,110 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if location %}{% trans "Edit Location" %}{% else %}{% trans "Add Location" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if location %}{% trans "Edit Location" %}{% else %}{% trans "Add Location" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/locations/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Locations" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Name (Required) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Location Name" %} *</label>
+                <input type="text" name="name" value="{{ form.name.value|default:'' }}" required
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                {% if form.name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Location Type -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Location Type" %}</label>
+                    <a href="{% url 'inventory:location_type_create' %}" target="_blank" class="text-xs text-primary-600 hover:text-primary-700">
+                        + {% trans "Create New Type" %}
+                    </a>
+                </div>
+                <select name="location_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">{% trans "Select type..." %}</option>
+                    {% for lt in form.fields.location_type.queryset %}
+                    <option value="{{ lt.pk }}" {% if form.location_type.value|stringformat:"i" == lt.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ lt.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.location_type.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.location_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Description" %}</label>
+                <textarea name="description" rows="2"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="{% trans 'Optional description of this location...' %}">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="space-y-3">
+                <div class="flex items-center">
+                    <input type="checkbox" name="requires_temperature_control" id="requires_temperature_control" value="true"
+                           {% if form.requires_temperature_control.value %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="requires_temperature_control" class="ml-2 text-sm text-gray-700">
+                        {% trans "Requires temperature control" %}
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="requires_restricted_access" id="requires_restricted_access" value="true"
+                           {% if form.requires_restricted_access.value %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="requires_restricted_access" class="ml-2 text-sm text-gray-700">
+                        {% trans "Requires restricted access" %}
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_active" id="is_active" value="true"
+                           {% if form.is_active.value or not location %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="is_active" class="ml-2 text-sm text-gray-700">{% trans "Active location" %}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if location %}{% trans "Save Changes" %}{% else %}{% trans "Create Location" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/locations/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

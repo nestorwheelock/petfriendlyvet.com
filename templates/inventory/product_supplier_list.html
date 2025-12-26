@@ -1,0 +1,87 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Product-Supplier Links" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Product-Supplier Links" %}</h1>
+        <div class="flex gap-4">
+            <a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+                + {% trans "Add Link" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium py-2">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Links List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if links %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Supplier" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Supplier SKU" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Unit Cost" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Min Order" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Preferred" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for link in links %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ link.product.name }}</p>
+                            <p class="text-sm text-gray-500">{{ link.product.sku }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/{{ link.supplier.pk }}/" class="text-primary-600 hover:text-primary-700">
+                                {{ link.supplier.name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{{ link.supplier_sku|default:"-" }}</td>
+                        <td class="px-6 py-4 text-right">${{ link.unit_cost }}</td>
+                        <td class="px-6 py-4 text-right">{{ link.minimum_order_quantity }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if link.is_preferred %}
+                            <span class="text-yellow-500">Yes</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if link.is_active %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                {% trans "Active" %}
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                {% trans "Inactive" %}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/{{ link.pk }}/edit/" class="text-primary-600 hover:text-primary-700 font-medium">
+                                {% trans "Edit" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No product-supplier links found. Link products to their suppliers to track costs and ordering." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

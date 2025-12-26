@@ -1,0 +1,133 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if link %}{% trans "Edit Product-Supplier Link" %}{% else %}{% trans "Add Product-Supplier Link" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if link %}{% trans "Edit Product-Supplier Link" %}{% else %}{% trans "Add Product-Supplier Link" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Links" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            {% for error in form.non_field_errors %}
+            <p class="text-red-600 text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-6">
+            <!-- Product with quick create link -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Product" %} *</label>
+                    <a href="/staff-{{ staff_token }}/store/products/add/" target="_blank" class="text-xs text-primary-600 hover:text-primary-700">
+                        + {% trans "Create New Product" %}
+                    </a>
+                </div>
+                <select name="product" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select product..." %}</option>
+                    {% for product in form.fields.product.queryset %}
+                    <option value="{{ product.pk }}" {% if form.product.value|stringformat:"i" == product.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ product.name }} ({{ product.sku }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.product.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.product.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Supplier with quick create link -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Supplier" %} *</label>
+                    <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/add/" target="_blank" class="text-xs text-primary-600 hover:text-primary-700">
+                        + {% trans "Create New Supplier" %}
+                    </a>
+                </div>
+                <select name="supplier" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select supplier..." %}</option>
+                    {% for supplier in form.fields.supplier.queryset %}
+                    <option value="{{ supplier.pk }}" {% if form.supplier.value|stringformat:"i" == supplier.pk|stringformat:"i" %}selected{% endif %}>
+                        {{ supplier.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.supplier.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.supplier.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Supplier SKU -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Supplier SKU" %}</label>
+                <input type="text" name="supplier_sku" value="{{ form.supplier_sku.value|default:'' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                       placeholder="{% trans 'Supplier product code' %}">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Unit Cost -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Unit Cost" %} *</label>
+                    <input type="number" name="unit_cost" step="0.01" min="0" required
+                           value="{{ form.unit_cost.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.unit_cost.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.unit_cost.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Minimum Order Quantity -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Min Order Qty" %} *</label>
+                    <input type="number" name="minimum_order_quantity" step="0.01" min="0" required
+                           value="{{ form.minimum_order_quantity.value|default:'1' }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    {% if form.minimum_order_quantity.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.minimum_order_quantity.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="space-y-3">
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_preferred" id="is_preferred" value="true"
+                           {% if form.is_preferred.value %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="is_preferred" class="ml-2 text-sm text-gray-700">
+                        {% trans "Preferred supplier for this product" %}
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_active" id="is_active" value="true"
+                           {% if form.is_active.value or not link %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="is_active" class="ml-2 text-sm text-gray-700">{% trans "Active link" %}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if link %}{% trans "Save Changes" %}{% else %}{% trans "Create Link" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

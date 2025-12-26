@@ -1,0 +1,79 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Counts" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Counts" %}</h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/create/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+            + {% trans "New Count" %}
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <form method="get" class="flex gap-4 items-center">
+            <select name="status" class="border border-gray-300 rounded-lg px-4 py-2" onchange="this.form.submit()">
+                <option value="">{% trans "All Statuses" %}</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Counts List -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        {% if counts %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Location" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Type" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Counted By" %}</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Products" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for count in counts %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ count.location.name }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ count.get_count_type_display }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ count.count_date|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ count.counted_by.username|default:"-" }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if count.status == 'posted' %}bg-green-100 text-green-800
+                                {% elif count.status == 'draft' %}bg-gray-100 text-gray-800
+                                {% elif count.status == 'submitted' %}bg-blue-100 text-blue-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ count.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right text-gray-600">
+                            {{ count.products_counted|default:"0" }}/{{ count.total_products|default:"0" }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/" class="text-primary-600 hover:text-primary-700 font-medium">
+                                {% trans "View" %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            {% trans "No stock counts found" %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

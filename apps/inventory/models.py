@@ -22,25 +22,60 @@ from django.utils import timezone
 User = get_user_model()
 
 
+class LocationType(models.Model):
+    """Location type (database-driven, module-seedable).
+
+    Modules can seed their own types during installation.
+    E.g., pharmacy module creates 'Pharmacy', 'Controlled Substances' types.
+    """
+
+    name = models.CharField(_('name'), max_length=100)
+    code = models.CharField(_('code'), max_length=50, unique=True)
+    description = models.TextField(_('description'), blank=True)
+
+    requires_temperature_control = models.BooleanField(
+        _('requires temperature control'),
+        default=False,
+        help_text=_('Locations of this type require temperature monitoring')
+    )
+    requires_restricted_access = models.BooleanField(
+        _('requires restricted access'),
+        default=False,
+        help_text=_('Locations of this type require special access permissions')
+    )
+
+    source_module = models.CharField(
+        _('source module'),
+        max_length=50,
+        blank=True,
+        help_text=_('Module that created this type (e.g., pharmacy, inventory)')
+    )
+
+    is_active = models.BooleanField(_('active'), default=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = _('location type')
+        verbose_name_plural = _('location types')
+
+    def __str__(self):
+        return self.name
+
+
 class StockLocation(models.Model):
     """Physical storage location."""
 
-    LOCATION_TYPES = [
-        ('store', _('Store Floor')),
-        ('pharmacy', _('Pharmacy')),
-        ('clinic', _('Clinic Storage')),
-        ('refrigerated', _('Refrigerated')),
-        ('controlled', _('Controlled Substances')),
-        ('warehouse', _('Warehouse/Backstock')),
-    ]
-
     name = models.CharField(_('name'), max_length=100)
     description = models.TextField(_('description'), blank=True)
-    location_type = models.CharField(
-        _('location type'),
-        max_length=20,
-        choices=LOCATION_TYPES,
-        default='store'
+    location_type = models.ForeignKey(
+        LocationType,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='locations',
+        verbose_name=_('location type')
     )
     requires_temperature_control = models.BooleanField(
         _('requires temperature control'),
@@ -601,6 +636,14 @@ class PurchaseOrder(models.Model):
 
     def __str__(self):
         return f"PO {self.po_number}"
+
+    def update_totals(self):
+        """Recalculate subtotal and total from line items."""
+        from django.db.models import Sum
+        subtotal = self.lines.aggregate(total=Sum('line_total'))['total'] or Decimal('0')
+        self.subtotal = subtotal
+        self.total = self.subtotal + self.tax + self.shipping
+        self.save(update_fields=['subtotal', 'total'])
 
 
 class PurchaseOrderLine(models.Model):

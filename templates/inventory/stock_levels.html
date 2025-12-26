@@ -10,9 +10,14 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Levels" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Current inventory by product and location" %}</p>
         </div>
-        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
-            ← {% trans "Dashboard" %}
-        </a>
+        <div class="flex gap-4">
+            <a href="/staff-{{ staff_token }}/operations/inventory/stock/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+                + {% trans "Add Stock Level" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium py-2">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -81,6 +86,7 @@
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Quantity" %}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Reserved" %}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Available" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -94,6 +100,14 @@
                         <td class="px-6 py-4 text-right font-medium">{{ stock.quantity }}</td>
                         <td class="px-6 py-4 text-right text-gray-500">{{ stock.reserved_quantity }}</td>
                         <td class="px-6 py-4 text-right font-medium text-green-600">{{ stock.available_quantity }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/stock/{{ stock.pk }}/adjust/" class="text-green-600 hover:underline text-sm mr-2">
+                                {% trans "Adjust" %}
+                            </a>
+                            <a href="/staff-{{ staff_token }}/operations/inventory/stock/{{ stock.pk }}/edit/" class="text-primary-600 hover:underline text-sm">
+                                {% trans "Edit" %}
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

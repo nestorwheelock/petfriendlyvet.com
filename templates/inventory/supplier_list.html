@@ -10,9 +10,14 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Suppliers" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Manage product suppliers and vendors" %}</p>
         </div>
-        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
-            ← {% trans "Dashboard" %}
-        </a>
+        <div class="flex gap-4">
+            <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+                + {% trans "Add Supplier" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium py-2">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
     </div>
 
     <!-- Search -->
@@ -31,7 +36,7 @@
     {% if suppliers %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for supplier in suppliers %}
-        <a href="{% url 'inventory:supplier_detail' supplier.pk %}" class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+        <a href="/staff-{{ staff_token }}/operations/inventory/suppliers/{{ supplier.pk }}/" class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
             <div class="p-6">
                 <div class="flex items-start justify-between">
                     <div>

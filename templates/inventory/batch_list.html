@@ -10,9 +10,14 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Batches" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Batch and lot tracking with expiry dates" %}</p>
         </div>
-        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
-            ← {% trans "Dashboard" %}
-        </a>
+        <div class="flex gap-4">
+            <a href="/staff-{{ staff_token }}/operations/inventory/batches/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700">
+                + {% trans "Add Batch" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium py-2">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -85,7 +90,10 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <a href="{% url 'inventory:batch_detail' batch.pk %}" class="text-primary-600 hover:underline text-sm">
+                            <a href="/staff-{{ staff_token }}/operations/inventory/batches/{{ batch.pk }}/edit/" class="text-primary-600 hover:underline text-sm mr-2">
+                                {% trans "Edit" %}
+                            </a>
+                            <a href="/staff-{{ staff_token }}/operations/inventory/batches/{{ batch.pk }}/" class="text-gray-600 hover:underline text-sm">
                                 {% trans "Details" %}
                             </a>
                         </td>

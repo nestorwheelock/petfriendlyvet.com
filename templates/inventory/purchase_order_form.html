@@ -1,0 +1,79 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if order %}{% trans "Edit Purchase Order" %}{% else %}{% trans "Create Purchase Order" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if order %}{% trans "Edit Purchase Order" %}: {{ order.po_number }}{% else %}{% trans "Create Purchase Order" %}{% endif %}
+        </h1>
+        <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back" %}
+        </a>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl shadow p-6">
+        {% csrf_token %}
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Supplier" %}</label>
+                <select name="supplier" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select supplier..." %}</option>
+                    {% for supplier in form.fields.supplier.queryset %}
+                    <option value="{{ supplier.pk }}" {% if form.supplier.value == supplier.pk|stringformat:"i" %}selected{% endif %}>{{ supplier.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.supplier.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.supplier.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Expected Delivery Date" %}</label>
+                <input type="date" name="expected_date" value="{{ form.expected_date.value|date:'Y-m-d' }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                {% if form.expected_date.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.expected_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Delivery Location" %}</label>
+                <select name="delivery_location" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">{% trans "Select location..." %}</option>
+                    {% for location in form.fields.delivery_location.queryset %}
+                    <option value="{{ location.pk }}" {% if form.delivery_location.value == location.pk|stringformat:"i" %}selected{% endif %}>{{ location.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.delivery_location.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.delivery_location.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Shipping Address" %}</label>
+                <textarea name="shipping_address" rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2">{{ form.shipping_address.value|default:"" }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Notes" %}</label>
+                <textarea name="notes" rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2">{{ form.notes.value|default:"" }}</textarea>
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% if order %}{% trans "Update Order" %}{% else %}{% trans "Create Order" %}{% endif %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

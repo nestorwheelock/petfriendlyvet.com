@@ -1,0 +1,84 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Enter Counts" %} - {{ count.location.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Enter Counts" %}</h1>
+            <p class="text-gray-500">{{ count.location.name }} - {{ count.count_date }}</p>
+        </div>
+        <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Count" %}
+        </a>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-semibold text-gray-900">{% trans "Products to Count" %}</h2>
+                    <span class="text-sm text-gray-500">{{ lines|length }} {% trans "items" %}</span>
+                </div>
+            </div>
+
+            {% if lines %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Product" %}</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "System Qty" %}</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{% trans "Counted Qty" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Variance Reason" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for line in lines %}
+                        <tr class="{% if line.discrepancy and line.discrepancy != 0 %}bg-yellow-50{% endif %}">
+                            <td class="px-6 py-4">
+                                <p class="font-medium text-gray-900">{{ line.product.name }}</p>
+                                <p class="text-sm text-gray-500">{{ line.product.sku }}</p>
+                            </td>
+                            <td class="px-6 py-4 text-right font-medium">{{ line.system_quantity }}</td>
+                            <td class="px-6 py-4">
+                                <input type="number" name="line_{{ line.id }}_counted" step="0.01" min="0"
+                                       value="{{ line.counted_quantity|default:'' }}"
+                                       class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center mx-auto block">
+                            </td>
+                            <td class="px-6 py-4">
+                                <input type="text" name="line_{{ line.id }}_reason"
+                                       value="{{ line.adjustment_reason|default:'' }}"
+                                       placeholder="{% trans 'Reason if different' %}"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No items to count at this location" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="flex gap-4">
+            <button type="submit" name="save" class="flex-1 bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700">
+                {% trans "Save Progress" %}
+            </button>
+            <button type="submit" name="submit_for_review" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
+                {% trans "Submit for Review" %}
+            </button>
+            <a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
