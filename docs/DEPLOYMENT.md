@@ -40,6 +40,45 @@ convert input.jpg output.png
 convert input.jpg -resize 64x64 favicon.png
 ```
 
+## Development Workflow
+
+### CSS/Tailwind Development
+
+The project uses Tailwind CSS with DaisyUI for styling. CSS is compiled from `static/css/input.css` to `static/css/output.css`.
+
+**Development (instant CSS changes):**
+```bash
+# Start Tailwind in watch mode (recompiles on file changes)
+npm run dev
+
+# Start Docker services (override auto-applied for live mounting)
+docker-compose up -d
+
+# CSS changes are instant - just refresh browser
+```
+
+**How it works:** The `docker-compose.override.yml` file is automatically loaded by docker-compose and mounts the local `static/` directory into the container. This means CSS changes compiled by `npm run dev` are immediately visible without rebuilding Docker.
+
+**Production build (baked into image):**
+```bash
+# Compile and minify CSS
+npm run build
+
+# Build WITHOUT the override (uses explicit -f flag)
+docker-compose -f docker-compose.yml build
+
+# Deploy WITHOUT the override
+docker-compose -f docker-compose.yml up -d
+```
+
+### Docker Compose Override Behavior
+
+The `docker-compose.override.yml` file provides development-friendly settings:
+- Mounts `./static:/app/static:ro` for instant CSS changes
+- Sets `DJANGO_DEBUG=True` for development
+
+**Important:** This override is auto-loaded when you run `docker-compose up` without specifying a file. For production deployments, always use the explicit `-f docker-compose.yml` flag to bypass the override.
+
 ## Docker Deployment
 
 ### Build and Run
@@ -99,6 +138,90 @@ When behind an SSL-terminating proxy (nginx), add to Django settings:
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+```
+
+## Security Features (v2.0.0)
+
+### Dynamic URL System
+
+Admin and staff URLs are obfuscated with session-based tokens:
+
+| URL Pattern | Access |
+|-------------|--------|
+| `/admin/` | Returns 404 (blocked) |
+| `/panel-{admin_token}/` | Django admin (superusers only) |
+| `/accounting/`, `/inventory/`, etc. | Returns 404 (blocked) |
+| `/staff-{staff_token}/section/module/` | Staff portal access |
+
+**How it works:**
+1. User logs in
+2. Session generates unique tokens (admin_token for superusers, staff_token for staff)
+3. User accesses protected areas via token URLs
+4. Middleware validates token matches session
+5. Tokens invalidate on logout/session expiry
+
+**Staff URL Sections:**
+- `/staff-{token}/operations/` - Practice, Inventory, Referrals, Delivery
+- `/staff-{token}/customers/` - CRM, Marketing
+- `/staff-{token}/finance/` - Accounting, Reports
+- `/staff-{token}/admin-tools/` - Audit, AI Chat
+
+### WAF (Web Application Firewall)
+
+The WAF module provides request-level security:
+
+| Feature | Production Setting |
+|---------|-------------------|
+| Rate limiting | 100 req/min per IP |
+| Ban threshold | 5 strikes |
+| Ban duration | 1 hour |
+| Pattern detection | SQL injection, XSS, path traversal |
+| Data leak detection | Credit cards, SSNs, API keys |
+
+**fail2ban Integration:**
+
+For VPS deployments, configure fail2ban:
+
+```bash
+# Copy filter and jail configs
+sudo cp apps/waf/conf/fail2ban-filter.conf /etc/fail2ban/filter.d/django-waf.conf
+sudo cp apps/waf/conf/fail2ban-jail.conf /etc/fail2ban/jail.d/django.conf
+
+# Restart fail2ban
+sudo systemctl restart fail2ban
+```
+
+### Module Activation System
+
+Enable/disable entire app modules from superadmin:
+
+1. Access `/panel-{admin_token}/` → Django admin
+2. Or use superadmin interface at `/superadmin/modules/`
+3. Toggle modules on/off
+4. Disabled modules return 404 and hide from navigation
+
+### Feature Flags
+
+Granular control over individual features:
+
+```python
+# In views
+from apps.core.feature_flags import is_enabled, require_feature
+
+if is_enabled('sms_notifications'):
+    send_sms()
+
+@require_feature('advanced_reporting')
+def advanced_report_view(request):
+    ...
+```
+
+```html
+<!-- In templates -->
+{% load feature_flags %}
+{% if_feature "dark_mode" %}
+  <button>Toggle Dark Mode</button>
+{% endif_feature %}
 ```
 
 ## Troubleshooting
