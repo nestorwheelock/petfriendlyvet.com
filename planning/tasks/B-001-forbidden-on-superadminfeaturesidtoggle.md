@@ -1,0 +1,28 @@
+# B-001: Forbidden on /superadmin/features/{id}/toggle/
+
+**Severity**: Medium
+**Status**: Open
+**Error Type**: forbidden
+**Status Code**: 403
+
+## Description
+
+HTTP 403 error detected on URL pattern: /superadmin/features/{id}/toggle/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/superadmin/features/{id}/toggle/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `eaaa441e55c52ac0`
+- **Error Type**: forbidden
+- **HTTP Status**: 403
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production
