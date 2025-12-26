@@ -1,6 +1,9 @@
 """Billing models for invoicing and payment management.
 
 Provides:
+- TaxRate: Mexico tax rates with SAT compliance
+- SATProductCode: SAT product codes for CFDI
+- SATUnitCode: SAT unit codes for CFDI
 - Invoice: Bill for services/products with line items
 - Payment: Payment records against invoices
 - CustomerDiscount: Persistent discount levels for customers
@@ -17,6 +20,68 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.storage import cfdi_path, statement_path
+
+
+class TaxRate(models.Model):
+    """Mexico tax rates with SAT compliance."""
+
+    TAX_TYPE_CHOICES = [
+        ('iva', 'IVA (Value Added Tax)'),
+        ('ieps', 'IEPS (Special Products Tax)'),
+    ]
+
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=100)
+    tax_type = models.CharField(max_length=10, choices=TAX_TYPE_CHOICES)
+    rate = models.DecimalField(max_digits=6, decimal_places=4)
+
+    # SAT CFDI fields
+    sat_impuesto_code = models.CharField(max_length=3)
+    sat_tipo_factor = models.CharField(max_length=10, default='Tasa')
+
+    is_default = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['tax_type', '-rate']
+
+    def __str__(self):
+        return self.name
+
+
+class SATProductCode(models.Model):
+    """SAT Clave de Producto o Servicio for CFDI."""
+
+    code = models.CharField(max_length=8, primary_key=True)
+    description = models.CharField(max_length=500)
+    includes_iva = models.BooleanField(default=False)
+    iva_exempt = models.BooleanField(default=False)
+    iva_zero_rate = models.BooleanField(default=False)
+    ieps_applicable = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'SAT Product Code'
+        verbose_name_plural = 'SAT Product Codes'
+        ordering = ['code']
+
+    def __str__(self):
+        return f"{self.code} - {self.description[:50]}"
+
+
+class SATUnitCode(models.Model):
+    """SAT Clave de Unidad for CFDI."""
+
+    code = models.CharField(max_length=5, primary_key=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'SAT Unit Code'
+        verbose_name_plural = 'SAT Unit Codes'
+        ordering = ['code']
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
 
 
 class Invoice(models.Model):

@@ -394,6 +394,80 @@ class ControlledSubstanceLog(models.Model):
 
 All inventory views require staff login (`@staff_member_required`).
 
+### Staff Token URL Routing (IMPORTANT)
+
+The staff portal uses dynamic URL routing with session-based tokens for security. When creating templates for staff views, you **MUST** use the staff token URL pattern instead of Django's `{% url %}` template tag.
+
+**Pattern:**
+```
+/staff-{{ staff_token }}/operations/inventory/[path]/
+```
+
+**Why this matters:**
+- The `staff_token` is a 6-character session-based token that changes each login
+- URLs like `/operations/inventory/` are blocked by middleware without the token
+- Django's `{% url 'inventory:xxx' %}` generates paths without the token
+- The `staff_token` context variable is provided by the `navigation` context processor
+
+**Correct Usage (in templates):**
+```html
+<!-- Link to inventory dashboard -->
+<a href="/staff-{{ staff_token }}/operations/inventory/">Dashboard</a>
+
+<!-- Link to specific view with pk -->
+<a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/{{ po.pk }}/">
+    View PO
+</a>
+
+<!-- Form action -->
+<form action="/staff-{{ staff_token }}/operations/inventory/stock-counts/{{ count.pk }}/approve/" method="post">
+```
+
+**INCORRECT (do NOT use):**
+```html
+<!-- These generate URLs without the staff token and will fail -->
+<a href="{% url 'inventory:dashboard' %}">Dashboard</a>
+<a href="{% url 'inventory:purchase_order_detail' pk=po.pk %}">View PO</a>
+```
+
+**Available Paths:**
+| Template Path | Maps To |
+|---------------|---------|
+| `operations/inventory/` | Dashboard |
+| `operations/inventory/stock/` | Stock Levels |
+| `operations/inventory/batches/` | Batch List |
+| `operations/inventory/movements/` | Movement List |
+| `operations/inventory/movements/add/` | Add Movement |
+| `operations/inventory/suppliers/` | Supplier List |
+| `operations/inventory/purchase-orders/` | PO List |
+| `operations/inventory/purchase-orders/create/` | Create PO |
+| `operations/inventory/purchase-orders/<pk>/` | PO Detail |
+| `operations/inventory/purchase-orders/<pk>/receive/` | Receive PO |
+| `operations/inventory/stock-counts/` | Stock Count List |
+| `operations/inventory/stock-counts/create/` | Create Count |
+| `operations/inventory/stock-counts/<pk>/` | Count Detail |
+| `operations/inventory/stock-counts/<pk>/entry/` | Count Entry |
+| `operations/inventory/transfers/create/` | Create Transfer |
+| `operations/inventory/alerts/` | Stock Alerts |
+| `operations/inventory/expiring/` | Expiring Items |
+
+**Testing with Staff Token URLs:**
+```python
+def get_staff_url(client, path):
+    """Build staff token URL for testing."""
+    session = client.session
+    token = session.get('staff_token')
+    if token:
+        return f'/staff-{token}/{path}'
+    return f'/{path}'
+
+# Usage in tests:
+def test_movement_add(self, authenticated_client):
+    url = get_staff_url(authenticated_client, 'operations/inventory/movements/add/')
+    response = authenticated_client.get(url)
+    assert response.status_code == 200
+```
+
 ### URL Patterns
 
 | URL | View | Description |

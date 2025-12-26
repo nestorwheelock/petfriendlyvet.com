@@ -3,6 +3,9 @@
 Provides:
 - InvoiceService: Create invoices from orders and appointments
 - PaymentService: Record and process payments
+- calculate_tax: Calculate tax for an amount
+- get_cfdi_tax_node: Generate CFDI-compliant tax node data
+- seed_default_tax_rates: Seed default Mexico tax rates
 """
 from datetime import date, timedelta
 from decimal import Decimal
@@ -263,3 +266,127 @@ class PaymentService:
             True if fully paid
         """
         return invoice.amount_paid >= invoice.total
+
+
+# Tax calculation functions for Mexico SAT compliance
+
+def calculate_tax(amount, tax_rate, include_in_price=False):
+    """Calculate tax for an amount.
+
+    Args:
+        amount: Base amount (Decimal or float)
+        tax_rate: TaxRate instance
+        include_in_price: If True, tax is included in amount (extract it)
+
+    Returns:
+        dict with subtotal, tax_amount, total, tax_rate
+    """
+    amount = Decimal(str(amount))
+    rate = tax_rate.rate
+
+    if tax_rate.sat_tipo_factor == 'Exento':
+        return {
+            'subtotal': amount,
+            'tax_amount': Decimal('0.00'),
+            'total': amount,
+            'tax_rate': tax_rate,
+        }
+
+    if include_in_price:
+        # Extract tax from total
+        subtotal = amount / (1 + rate)
+        tax_amount = amount - subtotal
+    else:
+        # Add tax to subtotal
+        subtotal = amount
+        tax_amount = amount * rate
+
+    return {
+        'subtotal': subtotal.quantize(Decimal('0.01')),
+        'tax_amount': tax_amount.quantize(Decimal('0.01')),
+        'total': (subtotal + tax_amount).quantize(Decimal('0.01')),
+        'tax_rate': tax_rate,
+    }
+
+
+def get_cfdi_tax_node(tax_calculation):
+    """Generate SAT CFDI tax node data.
+
+    Args:
+        tax_calculation: dict returned by calculate_tax
+
+    Returns:
+        dict ready for CFDI XML generation
+    """
+    tax_rate = tax_calculation['tax_rate']
+
+    if tax_rate.sat_tipo_factor == 'Exento':
+        return {
+            'Impuesto': tax_rate.sat_impuesto_code,
+            'TipoFactor': 'Exento',
+        }
+
+    return {
+        'Base': str(tax_calculation['subtotal']),
+        'Impuesto': tax_rate.sat_impuesto_code,
+        'TipoFactor': tax_rate.sat_tipo_factor,
+        'TasaOCuota': f"{tax_rate.rate:.6f}",
+        'Importe': str(tax_calculation['tax_amount']),
+    }
+
+
+def seed_default_tax_rates():
+    """Seed default Mexico tax rates.
+
+    Creates standard IVA rates if they don't exist:
+    - IVA 16% (default)
+    - IVA 0%
+    - IVA Exento
+    - IEPS 8% (common for some products)
+    """
+    from .models import TaxRate
+
+    default_rates = [
+        {
+            'code': 'IVA16',
+            'name': 'IVA 16%',
+            'tax_type': 'iva',
+            'rate': Decimal('0.1600'),
+            'sat_impuesto_code': '002',
+            'sat_tipo_factor': 'Tasa',
+            'is_default': True,
+        },
+        {
+            'code': 'IVA0',
+            'name': 'IVA 0%',
+            'tax_type': 'iva',
+            'rate': Decimal('0.0000'),
+            'sat_impuesto_code': '002',
+            'sat_tipo_factor': 'Tasa',
+            'is_default': False,
+        },
+        {
+            'code': 'IVA_EXEMPT',
+            'name': 'IVA Exento',
+            'tax_type': 'iva',
+            'rate': Decimal('0.0000'),
+            'sat_impuesto_code': '002',
+            'sat_tipo_factor': 'Exento',
+            'is_default': False,
+        },
+        {
+            'code': 'IEPS8',
+            'name': 'IEPS 8%',
+            'tax_type': 'ieps',
+            'rate': Decimal('0.0800'),
+            'sat_impuesto_code': '003',
+            'sat_tipo_factor': 'Tasa',
+            'is_default': False,
+        },
+    ]
+
+    for rate_data in default_rates:
+        TaxRate.objects.get_or_create(
+            code=rate_data['code'],
+            defaults=rate_data
+        )

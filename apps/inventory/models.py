@@ -1,6 +1,8 @@
 """Inventory management models for S-024.
 
 Provides:
+- InventoryItem: Central inventory item model for all item types
+- LocationType: Database-driven location types
 - StockLocation: Physical storage locations
 - StockLevel: Current stock levels per product/location
 - StockBatch: Batch/lot tracking with expiry dates
@@ -20,6 +22,127 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
 User = get_user_model()
+
+
+class InventoryItem(models.Model):
+    """Central inventory item model for all item types.
+
+    Supports:
+    - Resale products (sold in store)
+    - Operational supplies (toilet paper, cleaning)
+    - Consumables (needles, syringes for procedures)
+    - Equipment/Assets (depreciable)
+    - Raw materials (compounding ingredients)
+    """
+
+    ITEM_TYPE_CHOICES = [
+        ('resale', _('Resale Product')),
+        ('supply', _('Operational Supply')),
+        ('consumable', _('Consumable')),
+        ('equipment', _('Equipment/Asset')),
+        ('raw_material', _('Raw Material')),
+    ]
+
+    # Core fields
+    sku = models.CharField(_('SKU'), max_length=50, unique=True)
+    name = models.CharField(_('name'), max_length=200)
+    description = models.TextField(_('description'), blank=True)
+    item_type = models.CharField(
+        _('item type'),
+        max_length=20,
+        choices=ITEM_TYPE_CHOICES
+    )
+
+    # SAT compliance (required for CFDI)
+    sat_product_code = models.ForeignKey(
+        'billing.SATProductCode',
+        on_delete=models.PROTECT,
+        verbose_name=_('SAT Clave Producto')
+    )
+    sat_unit_code = models.ForeignKey(
+        'billing.SATUnitCode',
+        on_delete=models.PROTECT,
+        verbose_name=_('SAT Clave Unidad')
+    )
+
+    # Pricing
+    cost_price = models.DecimalField(
+        _('cost price'),
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    sale_price = models.DecimalField(
+        _('sale price'),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    # Tax
+    tax_rate = models.ForeignKey(
+        'billing.TaxRate',
+        on_delete=models.PROTECT,
+        verbose_name=_('tax rate')
+    )
+
+    # Accounting integration (optional)
+    inventory_account = models.ForeignKey(
+        'accounting.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='inventory_items',
+        verbose_name=_('inventory account'),
+        help_text=_('Asset account for inventory value')
+    )
+    cogs_account = models.ForeignKey(
+        'accounting.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cogs_items',
+        verbose_name=_('COGS account'),
+        help_text=_('COGS account for resale items')
+    )
+    expense_account = models.ForeignKey(
+        'accounting.Account',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='expense_items',
+        verbose_name=_('expense account'),
+        help_text=_('Expense account for supplies/consumables')
+    )
+
+    # Stock management
+    track_inventory = models.BooleanField(_('track inventory'), default=True)
+    reorder_point = models.PositiveIntegerField(_('reorder point'), default=0)
+    reorder_quantity = models.PositiveIntegerField(_('reorder quantity'), default=0)
+
+    # For equipment/assets
+    is_depreciable = models.BooleanField(_('depreciable'), default=False)
+    useful_life_months = models.PositiveIntegerField(
+        _('useful life (months)'),
+        null=True,
+        blank=True
+    )
+
+    # Status
+    is_active = models.BooleanField(_('active'), default=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = _('inventory item')
+        verbose_name_plural = _('inventory items')
+
+    def __str__(self):
+        return f"{self.sku} - {self.name}"
 
 
 class LocationType(models.Model):
