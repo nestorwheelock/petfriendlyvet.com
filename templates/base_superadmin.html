@@ -25,19 +25,31 @@
         <!-- Top Header Bar -->
         <header class="bg-base-100 shadow-sm border-b border-base-300">
             <div class="flex items-center justify-between px-4 py-3 lg:px-6">
-                <!-- Breadcrumb / Page Title -->
-                <div class="flex items-center gap-3">
-                    <span class="badge badge-error badge-lg font-bold">ADMIN</span>
-                    <nav class="flex" aria-label="Breadcrumb">
-                        <ol class="flex items-center space-x-2">
-                            <li>
-                                <a href="{% url 'superadmin:dashboard' %}" class="text-base-content/60 hover:text-base-content">
-                                    {% include "components/icons/feather.html" with icon="home" class="w-5 h-5" %}
-                                </a>
-                            </li>
-                            {% block breadcrumb %}{% endblock %}
-                        </ol>
-                    </nav>
+                <!-- Left: Logo/Clinic Name -->
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'core:home' %}" class="flex items-center" x-data="{ logoLoaded: false }">
+                        <img src="{% static 'images/logo.png' %}"
+                             alt="Pet-Friendly Vet"
+                             class="h-8 w-auto"
+                             x-show="logoLoaded"
+                             x-cloak
+                             @load="logoLoaded = true"
+                             @error="logoLoaded = false">
+                        <span x-show="!logoLoaded" class="text-lg font-bold text-primary">Pet-Friendly</span>
+                    </a>
+                    <div class="hidden sm:flex items-center gap-3">
+                        <span class="badge badge-error badge-lg font-bold">ADMIN</span>
+                        <nav class="flex" aria-label="Breadcrumb">
+                            <ol class="flex items-center space-x-2">
+                                <li>
+                                    <a href="{% url 'superadmin:dashboard' %}" class="text-base-content/60 hover:text-base-content">
+                                        {% include "components/icons/feather.html" with icon="home" class="w-5 h-5" %}
+                                    </a>
+                                </li>
+                                {% block breadcrumb %}{% endblock %}
+                            </ol>
+                        </nav>
+                    </div>
                 </div>
 
                 <!-- Right side actions -->
