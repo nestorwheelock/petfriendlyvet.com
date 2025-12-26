@@ -47,3 +47,12 @@ if os.getenv('USE_LOCMEM_CACHE', 'False').lower() == 'true':
 
 # CORS settings for development
 CORS_ALLOW_ALL_ORIGINS = True
+
+# WAF settings for development (more lenient)
+WAF_ENABLED = True  # Set to False to disable entirely during debugging
+WAF_RATE_LIMIT_REQUESTS = 1000  # High limit for development
+WAF_RATE_LIMIT_WINDOW = 60
+WAF_MAX_STRIKES = 50  # Very lenient
+WAF_BAN_DURATION = 60  # Short bans (1 min)
+WAF_PATTERN_DETECTION = True  # Keep attack detection on
+WAF_DATA_LEAK_DETECTION = False  # Disable in dev to avoid false positives

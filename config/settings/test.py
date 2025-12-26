@@ -49,3 +49,6 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 # Disable rate limiting for tests (prevents test failures from shared state)
 RATELIMIT_ENABLE = False
+
+# Disable WAF for tests (except WAF-specific tests which handle it)
+WAF_ENABLED = False

@@ -81,12 +81,14 @@ LOCAL_APPS = [
     'apps.reports',
     'apps.accounting',
     'apps.superadmin',
+    'apps.waf',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'apps.waf.middleware.WAFMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
