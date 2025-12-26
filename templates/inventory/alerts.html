@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Stock Alerts" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Items requiring attention" %}</p>
         </div>
-        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Dashboard" %}
         </a>
     </div>

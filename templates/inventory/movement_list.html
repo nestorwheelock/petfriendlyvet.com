@@ -11,10 +11,10 @@
             <p class="text-gray-600 mt-1">{% trans "Stock movement audit trail" %}</p>
         </div>
         <div class="flex gap-4">
-            <a href="{% url 'inventory:movement_add' %}" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+            <a href="/staff-{{ staff_token }}/operations/inventory/movements/add/" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
                 + {% trans "Record Movement" %}
             </a>
-            <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium">
                 ← {% trans "Dashboard" %}
             </a>
         </div>

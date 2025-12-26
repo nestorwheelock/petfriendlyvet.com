@@ -9,7 +9,7 @@
         <h1 class="text-3xl font-bold text-gray-900">
             {% if location_type %}{% trans "Edit Location Type" %}{% else %}{% trans "Add Location Type" %}{% endif %}
         </h1>
-        <a href="{% url 'inventory:location_types' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/location-types/" class="text-primary-600 hover:text-primary-700 font-medium">
             &larr; {% trans "Back to Types" %}
         </a>
     </div>
@@ -112,7 +112,7 @@
             <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
                 {% if location_type %}{% trans "Save Changes" %}{% else %}{% trans "Create Type" %}{% endif %}
             </button>
-            <a href="{% url 'inventory:location_types' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+            <a href="/staff-{{ staff_token }}/operations/inventory/location-types/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
                 {% trans "Cancel" %}
             </a>
         </div>

@@ -40,7 +40,7 @@
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label class="block text-sm font-medium text-gray-700">{% trans "Location Type" %}</label>
-                    <a href="{% url 'inventory:location_type_create' %}" target="_blank" class="text-xs text-primary-600 hover:text-primary-700">
+                    <a href="/staff-{{ staff_token }}/operations/inventory/location-types/add/" target="_blank" class="text-xs text-primary-600 hover:text-primary-700">
                         + {% trans "Create New Type" %}
                     </a>
                 </div>

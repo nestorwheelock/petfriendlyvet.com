@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Location Types" %}</h1>
             <p class="mt-2 text-gray-600">{% trans "Manage storage location types for your business" %}</p>
         </div>
-        <a href="{% url 'inventory:location_type_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+        <a href="/staff-{{ staff_token }}/operations/inventory/location-types/add/" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -85,10 +85,10 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 text-right space-x-3">
-                        <a href="{% url 'inventory:location_type_edit' lt.pk %}" class="text-primary-600 hover:text-primary-800">
+                        <a href="/staff-{{ staff_token }}/operations/inventory/location-types/{{ lt.pk }}/edit/" class="text-primary-600 hover:text-primary-800">
                             {% trans "Edit" %}
                         </a>
-                        <form method="post" action="{% url 'inventory:location_type_delete' lt.pk %}" class="inline" onsubmit="return confirm('{% trans "Delete this location type?" %}');">
+                        <form method="post" action="/staff-{{ staff_token }}/operations/inventory/location-types/{{ lt.pk }}/delete/" class="inline" onsubmit="return confirm('{% trans "Delete this location type?" %}');">
                             {% csrf_token %}
                             <button type="submit" class="text-red-600 hover:text-red-800">
                                 {% trans "Delete" %}
@@ -109,14 +109,14 @@
         </div>
         <h3 class="text-lg font-medium text-gray-900 mb-2">{% trans "No location types yet" %}</h3>
         <p class="text-gray-600 mb-4">{% trans "Create location types to categorize your storage areas." %}</p>
-        <a href="{% url 'inventory:location_type_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+        <a href="/staff-{{ staff_token }}/operations/inventory/location-types/add/" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
             {% trans "Add First Type" %}
         </a>
     </div>
     {% endif %}
 
     <div class="mt-8">
-        <a href="{% url 'inventory:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/" class="text-primary-600 hover:text-primary-700 font-medium">
             &larr; {% trans "Back to Dashboard" %}
         </a>
     </div>

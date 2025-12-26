@@ -7,7 +7,7 @@
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-3xl font-bold text-gray-900">{% trans "Record Stock Movement" %}</h1>
-        <a href="{% url 'inventory:movements' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/inventory/movements/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Back" %}
         </a>
     </div>
@@ -70,7 +70,7 @@
             <button type="submit" class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700">
                 {% trans "Record Movement" %}
             </button>
-            <a href="{% url 'inventory:movements' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
+            <a href="/staff-{{ staff_token }}/operations/inventory/movements/" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-center">
                 {% trans "Cancel" %}
             </a>
         </div>
