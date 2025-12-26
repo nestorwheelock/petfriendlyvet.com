@@ -113,7 +113,7 @@
                                     {% trans "Admin Dashboard" %}
                                 </a>
                                 {% endif %}
-                                <a href="{% url 'practice:dashboard' %}" class="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">
+                                <a href="/staff-{{ staff_token }}/operations/practice/" class="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">
                                     {% include "components/icons/feather.html" with icon="briefcase" class="w-4 h-4 mr-3" %}
                                     {% trans "Staff Portal" %}
                                 </a>
