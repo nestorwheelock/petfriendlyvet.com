@@ -1,0 +1,133 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Roles & Permissions" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-base-content">{% trans "Roles & Permissions" %}</h1>
+        <p class="text-base-content/60">{% trans "View user roles and their permissions" %}</p>
+    </div>
+
+    <!-- User Roles -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-base-content mb-4">{% trans "User Roles" %}</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Role" %}</th>
+                            <th>{% trans "Users" %}</th>
+                            <th>{% trans "Description" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for code, name in user_roles %}
+                        <tr class="hover">
+                            <td>
+                                <span class="badge {% if code == 'admin' %}badge-error{% elif code == 'vet' %}badge-secondary{% elif code == 'staff' %}badge-primary{% else %}badge-ghost{% endif %}">
+                                    {{ name }}
+                                </span>
+                            </td>
+                            <td>{{ role_counts|default_if_none:0 }}</td>
+                            <td class="text-base-content/60">
+                                {% if code == 'owner' %}{% trans "Pet owners who use customer-facing features" %}
+                                {% elif code == 'staff' %}{% trans "Staff members with access to staff modules" %}
+                                {% elif code == 'vet' %}{% trans "Veterinarians with prescription privileges" %}
+                                {% elif code == 'admin' %}{% trans "Administrators with full system access" %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Roles -->
+    {% if staff_roles %}
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-base-content mb-4">{% trans "Staff Roles" %}</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Role" %}</th>
+                            <th>{% trans "Prescribe" %}</th>
+                            <th>{% trans "Dispense" %}</th>
+                            <th>{% trans "Controlled Substances" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for code, name in staff_roles %}
+                        <tr class="hover">
+                            <td><span class="badge badge-outline">{{ name }}</span></td>
+                            <td>
+                                {% if code == 'veterinarian' %}
+                                <span class="text-success">Yes</span>
+                                {% else %}
+                                <span class="text-base-content/40">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if code in 'veterinarian,pharmacy_tech' %}
+                                <span class="text-success">Yes</span>
+                                {% else %}
+                                <span class="text-base-content/40">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if code == 'veterinarian' %}
+                                <span class="text-warning">Requires DEA</span>
+                                {% else %}
+                                <span class="text-base-content/40">No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Permission Legend -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-base-content mb-4">{% trans "Access Levels" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <h3 class="font-semibold text-base-content mb-2">{% trans "Customer" %}</h3>
+                    <ul class="text-sm text-base-content/70 space-y-1">
+                        <li>View own pets and appointments</li>
+                        <li>Place orders in store</li>
+                        <li>View invoices and loyalty points</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <h3 class="font-semibold text-base-content mb-2">{% trans "Staff" %}</h3>
+                    <ul class="text-sm text-base-content/70 space-y-1">
+                        <li>Access staff modules</li>
+                        <li>Manage appointments</li>
+                        <li>Process orders and inventory</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg border-2 border-error/30">
+                    <h3 class="font-semibold text-error mb-2">{% trans "Superuser" %}</h3>
+                    <ul class="text-sm text-base-content/70 space-y-1">
+                        <li>Full system access</li>
+                        <li>User management</li>
+                        <li>System settings</li>
+                        <li>Audit logs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

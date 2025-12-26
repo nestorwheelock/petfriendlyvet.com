@@ -1,0 +1,122 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit User" %}{% else %}{% trans "Create User" %}{% endif %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div>
+        <a href="{% url 'superadmin:user_list' %}" class="btn btn-ghost btn-sm mb-4">
+            {% include "components/icons/feather.html" with icon="arrow-left" class="w-4 h-4 mr-2" %}
+            {% trans "Back to Users" %}
+        </a>
+        <h1 class="text-2xl font-bold text-base-content">
+            {% if object %}{% trans "Edit User" %}{% else %}{% trans "Create User" %}{% endif %}
+        </h1>
+    </div>
+
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "Email" %} *</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.email.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "Role" %}</span>
+                        </label>
+                        {{ form.role }}
+                        {% if form.role.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.role.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "First Name" %}</span>
+                        </label>
+                        {{ form.first_name }}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "Last Name" %}</span>
+                        </label>
+                        {{ form.last_name }}
+                    </div>
+
+                    {% if not object %}
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "Password" %} *</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.password1.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{% trans "Confirm Password" %} *</span>
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <label class="label"><span class="label-text-alt text-error">{{ form.password2.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="divider">{% trans "Permissions" %}</div>
+
+                <div class="flex flex-wrap gap-6">
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            {{ form.is_active }}
+                            <span class="label-text">{% trans "Active" %}</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            {{ form.is_staff }}
+                            <span class="label-text">{% trans "Staff Access" %}</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            {{ form.is_superuser }}
+                            <span class="label-text text-error font-semibold">{% trans "Superuser" %}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Create User" %}{% endif %}
+                    </button>
+                    <a href="{% url 'superadmin:user_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

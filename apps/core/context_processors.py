@@ -39,10 +39,21 @@ PORTAL_NAV = [
     {'id': 'profile', 'icon': 'user', 'label': _('Profile'), 'url': 'accounts:profile', 'section': 'Help'},
 ]
 
+# Superadmin navigation - system administration sections
+SUPERADMIN_NAV = [
+    {'id': 'superadmin_dashboard', 'icon': 'home', 'label': _('Dashboard'), 'url': 'superadmin:dashboard', 'section': 'System Admin'},
+    {'id': 'users', 'icon': 'users', 'label': _('Users'), 'url': 'superadmin:user_list', 'section': 'System Admin'},
+    {'id': 'roles', 'icon': 'key', 'label': _('Roles'), 'url': 'superadmin:role_list', 'section': 'System Admin'},
+    {'id': 'settings', 'icon': 'settings', 'label': _('Settings'), 'url': 'superadmin:settings', 'section': 'System Admin'},
+    {'id': 'audit_dashboard', 'icon': 'eye', 'label': _('Audit Logs'), 'url': 'superadmin:audit_dashboard', 'section': 'System Admin'},
+    {'id': 'monitoring', 'icon': 'activity', 'label': _('Monitoring'), 'url': 'superadmin:monitoring', 'section': 'System Admin'},
+]
+
 # Namespace to nav ID mapping for nested namespaces
 NAMESPACE_MAPPING = {
     'delivery:delivery_admin': 'delivery',
     'ai_assistant': 'ai_chat',
+    'superadmin': 'superadmin_dashboard',
 }
 
 
@@ -51,7 +62,7 @@ def navigation(request):
     Context processor that provides navigation data for templates.
 
     Returns:
-        dict: Contains staff_nav, portal_nav, and active_nav
+        dict: Contains staff_nav, portal_nav, superadmin_nav, active_nav, and is_superadmin
     """
     user = getattr(request, 'user', None)
 
@@ -60,7 +71,9 @@ def navigation(request):
         return {
             'staff_nav': [],
             'portal_nav': [],
+            'superadmin_nav': [],
             'active_nav': '',
+            'is_superadmin': False,
         }
 
     # Determine active navigation from URL namespace
@@ -78,17 +91,31 @@ def navigation(request):
         else:
             active_nav = namespace
 
-    # Staff users get staff navigation
-    if user.is_staff:
+    # Superusers get superadmin navigation + all staff navigation
+    if user.is_superuser:
         return {
+            'superadmin_nav': list(SUPERADMIN_NAV),
             'staff_nav': list(STAFF_NAV),
             'portal_nav': [],
             'active_nav': active_nav,
+            'is_superadmin': True,
+        }
+
+    # Staff users get staff navigation only
+    if user.is_staff:
+        return {
+            'superadmin_nav': [],
+            'staff_nav': list(STAFF_NAV),
+            'portal_nav': [],
+            'active_nav': active_nav,
+            'is_superadmin': False,
         }
 
     # Regular authenticated users get portal navigation
     return {
+        'superadmin_nav': [],
         'staff_nav': [],
         'portal_nav': list(PORTAL_NAV),
         'active_nav': active_nav,
+        'is_superadmin': False,
     }

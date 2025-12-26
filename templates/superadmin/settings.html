@@ -1,0 +1,150 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Site Settings" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-base-content">{% trans "Site Settings" %}</h1>
+        <p class="text-base-content/60">{% trans "Configure clinic information and branding" %}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Basic Info -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Clinic Information" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Clinic Name" %}</span></label>
+                        {{ form.name }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Legal Name" %}</span></label>
+                        {{ form.legal_name }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Tax ID" %}</span></label>
+                        {{ form.tax_id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address & Contact -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Contact Information" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control md:col-span-2">
+                        <label class="label"><span class="label-text">{% trans "Address" %}</span></label>
+                        {{ form.address }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Phone" %}</span></label>
+                        {{ form.phone }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Email" %}</span></label>
+                        {{ form.email }}
+                    </div>
+                    <div class="form-control md:col-span-2">
+                        <label class="label"><span class="label-text">{% trans "Website" %}</span></label>
+                        {{ form.website }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Operating Hours" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Opening Time" %}</span></label>
+                        {{ form.opening_time }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Closing Time" %}</span></label>
+                        {{ form.closing_time }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Days Open" %}</span></label>
+                        {{ form.days_open }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Emergency Contact" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Emergency Phone" %}</span></label>
+                        {{ form.emergency_phone }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            {{ form.emergency_available }}
+                            <span class="label-text">{% trans "Emergency Services Available" %}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Social Media & Links" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Facebook" %}</span></label>
+                        {{ form.facebook_url }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Instagram" %}</span></label>
+                        {{ form.instagram_url }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Google Maps" %}</span></label>
+                        {{ form.google_maps_url }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Branding" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Logo" %}</span></label>
+                        {% if object.logo %}
+                        <div class="mb-2">
+                            <img src="{{ object.logo.url }}" alt="Current logo" class="h-16 w-auto rounded">
+                        </div>
+                        {% endif %}
+                        {{ form.logo }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">{% trans "Primary Color" %}</span></label>
+                        {{ form.primary_color }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <button type="submit" class="btn btn-primary">{% trans "Save Settings" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

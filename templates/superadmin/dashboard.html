@@ -1,0 +1,196 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Superadmin Dashboard" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-base-content">{% trans "System Dashboard" %}</h1>
+            <p class="text-base-content/60">{% trans "System overview and quick actions" %}</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-base-content/60 text-sm">{% trans "Total Users" %}</p>
+                        <p class="text-3xl font-bold text-base-content">{{ total_users }}</p>
+                    </div>
+                    <div class="p-3 bg-primary/20 rounded-lg">
+                        {% include "components/icons/feather.html" with icon="users" class="w-6 h-6 text-primary" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-base-content/60 text-sm">{% trans "Staff Members" %}</p>
+                        <p class="text-3xl font-bold text-base-content">{{ staff_users }}</p>
+                    </div>
+                    <div class="p-3 bg-secondary/20 rounded-lg">
+                        {% include "components/icons/feather.html" with icon="briefcase" class="w-6 h-6 text-secondary" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-base-content/60 text-sm">{% trans "Superusers" %}</p>
+                        <p class="text-3xl font-bold text-base-content">{{ superusers }}</p>
+                    </div>
+                    <div class="p-3 bg-error/20 rounded-lg">
+                        {% include "components/icons/feather.html" with icon="shield" class="w-6 h-6 text-error" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-base-content/60 text-sm">{% trans "Active Users" %}</p>
+                        <p class="text-3xl font-bold text-base-content">{{ active_users }}</p>
+                    </div>
+                    <div class="p-3 bg-success/20 rounded-lg">
+                        {% include "components/icons/feather.html" with icon="check-circle" class="w-6 h-6 text-success" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Audit Logs -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title text-base-content">{% trans "Recent Activity" %}</h2>
+                    <a href="{% url 'superadmin:audit_dashboard' %}" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Time" %}</th>
+                                <th>{% trans "User" %}</th>
+                                <th>{% trans "Action" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_audit_logs %}
+                            <tr class="hover">
+                                <td class="text-xs text-base-content/60">{{ log.created_at|timesince }} ago</td>
+                                <td class="text-sm">{{ log.user.email|default:"System" }}</td>
+                                <td><span class="badge badge-ghost badge-sm">{{ log.action }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-base-content/60">{% trans "No recent activity" %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title text-base-content">{% trans "System Health" %}</h2>
+                    <a href="{% url 'superadmin:monitoring' %}" class="btn btn-ghost btn-sm">{% trans "Details" %}</a>
+                </div>
+                <div class="space-y-3">
+                    {% for name, status in system_health.items %}
+                    <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            {% if status.status == 'ok' %}
+                            <span class="w-3 h-3 rounded-full bg-success"></span>
+                            {% elif status.status == 'warning' %}
+                            <span class="w-3 h-3 rounded-full bg-warning"></span>
+                            {% else %}
+                            <span class="w-3 h-3 rounded-full bg-error"></span>
+                            {% endif %}
+                            <span class="font-medium text-base-content capitalize">{{ name }}</span>
+                        </div>
+                        <span class="text-sm text-base-content/60">{{ status.message }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title text-base-content">{% trans "Recent Registrations" %}</h2>
+                    <a href="{% url 'superadmin:user_list' %}" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
+                </div>
+                <div class="space-y-2">
+                    {% for user in recent_users %}
+                    <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                    <span class="text-sm">{{ user.email|slice:":1"|upper }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="font-medium text-sm text-base-content">{{ user.email }}</p>
+                                <p class="text-xs text-base-content/60">{{ user.date_joined|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                        <span class="badge {% if user.is_staff %}badge-secondary{% else %}badge-ghost{% endif %} badge-sm">
+                            {{ user.get_role_display|default:"User" }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-base-content/60 py-4">{% trans "No recent registrations" %}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title text-base-content mb-4">{% trans "Quick Actions" %}</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{% url 'superadmin:user_create' %}" class="btn btn-outline btn-primary">
+                        {% include "components/icons/feather.html" with icon="user-plus" class="w-4 h-4 mr-2" %}
+                        {% trans "New User" %}
+                    </a>
+                    <a href="{% url 'superadmin:settings' %}" class="btn btn-outline btn-secondary">
+                        {% include "components/icons/feather.html" with icon="settings" class="w-4 h-4 mr-2" %}
+                        {% trans "Settings" %}
+                    </a>
+                    <a href="{% url 'superadmin:audit_dashboard' %}" class="btn btn-outline">
+                        {% include "components/icons/feather.html" with icon="eye" class="w-4 h-4 mr-2" %}
+                        {% trans "Audit Logs" %}
+                    </a>
+                    <a href="{% url 'superadmin:monitoring' %}" class="btn btn-outline">
+                        {% include "components/icons/feather.html" with icon="activity" class="w-4 h-4 mr-2" %}
+                        {% trans "Monitoring" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

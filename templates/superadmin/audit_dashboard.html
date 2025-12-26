@@ -1,0 +1,215 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Audit Logs" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-base-content">{% trans "Audit Logs" %}</h1>
+            <p class="text-base-content/60">{% trans "Monitor system activity and user actions" %}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="?export=csv" class="btn btn-outline btn-sm">
+                {% include "components/icons/feather.html" with icon="download" class="w-4 h-4 mr-2" %}
+                {% trans "Export CSV" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">{% trans "User" %}</span></label>
+                    <select name="user" class="select select-bordered bg-base-200 text-base-content">
+                        <option value="">{% trans "All Users" %}</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"i" %}selected{% endif %}>
+                            {{ user.email }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">{% trans "Action" %}</span></label>
+                    <select name="action" class="select select-bordered bg-base-200 text-base-content">
+                        <option value="">{% trans "All Actions" %}</option>
+                        {% for action in action_choices %}
+                        <option value="{{ action.0 }}" {% if request.GET.action == action.0 %}selected{% endif %}>
+                            {{ action.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">{% trans "Date From" %}</span></label>
+                    <input type="date" name="date_from" value="{{ request.GET.date_from }}"
+                           class="input input-bordered bg-base-200 text-base-content">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">{% trans "Date To" %}</span></label>
+                    <input type="date" name="date_to" value="{{ request.GET.date_to }}"
+                           class="input input-bordered bg-base-200 text-base-content">
+                </div>
+                <div class="md:col-span-4 flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        {% include "components/icons/feather.html" with icon="search" class="w-4 h-4 mr-2" %}
+                        {% trans "Filter" %}
+                    </button>
+                    <a href="{% url 'superadmin:audit_dashboard' %}" class="btn btn-ghost btn-sm">{% trans "Clear" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body py-4">
+                <p class="text-base-content/60 text-sm">{% trans "Total Entries" %}</p>
+                <p class="text-2xl font-bold text-base-content">{{ total_entries|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body py-4">
+                <p class="text-base-content/60 text-sm">{% trans "Today" %}</p>
+                <p class="text-2xl font-bold text-base-content">{{ today_entries|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body py-4">
+                <p class="text-base-content/60 text-sm">{% trans "This Week" %}</p>
+                <p class="text-2xl font-bold text-base-content">{{ week_entries|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body py-4">
+                <p class="text-base-content/60 text-sm">{% trans "Unique Users" %}</p>
+                <p class="text-2xl font-bold text-base-content">{{ unique_users|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Log Table -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Timestamp" %}</th>
+                            <th>{% trans "User" %}</th>
+                            <th>{% trans "Action" %}</th>
+                            <th>{% trans "Resource" %}</th>
+                            <th>{% trans "IP Address" %}</th>
+                            <th>{% trans "Details" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr class="hover">
+                            <td class="text-sm">
+                                <span class="text-base-content/60">{{ log.created_at|date:"M d, Y" }}</span>
+                                <br>
+                                <span class="text-xs">{{ log.created_at|time:"H:i:s" }}</span>
+                            </td>
+                            <td>
+                                {% if log.user %}
+                                <div class="flex items-center gap-2">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                            <span class="text-xs">{{ log.user.email|slice:":1"|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm">{{ log.user.email }}</span>
+                                </div>
+                                {% else %}
+                                <span class="text-base-content/60">{% trans "System" %}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if log.action == 'CREATE' %}badge-success
+                                    {% elif log.action == 'UPDATE' %}badge-info
+                                    {% elif log.action == 'DELETE' %}badge-error
+                                    {% elif log.action == 'LOGIN' %}badge-primary
+                                    {% elif log.action == 'LOGOUT' %}badge-secondary
+                                    {% else %}badge-ghost{% endif %} badge-sm">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td class="text-sm">
+                                {% if log.content_type %}
+                                {{ log.content_type.model|title }}
+                                {% if log.object_id %}
+                                <span class="text-base-content/60">#{{ log.object_id }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-base-content/60">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-sm font-mono text-base-content/60">
+                                {{ log.ip_address|default:"-" }}
+                            </td>
+                            <td>
+                                {% if log.changes %}
+                                <button class="btn btn-ghost btn-xs"
+                                        onclick="document.getElementById('modal-{{ log.id }}').showModal()">
+                                    {% include "components/icons/feather.html" with icon="eye" class="w-4 h-4" %}
+                                </button>
+                                <dialog id="modal-{{ log.id }}" class="modal">
+                                    <div class="modal-box bg-base-200">
+                                        <h3 class="font-bold text-lg">{% trans "Change Details" %}</h3>
+                                        <pre class="mt-4 p-4 bg-base-300 rounded-lg text-xs overflow-x-auto">{{ log.changes }}</pre>
+                                        <div class="modal-action">
+                                            <form method="dialog">
+                                                <button class="btn">{% trans "Close" %}</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </dialog>
+                                {% else %}
+                                <span class="text-base-content/60">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-base-content/60 py-8">
+                                {% trans "No audit logs found" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj %}
+            <div class="flex justify-center mt-4">
+                <div class="join">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="join-item btn btn-sm">«</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="join-item btn btn-sm">‹</a>
+                    {% endif %}
+                    <button class="join-item btn btn-sm btn-active">
+                        {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                    </button>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="join-item btn btn-sm">›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="join-item btn btn-sm">»</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Deactivate User" %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="max-w-md mx-auto py-8">
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body text-center">
+            <div class="w-16 h-16 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                {% include "components/icons/feather.html" with icon="user-x" class="w-8 h-8 text-error" %}
+            </div>
+
+            <h1 class="text-2xl font-bold text-base-content mb-2">{% trans "Deactivate User" %}</h1>
+            <p class="text-base-content/60 mb-6">
+                {% trans "Are you sure you want to deactivate this user? They will no longer be able to log in." %}
+            </p>
+
+            <div class="bg-base-200 rounded-lg p-4 mb-6 text-left">
+                <p class="font-medium text-base-content">{{ object.email }}</p>
+                <p class="text-sm text-base-content/60">{{ object.get_full_name|default:"No name" }}</p>
+                <p class="text-sm text-base-content/60">{% trans "Role:" %} {{ object.get_role_display }}</p>
+            </div>
+
+            <form method="post" class="flex gap-4 justify-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error">{% trans "Deactivate" %}</button>
+                <a href="{% url 'superadmin:user_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

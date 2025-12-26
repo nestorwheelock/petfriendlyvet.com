@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block content %}
+<div class="flex h-screen" data-theme="superadmin" x-data="{ sidebarOpen: false }">
+    <!-- Superadmin Sidebar -->
+    {% include "components/superadmin_sidebar.html" %}
+
+    <!-- Mobile sidebar toggle -->
+    <div class="fixed bottom-4 left-4 lg:hidden z-40">
+        <button @click="sidebarOpen = !sidebarOpen; document.getElementById('superadmin-sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden')"
+                class="p-3 bg-error text-white rounded-full shadow-lg hover:bg-error/80 focus:outline-none focus:ring-2 focus:ring-error">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden lg:ml-0 bg-base-200">
+        <!-- Top Header Bar -->
+        <header class="bg-base-100 shadow-sm border-b border-base-300">
+            <div class="flex items-center justify-between px-4 py-3 lg:px-6">
+                <!-- Breadcrumb / Page Title -->
+                <div class="flex items-center gap-3">
+                    <span class="badge badge-error badge-lg font-bold">ADMIN</span>
+                    <nav class="flex" aria-label="Breadcrumb">
+                        <ol class="flex items-center space-x-2">
+                            <li>
+                                <a href="{% url 'superadmin:dashboard' %}" class="text-base-content/60 hover:text-base-content">
+                                    {% include "components/icons/feather.html" with icon="home" class="w-5 h-5" %}
+                                </a>
+                            </li>
+                            {% block breadcrumb %}{% endblock %}
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="flex items-center space-x-4">
+                    {% block header_actions %}{% endblock %}
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                            <div class="w-10 rounded-full bg-error text-white flex items-center justify-center">
+                                <span class="text-lg font-bold">{{ user.email|slice:":1"|upper }}</span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow border border-base-300">
+                            <li class="menu-title">{{ user.email }}</li>
+                            <li><a href="{% url 'superadmin:dashboard' %}">{% trans "Admin Dashboard" %}</a></li>
+                            <li><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
+                            <li><a href="{% url 'accounts:logout' %}">{% trans "Logout" %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block superadmin_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay"
+     class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"
+     onclick="closeSidebar()"></div>
+
+<script>
+function closeSidebar() {
+    document.getElementById('superadmin-sidebar').classList.add('-translate-x-full');
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeSidebar();
+    }
+});
+</script>
+{% endblock %}
