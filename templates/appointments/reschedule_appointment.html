@@ -1,0 +1,77 @@
+{% extends "base_portal.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Reschedule Appointment" %}{% endblock %}
+
+{% block portal_content %}
+<section class="py-16">
+    <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <a href="{% url 'appointments:detail' pk=appointment.pk %}" class="text-primary-600 hover:text-primary-700">
+                &larr; {% trans "Back to Appointment" %}
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 text-center mb-4">{% trans "Reschedule Appointment" %}</h1>
+
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <p class="font-medium text-gray-900">{{ appointment.service.name }}</p>
+                {% if appointment.pet %}
+                <p class="text-gray-600">{{ appointment.pet.name }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-500 mt-2">
+                    {% trans "Currently scheduled for:" %}
+                </p>
+                <p class="text-gray-700 font-medium">{{ appointment.scheduled_start|date:"l, d M Y" }} {% trans "at" %} {{ appointment.scheduled_start|time:"H:i" }}</p>
+            </div>
+
+            <form method="post" id="reschedule-form">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "New Date" %}
+                    </label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_time_slot" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "New Time" %}
+                    </label>
+                    {{ form.time_slot }}
+                    {% if form.time_slot.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.time_slot.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-6">
+                    <label for="id_reason" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Reason for rescheduling" %} ({% trans "optional" %})
+                    </label>
+                    {{ form.reason }}
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium">
+                        {% trans "Confirm Reschedule" %}
+                    </button>
+                    <a href="{% url 'appointments:detail' pk=appointment.pk %}" class="flex-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-6 rounded-lg font-medium text-center">
+                        {% trans "Cancel" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock portal_content %}

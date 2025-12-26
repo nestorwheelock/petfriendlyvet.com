@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Editar Perfil" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <section class="py-16">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
@@ -42,6 +42,18 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Email" %}
+                    </label>
+                    <div class="flex items-center justify-between bg-gray-50 px-4 py-3 border border-gray-300 rounded-lg">
+                        <span class="text-gray-900">{{ user.email }}</span>
+                        <a href="{% url 'accounts:email_change' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                            {% trans "Change" %}
+                        </a>
+                    </div>
+                </div>
+
+                <div>
                     <label for="id_phone_number" class="block text-sm font-medium text-gray-700 mb-1">
                         {% trans "Teléfono" %}
                     </label>
@@ -74,4 +86,4 @@
         </div>
     </div>
 </section>
-{% endblock %}
+{% endblock portal_content %}

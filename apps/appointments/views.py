@@ -252,3 +252,118 @@ class AvailableSlotsView(LoginRequiredMixin, TemplateView):
                 context['slots'] = []
 
         return context
+
+
+class RescheduleAppointmentForm(forms.Form):
+    """Form for rescheduling an appointment."""
+
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+        })
+    )
+    time_slot = forms.ChoiceField(
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+        })
+    )
+    reason = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+            'rows': 2,
+            'placeholder': _('Reason for rescheduling (optional)'),
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set minimum date to today
+        self.fields['date'].widget.attrs['min'] = datetime.now().strftime('%Y-%m-%d')
+        # Generate time slots
+        self.fields['time_slot'].choices = self._generate_time_slots()
+
+    def _generate_time_slots(self):
+        """Generate available time slots."""
+        slots = [('', _('Select a time'))]
+        for hour in range(9, 18):
+            for minute in [0, 30]:
+                time_str = f'{hour:02d}:{minute:02d}'
+                if hour < 12:
+                    display = f'{hour:02d}:{minute:02d} AM'
+                elif hour == 12:
+                    display = f'12:{minute:02d} PM'
+                else:
+                    display = f'{hour-12:02d}:{minute:02d} PM'
+                slots.append((time_str, display))
+        return slots
+
+
+class RescheduleAppointmentView(LoginRequiredMixin, TemplateView):
+    """Reschedule an appointment to a new date/time."""
+
+    template_name = 'appointments/reschedule_appointment.html'
+
+    def get_appointment(self):
+        return get_object_or_404(
+            Appointment,
+            pk=self.kwargs['pk'],
+            owner=self.request.user,
+            status__in=['scheduled', 'confirmed']
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        appointment = self.get_appointment()
+        context['appointment'] = appointment
+
+        # Initialize form with current date/time
+        initial = {
+            'date': appointment.scheduled_start.date(),
+            'time_slot': appointment.scheduled_start.strftime('%H:%M'),
+        }
+        context['form'] = RescheduleAppointmentForm(initial=initial)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        appointment = self.get_appointment()
+        form = RescheduleAppointmentForm(request.POST)
+
+        if form.is_valid():
+            # Store old time for reference
+            old_time = appointment.scheduled_start
+
+            # Parse new date and time
+            date = form.cleaned_data['date']
+            time_str = form.cleaned_data['time_slot']
+            hour, minute = map(int, time_str.split(':'))
+
+            # Create new datetime
+            new_start = timezone.make_aware(
+                datetime.combine(date, datetime.min.time().replace(hour=hour, minute=minute))
+            )
+
+            # Calculate new end time based on service duration
+            new_end = new_start + timedelta(minutes=appointment.service.duration_minutes)
+
+            # Update appointment
+            appointment.scheduled_start = new_start
+            appointment.scheduled_end = new_end
+            appointment.status = 'scheduled'  # Reset to scheduled
+            appointment.reminder_sent = False  # Reset reminder
+            appointment.save()
+
+            messages.success(
+                request,
+                _('Your appointment has been rescheduled from %(old_date)s to %(new_date)s.') % {
+                    'old_date': old_time.strftime('%b %d, %Y %H:%M'),
+                    'new_date': new_start.strftime('%b %d, %Y %H:%M'),
+                }
+            )
+            return redirect('appointments:detail', pk=appointment.pk)
+
+        # Form invalid, re-render
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+        return self.render_to_response(context)

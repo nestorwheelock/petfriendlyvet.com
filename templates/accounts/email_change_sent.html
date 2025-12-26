@@ -1,0 +1,58 @@
+{% extends "base_portal.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Verification Email Sent" %}{% endblock %}
+
+{% block portal_content %}
+<section class="py-16">
+    <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Check Your Email" %}</h1>
+
+            <p class="text-gray-600 mb-6">
+                {% trans "We've sent a verification email to your new email address. Please click the link in the email to confirm your email change." %}
+            </p>
+
+            <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                <h3 class="font-medium text-gray-900 mb-2">{% trans "What happens next?" %}</h3>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Check your inbox for the verification email" %}
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Click the verification link in the email" %}
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-primary-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        {% trans "Your email will be updated automatically" %}
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-yellow-50 rounded-lg p-4 mb-6 text-left">
+                <p class="text-sm text-yellow-700">
+                    <strong>{% trans "Note:" %}</strong> {% trans "The verification link will expire in 24 hours." %}
+                </p>
+            </div>
+
+            <a href="{% url 'accounts:profile' %}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                {% trans "Return to Profile" %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock portal_content %}

@@ -2,6 +2,8 @@
 from django.db import models
 from django.conf import settings
 
+from apps.core.storage import clinic_logo_path
+
 
 class StaffProfile(models.Model):
     """Staff profile for clinic employees."""
@@ -162,7 +164,7 @@ class ClinicSettings(models.Model):
     google_maps_url = models.URLField(blank=True)
 
     # Branding
-    logo = models.ImageField(upload_to='clinic/', blank=True, null=True)
+    logo = models.ImageField(upload_to=clinic_logo_path, blank=True, null=True)
     primary_color = models.CharField(max_length=7, default='#2563eb')
 
     updated_at = models.DateTimeField(auto_now=True)

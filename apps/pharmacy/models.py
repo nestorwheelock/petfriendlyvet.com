@@ -232,6 +232,7 @@ class RefillRequest(models.Model):
         ('approved', 'Approved'),
         ('denied', 'Denied'),
         ('filled', 'Filled'),
+        ('cancelled', 'Cancelled'),
     ]
 
     prescription = models.ForeignKey(
@@ -263,6 +264,10 @@ class RefillRequest(models.Model):
     )
     authorized_at = models.DateTimeField(null=True, blank=True)
     denial_reason = models.TextField(blank=True)
+
+    # Cancellation
+    cancellation_reason = models.TextField(blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
 
     # Result
     fill = models.ForeignKey(

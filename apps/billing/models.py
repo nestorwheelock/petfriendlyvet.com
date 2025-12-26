@@ -16,6 +16,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from apps.core.storage import cfdi_path, statement_path
+
 
 class Invoice(models.Model):
     """Invoice for services or products."""
@@ -78,7 +80,7 @@ class Invoice(models.Model):
     # CFDI (Mexican tax compliance)
     cfdi_uuid = models.UUIDField(null=True, blank=True)
     cfdi_xml = models.TextField(blank=True)
-    cfdi_pdf = models.FileField(upload_to='cfdi/', null=True, blank=True)
+    cfdi_pdf = models.FileField(upload_to=cfdi_path, null=True, blank=True)
     cfdi_status = models.CharField(max_length=20, blank=True)
 
     # Client tax info for CFDI
@@ -469,7 +471,7 @@ class ProfessionalStatement(models.Model):
 
     invoices = models.ManyToManyField(Invoice)
 
-    pdf = models.FileField(upload_to='statements/', null=True, blank=True)
+    pdf = models.FileField(upload_to=statement_path, null=True, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

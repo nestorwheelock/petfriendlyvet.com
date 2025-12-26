@@ -12,6 +12,7 @@ urlpatterns = [
     # Refills
     path('refills/', views.RefillListView.as_view(), name='refill_list'),
     path('refills/<int:pk>/', views.RefillDetailView.as_view(), name='refill_detail'),
+    path('refills/<int:pk>/cancel/', views.RefillRequestCancelView.as_view(), name='refill_cancel'),
     path(
         'prescriptions/<int:prescription_id>/refill/',
         views.RefillRequestCreateView.as_view(),

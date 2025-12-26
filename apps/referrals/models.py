@@ -15,6 +15,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from apps.core.storage import referral_file_path, visiting_report_path
+
 
 class Specialist(models.Model):
     """Specialist veterinarian or facility for referrals."""
@@ -337,7 +339,7 @@ class ReferralDocument(models.Model):
 
     document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPES)
     title = models.CharField(max_length=200)
-    file = models.FileField(upload_to='referrals/')
+    file = models.FileField(upload_to=referral_file_path)
     description = models.TextField(blank=True)
 
     # Source
@@ -431,7 +433,7 @@ class VisitingAppointment(models.Model):
     recommendations = models.TextField(blank=True)
 
     # Documents
-    report_file = models.FileField(upload_to='visiting_reports/', null=True, blank=True)
+    report_file = models.FileField(upload_to=visiting_report_path, null=True, blank=True)
     images = models.JSONField(default=list)
 
     # Billing

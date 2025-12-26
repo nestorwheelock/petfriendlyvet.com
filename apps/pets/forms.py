@@ -1,7 +1,14 @@
 """Forms for pets management."""
 from django import forms
+from django.forms.widgets import ClearableFileInput
 
 from .models import Pet, PetDocument
+
+
+class StyledClearableFileInput(ClearableFileInput):
+    """Clearable file input with Tailwind styling."""
+
+    template_name = 'widgets/clearable_file_input.html'
 
 
 class PetForm(forms.ModelForm):
@@ -52,8 +59,9 @@ class PetForm(forms.ModelForm):
             'is_neutered': forms.CheckboxInput(attrs={
                 'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'
             }),
-            'photo': forms.FileInput(attrs={
-                'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100'
+            'photo': StyledClearableFileInput(attrs={
+                'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100',
+                'accept': 'image/*'
             }),
             'notes': forms.Textarea(attrs={
                 'class': 'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500',

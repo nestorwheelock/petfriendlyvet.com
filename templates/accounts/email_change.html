@@ -1,0 +1,84 @@
+{% extends "base_portal.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Change Email Address" %}{% endblock %}
+
+{% block portal_content %}
+<section class="py-16">
+    <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <a href="{% url 'accounts:profile_edit' %}" class="text-primary-600 hover:text-primary-700">
+                &larr; {% trans "Back to Profile" %}
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 text-center mb-4">{% trans "Change Email Address" %}</h1>
+
+            <p class="text-gray-600 text-center mb-6">
+                {% trans "Your current email is:" %}
+                <strong class="block mt-1">{{ user.email }}</strong>
+            </p>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 text-red-700 p-4 rounded-lg">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="id_new_email" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "New Email Address" %}
+                    </label>
+                    {{ form.new_email }}
+                    {% if form.new_email.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.new_email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Current Password" %}
+                    </label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.password.help_text }}</p>
+                </div>
+
+                <div class="bg-yellow-50 rounded-lg p-4">
+                    <div class="flex">
+                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                {% trans "A verification email will be sent to your new email address. Click the link in the email to confirm the change." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                        {% trans "Send Verification Email" %}
+                    </button>
+                    <a href="{% url 'accounts:profile_edit' %}" class="flex-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-6 rounded-lg font-medium text-center transition-colors">
+                        {% trans "Cancel" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock portal_content %}

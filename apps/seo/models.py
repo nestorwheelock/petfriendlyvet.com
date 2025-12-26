@@ -3,6 +3,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
+from apps.core.storage import blog_image_path, og_image_path, landing_image_path
+
 
 class BlogCategory(models.Model):
     """Blog post categories."""
@@ -77,7 +79,7 @@ class BlogPost(models.Model):
     )
     tags = models.JSONField(default=list, blank=True)
 
-    featured_image = models.ImageField(upload_to='blog/', blank=True, null=True)
+    featured_image = models.ImageField(upload_to=blog_image_path, blank=True, null=True)
     featured_image_alt = models.CharField(max_length=200, blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
@@ -89,7 +91,7 @@ class BlogPost(models.Model):
 
     og_title = models.CharField(max_length=100, blank=True, help_text="Open Graph title")
     og_description = models.CharField(max_length=200, blank=True)
-    og_image = models.ImageField(upload_to='blog/og/', blank=True, null=True)
+    og_image = models.ImageField(upload_to=og_image_path, blank=True, null=True)
 
     canonical_url = models.URLField(blank=True)
     schema_markup = models.JSONField(default=dict, blank=True)
@@ -137,7 +139,7 @@ class LandingPage(models.Model):
     content = models.TextField()
     content_es = models.TextField(blank=True)
 
-    hero_image = models.ImageField(upload_to='landing/', blank=True, null=True)
+    hero_image = models.ImageField(upload_to=landing_image_path, blank=True, null=True)
     cta_text = models.CharField(max_length=50, default='Get Started')
     cta_url = models.CharField(max_length=200, blank=True)
 

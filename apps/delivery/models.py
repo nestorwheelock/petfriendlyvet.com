@@ -17,6 +17,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from apps.core.storage import delivery_contract_path, delivery_id_path, delivery_proof_path
+
 
 class DeliveryZone(models.Model):
     """Geographic delivery zone with specific fees and ETAs."""
@@ -143,12 +145,12 @@ class DeliveryDriver(models.Model):
     # Contractor onboarding
     contract_signed = models.BooleanField(default=False)
     contract_document = models.FileField(
-        upload_to='driver_contracts/',
+        upload_to=delivery_contract_path,
         null=True,
         blank=True
     )
     id_document = models.FileField(
-        upload_to='driver_ids/',
+        upload_to=delivery_id_path,
         null=True,
         blank=True
     )
@@ -479,7 +481,7 @@ class DeliveryProof(models.Model):
     )
     proof_type = models.CharField(max_length=20, choices=PROOF_TYPES)
     image = models.ImageField(
-        upload_to='delivery_proofs/',
+        upload_to=delivery_proof_path,
         null=True,
         blank=True
     )

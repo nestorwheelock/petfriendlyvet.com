@@ -13,6 +13,9 @@ urlpatterns = [
     path('add/', views.PetCreateView.as_view(), name='pet_add'),
     path('<int:pk>/', views.PetDetailView.as_view(), name='pet_detail'),
     path('<int:pk>/edit/', views.PetUpdateView.as_view(), name='pet_edit'),
+    path('<int:pk>/archive/', views.PetArchiveView.as_view(), name='pet_archive'),
+    path('<int:pk>/unarchive/', views.PetUnarchiveView.as_view(), name='pet_unarchive'),
+    path('<int:pk>/mark-deceased/', views.PetMarkDeceasedView.as_view(), name='pet_mark_deceased'),
 
     # Document management
     path('<int:pet_pk>/documents/', document_views.DocumentListView.as_view(), name='document_list'),

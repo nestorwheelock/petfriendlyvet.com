@@ -6,6 +6,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.storage import travel_document_path
+
 
 CERTIFICATE_STATUS = [
     ('pending', _('Pending')),
@@ -103,7 +105,7 @@ class HealthCertificate(models.Model):
 
     pdf_document = models.FileField(
         _('PDF document'),
-        upload_to='travel_certificates/',
+        upload_to=travel_document_path,
         null=True,
         blank=True
     )

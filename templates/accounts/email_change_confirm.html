@@ -1,0 +1,97 @@
+{% extends "base_portal.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Confirm Email Change" %}{% endblock %}
+
+{% block portal_content %}
+<section class="py-16">
+    <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+            {% if valid %}
+            <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Confirm Email Change" %}</h1>
+
+            <p class="text-gray-600 mb-2">
+                {% trans "You are about to change your email address to:" %}
+            </p>
+            <p class="text-lg font-medium text-gray-900 mb-6">
+                {{ email_change.new_email }}
+            </p>
+
+            {% if email_change.old_email %}
+            <p class="text-sm text-gray-500 mb-6">
+                {% trans "Your current email:" %} {{ email_change.old_email }}
+            </p>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors mb-4">
+                    {% trans "Confirm Email Change" %}
+                </button>
+            </form>
+
+            <a href="{% url 'accounts:profile' %}" class="text-gray-500 hover:text-gray-700 text-sm">
+                {% trans "Cancel and go back to profile" %}
+            </a>
+
+            {% elif expired %}
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Link Expired" %}</h1>
+
+            <p class="text-gray-600 mb-6">
+                {% trans "This verification link has expired. Please request a new email change." %}
+            </p>
+
+            <a href="{% url 'accounts:email_change' %}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                {% trans "Request New Email Change" %}
+            </a>
+
+            {% elif already_confirmed %}
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Already Confirmed" %}</h1>
+
+            <p class="text-gray-600 mb-6">
+                {% trans "This email change has already been confirmed." %}
+            </p>
+
+            <a href="{% url 'accounts:profile' %}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                {% trans "Go to Profile" %}
+            </a>
+
+            {% else %}
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Invalid Link" %}</h1>
+
+            <p class="text-gray-600 mb-6">
+                {% trans "This verification link is invalid or has already been used." %}
+            </p>
+
+            <a href="{% url 'accounts:email_change' %}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                {% trans "Request New Email Change" %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock portal_content %}

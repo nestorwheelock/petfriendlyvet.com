@@ -1,11 +1,14 @@
 """Store views for e-commerce functionality."""
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, TemplateView
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 from django.db.models import Q, F
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from .models import Category, Product, Cart, CartItem, Order
 from apps.delivery.models import Delivery, DeliverySlot
@@ -365,3 +368,56 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         if obj.user != self.request.user:
             raise Http404("Order not found")
         return obj
+
+
+class OrderCancelView(LoginRequiredMixin, TemplateView):
+    """Cancel an order."""
+
+    template_name = 'store/order_cancel.html'
+
+    def get_order(self):
+        return get_object_or_404(
+            Order,
+            order_number=self.kwargs['order_number'],
+            user=self.request.user,
+            status__in=['pending', 'paid']  # Only allow cancellation of pending/paid orders
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['order'] = self.get_order()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        order = self.get_order()
+
+        # Store cancellation reason
+        reason = request.POST.get('reason', '')
+
+        # Restore stock for each item
+        for item in order.items.all():
+            if item.product.track_inventory:
+                item.product.stock_quantity += item.quantity
+                item.product.save(update_fields=['stock_quantity'])
+
+        # Update order status
+        order.status = 'cancelled'
+        order.notes = f"{order.notes}\n\nCancellation reason: {reason}".strip() if reason else order.notes
+        order.save()
+
+        # If there's a delivery, cancel it too
+        if hasattr(order, 'delivery') and order.delivery:
+            order.delivery.status = 'cancelled'
+            order.delivery.save(update_fields=['status'])
+
+            # Free up delivery slot
+            if order.delivery.slot:
+                from django.db.models import F
+                order.delivery.slot.booked_count = F('booked_count') - 1
+                order.delivery.slot.save(update_fields=['booked_count'])
+
+        messages.success(
+            request,
+            _('Order %(order_number)s has been cancelled.') % {'order_number': order.order_number}
+        )
+        return redirect('store:order_list')

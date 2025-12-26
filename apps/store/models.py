@@ -13,6 +13,8 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from apps.core.storage import category_image_path, product_image_path
+
 User = get_user_model()
 
 
@@ -82,7 +84,7 @@ class Category(models.Model):
         on_delete=models.CASCADE,
         related_name='children'
     )
-    image = models.ImageField(upload_to='categories/', null=True, blank=True)
+    image = models.ImageField(upload_to=category_image_path, null=True, blank=True)
     description = models.TextField(blank=True)
     description_es = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
@@ -250,7 +252,7 @@ class ProductImage(models.Model):
         on_delete=models.CASCADE,
         related_name='images'
     )
-    image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to=product_image_path)
     alt_text = models.CharField(max_length=200, blank=True)
     is_primary = models.BooleanField(default=False)
     order = models.IntegerField(default=0)

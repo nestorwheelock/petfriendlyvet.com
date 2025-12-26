@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Pedido" %} {{ order.order_number }}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">
@@ -231,6 +231,18 @@
                     </div>
                 </div>
                 {% endif %}
+
+                {% if order.status == 'pending' or order.status == 'paid' %}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <a href="{% url 'store:order_cancel' order_number=order.order_number %}"
+                       class="w-full inline-flex justify-center items-center px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        {% trans "Cancelar pedido" %}
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Contact Support -->
@@ -249,4 +261,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

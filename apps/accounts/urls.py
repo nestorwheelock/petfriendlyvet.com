@@ -15,6 +15,9 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/edit/', views.ProfileEditView.as_view(), name='profile_edit'),
     path('profile/change-password/', views.ChangePasswordView.as_view(), name='change_password'),
+    path('profile/change-email/', views.EmailChangeRequestView.as_view(), name='email_change'),
+    path('profile/change-email/sent/', views.EmailChangeSentView.as_view(), name='email_change_sent'),
+    path('profile/change-email/confirm/<str:token>/', views.EmailChangeConfirmView.as_view(), name='email_change_confirm'),
     path('profile/delete/', views.DeleteAccountView.as_view(), name='delete_account'),
 
     # Password reset

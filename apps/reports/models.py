@@ -2,6 +2,8 @@
 from django.db import models
 from django.conf import settings
 
+from apps.core.storage import report_file_path
+
 
 class ReportDefinition(models.Model):
     """Saved report templates/definitions."""
@@ -71,7 +73,7 @@ class GeneratedReport(models.Model):
     data = models.JSONField(default=dict)
     summary = models.JSONField(default=dict)
 
-    file = models.FileField(upload_to='reports/', null=True, blank=True)
+    file = models.FileField(upload_to=report_file_path, null=True, blank=True)
     file_format = models.CharField(max_length=10, blank=True)
 
     generated_by = models.ForeignKey(

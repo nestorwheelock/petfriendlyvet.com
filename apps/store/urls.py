@@ -23,4 +23,5 @@ urlpatterns = [
     # Orders
     path('orders/', views.OrderListView.as_view(), name='order_list'),
     path('orders/<str:order_number>/', views.OrderDetailView.as_view(), name='order_detail'),
+    path('orders/<str:order_number>/cancel/', views.OrderCancelView.as_view(), name='order_cancel'),
 ]

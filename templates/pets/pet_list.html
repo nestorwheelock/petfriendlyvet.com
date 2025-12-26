@@ -1,39 +1,67 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "My Pets" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">{% trans "My Pets" %}</h1>
-        <a href="{% url 'pets:pet_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
-            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            {% trans "Add Pet" %}
-        </a>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "My Pets" %}</h1>
+            {% if show_archived %}
+            <p class="text-sm text-gray-500 mt-1">{% trans "Showing archived pets" %}</p>
+            {% endif %}
+        </div>
+        <div class="flex items-center space-x-4">
+            {% if archived_count > 0 %}
+            <a href="{% if show_archived %}{% url 'pets:pet_list' %}{% else %}{% url 'pets:pet_list' %}?archived=1{% endif %}" class="text-sm text-gray-600 hover:text-gray-900">
+                {% if show_archived %}
+                {% trans "Show active pets" %}
+                {% else %}
+                {% trans "Show archived" %} ({{ archived_count }})
+                {% endif %}
+            </a>
+            {% endif %}
+            <a href="{% url 'pets:pet_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+                <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                {% trans "Add Pet" %}
+            </a>
+        </div>
     </div>
 
     {% if pets %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for pet in pets %}
-            <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+            <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow {% if pet.is_archived %}opacity-75{% endif %}">
                 <a href="{% url 'pets:pet_detail' pk=pet.pk %}" class="block">
                     <div class="p-6">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0">
+                            <div class="flex-shrink-0 relative">
                                 {% if pet.photo %}
-                                    <img src="{{ pet.photo.url }}" alt="{{ pet.name }}" class="h-16 w-16 rounded-full object-cover">
+                                    <img src="{{ pet.photo.url }}" alt="{{ pet.name }}" class="h-16 w-16 rounded-full object-cover {% if pet.is_archived %}grayscale{% endif %}">
                                 {% else %}
-                                    <div class="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center">
-                                        <span class="text-primary-600 text-2xl font-medium">{{ pet.name|first }}</span>
+                                    <div class="h-16 w-16 rounded-full {% if pet.is_archived %}bg-gray-200{% else %}bg-primary-100{% endif %} flex items-center justify-center">
+                                        <span class="{% if pet.is_archived %}text-gray-500{% else %}text-primary-600{% endif %} text-2xl font-medium">{{ pet.name|first }}</span>
                                     </div>
+                                {% endif %}
+                                {% if pet.deceased_date %}
+                                <div class="absolute -top-1 -right-1 bg-gray-600 text-white rounded-full p-1">
+                                    <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </div>
                                 {% endif %}
                             </div>
                             <div class="ml-4">
-                                <h2 class="text-xl font-semibold text-gray-900">{{ pet.name }}</h2>
+                                <h2 class="text-xl font-semibold {% if pet.is_archived %}text-gray-600{% else %}text-gray-900{% endif %}">{{ pet.name }}</h2>
                                 <p class="text-sm text-gray-500">{{ pet.get_species_display }}</p>
+                                {% if pet.is_archived %}
+                                <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    {% if pet.deceased_date %}{% trans "In Memoriam" %}{% else %}{% trans "Archived" %}{% endif %}
+                                </span>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="mt-4 space-y-2">
@@ -93,4 +121,4 @@
         </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock portal_content %}

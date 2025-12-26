@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% if object %}{% trans "Edit" %} {{ object.name }}{% else %}{% trans "Add Pet" %}{% endif %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb -->
     <nav class="mb-6">
@@ -134,14 +134,8 @@
             <!-- Photo -->
             <div class="pt-6 border-t border-gray-200">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">{% trans "Photo" %}</h2>
-                {% if object and object.photo %}
-                <div class="mb-4">
-                    <p class="text-sm text-gray-500 mb-2">{% trans "Current photo:" %}</p>
-                    <img src="{{ object.photo.url }}" alt="{{ object.name }}" class="h-24 w-24 rounded-full object-cover">
-                </div>
-                {% endif %}
                 <div>
-                    <label for="id_photo" class="block text-sm font-medium text-gray-700">{% if object and object.photo %}{% trans "Change photo" %}{% else %}{% trans "Upload photo" %}{% endif %}</label>
+                    <label for="id_photo" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Pet Photo" %}</label>
                     {{ form.photo }}
                     {% if form.photo.errors %}
                     <p class="mt-1 text-sm text-red-600">{{ form.photo.errors.0 }}</p>
@@ -175,4 +169,4 @@
         </form>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

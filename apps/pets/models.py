@@ -6,6 +6,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.storage import pet_photo_path, pet_document_path
+
 
 SPECIES_CHOICES = [
     ('dog', _('Dog')),
@@ -64,11 +66,22 @@ class Pet(models.Model):
     is_neutered = models.BooleanField(_('neutered/spayed'), default=False)
     photo = models.ImageField(
         _('photo'),
-        upload_to='pets/',
+        upload_to=pet_photo_path,
         null=True,
         blank=True
     )
     notes = models.TextField(_('notes'), blank=True)
+    is_archived = models.BooleanField(
+        _('archived'),
+        default=False,
+        help_text=_('Hidden from active pet list but preserved for records')
+    )
+    deceased_date = models.DateField(
+        _('date passed away'),
+        null=True,
+        blank=True,
+        help_text=_('If the pet has passed away')
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -400,7 +413,7 @@ class PetDocument(models.Model):
     )
     file = models.FileField(
         _('file'),
-        upload_to='pet_documents/',
+        upload_to=pet_document_path,
         null=True,
         blank=True
     )

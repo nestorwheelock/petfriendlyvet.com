@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Detalle de Cita" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <section class="py-16">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
@@ -64,10 +64,19 @@
                 </div>
                 {% endif %}
 
-                {% if appointment.status == 'scheduled' %}
-                <div class="border-t pt-6 mt-6">
-                    <a href="{% url 'appointments:cancel' appointment.pk %}" class="btn-outline text-red-600 border-red-600 hover:bg-red-50">
-                        {% trans "Cancelar Cita" %}
+                {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                <div class="border-t pt-6 mt-6 flex flex-wrap gap-4">
+                    <a href="{% url 'appointments:reschedule' appointment.pk %}" class="inline-flex items-center px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        {% trans "Reschedule" %}
+                    </a>
+                    <a href="{% url 'appointments:cancel' appointment.pk %}" class="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        {% trans "Cancel Appointment" %}
                     </a>
                 </div>
                 {% endif %}
@@ -75,4 +84,4 @@
         </div>
     </div>
 </section>
-{% endblock %}
+{% endblock portal_content %}

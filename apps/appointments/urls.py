@@ -13,5 +13,6 @@ urlpatterns = [
     path('my-appointments/', views.MyAppointmentsView.as_view(), name='my_appointments'),
     path('<int:pk>/', views.AppointmentDetailView.as_view(), name='detail'),
     path('<int:pk>/cancel/', views.CancelAppointmentView.as_view(), name='cancel'),
+    path('<int:pk>/reschedule/', views.RescheduleAppointmentView.as_view(), name='reschedule'),
     path('available-slots/', views.AvailableSlotsView.as_view(), name='available_slots'),
 ]

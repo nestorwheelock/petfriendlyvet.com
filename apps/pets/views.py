@@ -1,8 +1,11 @@
 """Views for pets management."""
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import (
     ListView,
     DetailView,
@@ -24,8 +27,8 @@ class OwnerDashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Get user's pets
-        context['pets'] = Pet.objects.filter(owner=user).order_by('name')
+        # Get user's active (non-archived) pets
+        context['pets'] = Pet.objects.filter(owner=user, is_archived=False).order_by('name')
 
         # Get upcoming appointments
         from apps.appointments.models import Appointment
@@ -46,7 +49,19 @@ class PetListView(LoginRequiredMixin, ListView):
     context_object_name = 'pets'
 
     def get_queryset(self):
-        return Pet.objects.filter(owner=self.request.user).order_by('name')
+        show_archived = self.request.GET.get('archived') == '1'
+        qs = Pet.objects.filter(owner=self.request.user)
+        if not show_archived:
+            qs = qs.filter(is_archived=False)
+        return qs.order_by('is_archived', 'name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['show_archived'] = self.request.GET.get('archived') == '1'
+        context['archived_count'] = Pet.objects.filter(
+            owner=self.request.user, is_archived=True
+        ).count()
+        return context
 
 
 class PetDetailView(LoginRequiredMixin, DetailView):
@@ -109,3 +124,49 @@ class PetUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('pets:pet_detail', kwargs={'pk': self.object.pk})
+
+
+class PetArchiveView(LoginRequiredMixin, View):
+    """Archive a pet (soft delete)."""
+
+    def post(self, request, pk):
+        pet = get_object_or_404(Pet, pk=pk, owner=request.user)
+        pet.is_archived = True
+        pet.save(update_fields=['is_archived', 'updated_at'])
+        messages.success(request, _('%(name)s has been archived.') % {'name': pet.name})
+        return redirect('pets:pet_list')
+
+
+class PetUnarchiveView(LoginRequiredMixin, View):
+    """Restore an archived pet."""
+
+    def post(self, request, pk):
+        pet = get_object_or_404(Pet, pk=pk, owner=request.user, is_archived=True)
+        pet.is_archived = False
+        pet.save(update_fields=['is_archived', 'updated_at'])
+        messages.success(request, _('%(name)s has been restored.') % {'name': pet.name})
+        return redirect('pets:pet_detail', pk=pet.pk)
+
+
+class PetMarkDeceasedView(LoginRequiredMixin, View):
+    """Mark a pet as deceased with date."""
+
+    def post(self, request, pk):
+        from datetime import datetime
+        pet = get_object_or_404(Pet, pk=pk, owner=request.user)
+
+        # Parse date from form or use today
+        date_str = request.POST.get('deceased_date')
+        if date_str:
+            try:
+                deceased_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                deceased_date = timezone.now().date()
+        else:
+            deceased_date = timezone.now().date()
+
+        pet.deceased_date = deceased_date
+        pet.is_archived = True
+        pet.save(update_fields=['deceased_date', 'is_archived', 'updated_at'])
+        messages.info(request, _('We\'re sorry for your loss. %(name)s\'s profile has been preserved in your archived pets.') % {'name': pet.name})
+        return redirect('pets:pet_list')

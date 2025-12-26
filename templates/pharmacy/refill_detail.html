@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Refill Request" %} - {{ refill_request.prescription.medication.name }}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Back link -->
     <div class="mb-6">
@@ -20,7 +20,7 @@
         <div class="px-6 py-5 border-b border-gray-200
             {% if refill_request.status == 'filled' %}bg-green-50
             {% elif refill_request.status == 'approved' %}bg-blue-50
-            {% elif refill_request.status == 'denied' %}bg-red-50
+            {% elif refill_request.status == 'denied' or refill_request.status == 'cancelled' %}bg-red-50
             {% else %}bg-yellow-50{% endif %}">
             <div class="flex items-center justify-between">
                 <div>
@@ -30,7 +30,7 @@
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                     {% if refill_request.status == 'filled' %}bg-green-100 text-green-800
                     {% elif refill_request.status == 'approved' %}bg-blue-100 text-blue-800
-                    {% elif refill_request.status == 'denied' %}bg-red-100 text-red-800
+                    {% elif refill_request.status == 'denied' or refill_request.status == 'cancelled' %}bg-red-100 text-red-800
                     {% else %}bg-yellow-100 text-yellow-800{% endif %}">
                     {{ refill_request.get_status_display }}
                 </span>
@@ -79,6 +79,19 @@
                     <dt class="text-sm font-medium text-gray-500">{% trans "Denial Reason" %}</dt>
                     <dd class="mt-1 text-sm text-red-700 bg-red-50 rounded-md p-3">{{ refill_request.denial_reason }}</dd>
                 </div>
+                {% endif %}
+
+                {% if refill_request.status == 'cancelled' %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Cancelled" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ refill_request.cancelled_at|date:"F d, Y H:i" }}</dd>
+                </div>
+                {% if refill_request.cancellation_reason %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Cancellation Reason" %}</dt>
+                    <dd class="mt-1 text-sm text-gray-700 bg-gray-50 rounded-md p-3">{{ refill_request.cancellation_reason }}</dd>
+                </div>
+                {% endif %}
                 {% endif %}
             </dl>
         </div>
@@ -129,6 +142,33 @@
                 </div>
             </div>
         </div>
+        {% elif refill_request.status == 'cancelled' %}
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-gray-700">
+                        {% trans "This refill request has been cancelled." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if refill_request.status == 'pending' or refill_request.status == 'approved' %}
+        <div class="px-6 py-4 border-t border-gray-200">
+            <a href="{% url 'pharmacy:refill_cancel' pk=refill_request.pk %}"
+               class="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                {% trans "Cancel Request" %}
+            </a>
+        </div>
         {% endif %}
 
         <!-- Link to prescription -->
@@ -143,4 +183,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

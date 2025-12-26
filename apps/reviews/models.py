@@ -2,6 +2,8 @@
 from django.conf import settings
 from django.db import models
 
+from apps.core.storage import review_photo_path, testimonial_photo_path
+
 
 class Review(models.Model):
     """Customer review/testimonial."""
@@ -50,7 +52,7 @@ class Review(models.Model):
     author_location = models.CharField(max_length=100, blank=True)
 
     # Media
-    photo = models.ImageField(upload_to='reviews/', blank=True, null=True)
+    photo = models.ImageField(upload_to=review_photo_path, blank=True, null=True)
     video_url = models.URLField(blank=True)
 
     # Status
@@ -176,7 +178,7 @@ class Testimonial(models.Model):
     # Can be manually created without linked review
     author_name = models.CharField(max_length=100)
     author_title = models.CharField(max_length=100, blank=True)
-    author_photo = models.ImageField(upload_to='testimonials/', blank=True, null=True)
+    author_photo = models.ImageField(upload_to=testimonial_photo_path, blank=True, null=True)
 
     quote = models.TextField()
     short_quote = models.CharField(max_length=200, blank=True)

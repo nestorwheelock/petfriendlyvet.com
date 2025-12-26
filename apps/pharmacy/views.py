@@ -2,7 +2,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
-from django.views.generic import ListView, DetailView, CreateView
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.generic import ListView, DetailView, CreateView, TemplateView
 from django.contrib import messages
 from django.http import Http404
 
@@ -122,3 +125,38 @@ class RefillDetailView(LoginRequiredMixin, DetailView):
             context['fill'] = refill.fill
 
         return context
+
+
+class RefillRequestCancelView(LoginRequiredMixin, TemplateView):
+    """Cancel a refill request."""
+
+    template_name = 'pharmacy/refill_cancel.html'
+
+    def get_refill_request(self):
+        return get_object_or_404(
+            RefillRequest,
+            pk=self.kwargs['pk'],
+            requested_by=self.request.user,
+            status__in=['pending', 'approved']
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['refill_request'] = self.get_refill_request()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        refill_request = self.get_refill_request()
+
+        reason = request.POST.get('reason', '')
+
+        refill_request.status = 'cancelled'
+        refill_request.cancellation_reason = reason
+        refill_request.cancelled_at = timezone.now()
+        refill_request.save(update_fields=['status', 'cancellation_reason', 'cancelled_at', 'updated_at'])
+
+        messages.success(
+            request,
+            _('Your refill request has been cancelled.')
+        )
+        return redirect('pharmacy:refill_list')
