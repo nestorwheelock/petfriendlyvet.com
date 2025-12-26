@@ -56,11 +56,15 @@ class TestInventoryReorderJourney:
     @pytest.fixture
     def stock_location(self, db):
         """Create main stock location."""
-        from apps.inventory.models import StockLocation
+        from apps.inventory.models import StockLocation, LocationType
 
+        warehouse_type, _ = LocationType.objects.get_or_create(
+            code='warehouse',
+            defaults={'name': 'Warehouse', 'is_active': True},
+        )
         return StockLocation.objects.create(
             name='Almacén Principal',
-            location_type='warehouse',
+            location_type=warehouse_type,
             is_active=True,
         )
 
@@ -241,12 +245,16 @@ class TestInventoryExpiryManagement:
 
     def test_batch_expiry_tracking(self, db):
         """Batches track expiry dates."""
-        from apps.inventory.models import StockLocation, StockBatch
+        from apps.inventory.models import StockLocation, LocationType, StockBatch
         from apps.store.models import Product, Category
 
+        pharmacy_type, _ = LocationType.objects.get_or_create(
+            code='pharmacy',
+            defaults={'name': 'Pharmacy', 'is_active': True},
+        )
         location = StockLocation.objects.create(
             name='Pharmacy',
-            location_type='pharmacy',
+            location_type=pharmacy_type,
             is_active=True,
         )
 
@@ -294,12 +302,16 @@ class TestInventoryStockMovements:
 
     def test_stock_movement_types(self, db):
         """Different movement types are recorded."""
-        from apps.inventory.models import StockLocation, StockMovement
+        from apps.inventory.models import StockLocation, LocationType, StockMovement
         from apps.store.models import Product, Category
 
+        store_type, _ = LocationType.objects.get_or_create(
+            code='store',
+            defaults={'name': 'Store', 'is_active': True},
+        )
         location = StockLocation.objects.create(
             name='Store',
-            location_type='store',
+            location_type=store_type,
             is_active=True,
         )
 

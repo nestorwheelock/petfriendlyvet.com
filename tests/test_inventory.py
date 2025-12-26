@@ -77,11 +77,15 @@ def product2(db, category):
 @pytest.fixture
 def stock_location(db):
     """Create a stock location for testing."""
-    from apps.inventory.models import StockLocation
+    from apps.inventory.models import StockLocation, LocationType
+    pharmacy_type, _ = LocationType.objects.get_or_create(
+        code='pharmacy',
+        defaults={'name': 'Pharmacy', 'is_active': True},
+    )
     return StockLocation.objects.create(
         name='Main Pharmacy',
         description='Primary pharmacy storage',
-        location_type='pharmacy',
+        location_type=pharmacy_type,
         requires_temperature_control=False,
         requires_restricted_access=True,
         is_active=True
@@ -91,11 +95,15 @@ def stock_location(db):
 @pytest.fixture
 def stock_location2(db):
     """Create a secondary stock location for testing."""
-    from apps.inventory.models import StockLocation
+    from apps.inventory.models import StockLocation, LocationType
+    store_type, _ = LocationType.objects.get_or_create(
+        code='store',
+        defaults={'name': 'Store', 'is_active': True},
+    )
     return StockLocation.objects.create(
         name='Store Floor',
         description='Retail display area',
-        location_type='store',
+        location_type=store_type,
         requires_temperature_control=False,
         requires_restricted_access=False,
         is_active=True
@@ -105,11 +113,15 @@ def stock_location2(db):
 @pytest.fixture
 def refrigerated_location(db):
     """Create a refrigerated stock location for testing."""
-    from apps.inventory.models import StockLocation
+    from apps.inventory.models import StockLocation, LocationType
+    refrigerated_type, _ = LocationType.objects.get_or_create(
+        code='refrigerated',
+        defaults={'name': 'Refrigerated', 'is_active': True},
+    )
     return StockLocation.objects.create(
         name='Refrigerated Storage',
         description='Cold storage for vaccines',
-        location_type='refrigerated',
+        location_type=refrigerated_type,
         requires_temperature_control=True,
         requires_restricted_access=True,
         is_active=True
@@ -382,7 +394,7 @@ class TestStockLocation:
     def test_create_stock_location(self, stock_location):
         """Test creating a stock location."""
         assert stock_location.name == 'Main Pharmacy'
-        assert stock_location.location_type == 'pharmacy'
+        assert stock_location.location_type.code == 'pharmacy'
         assert stock_location.requires_restricted_access is True
         assert stock_location.is_active is True
 
@@ -399,15 +411,19 @@ class TestStockLocation:
 
     def test_location_types(self, db):
         """Test different location types can be created."""
-        from apps.inventory.models import StockLocation
+        from apps.inventory.models import StockLocation, LocationType
         types = ['store', 'pharmacy', 'clinic', 'refrigerated', 'controlled', 'warehouse']
         for loc_type in types:
+            loc_type_obj, _ = LocationType.objects.get_or_create(
+                code=loc_type,
+                defaults={'name': loc_type.title(), 'is_active': True},
+            )
             location = StockLocation.objects.create(
                 name=f'{loc_type.title()} Location',
-                location_type=loc_type,
+                location_type=loc_type_obj,
                 is_active=True
             )
-            assert location.location_type == loc_type
+            assert location.location_type.code == loc_type
 
 
 # =============================================================================

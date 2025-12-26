@@ -9,7 +9,7 @@ from playwright.sync_api import Page, expect
 def audit_inventory_setup(db, staff_user):
     """Minimal inventory setup for audit tests."""
     from apps.store.models import Category, Product
-    from apps.inventory.models import StockLocation, Supplier
+    from apps.inventory.models import StockLocation, LocationType, Supplier
 
     category = Category.objects.create(
         name='Audit Test Category',
@@ -25,9 +25,13 @@ def audit_inventory_setup(db, staff_user):
         sku='AUDIT-001',
         is_active=True,
     )
+    warehouse_type, _ = LocationType.objects.get_or_create(
+        code='warehouse',
+        defaults={'name': 'Warehouse', 'is_active': True},
+    )
     location = StockLocation.objects.create(
         name='Main Warehouse',
-        location_type='warehouse',
+        location_type=warehouse_type,
         is_active=True,
     )
     supplier = Supplier.objects.create(

@@ -3,6 +3,16 @@ from .base import *
 
 DEBUG = False
 
+# Create a copy of MIDDLEWARE to avoid pollution from development.py imports
+# (development.py modifies the list in-place which affects all settings modules)
+MIDDLEWARE = [mw for mw in MIDDLEWARE if mw not in [
+    'apps.core.middleware.dynamic_urls.DynamicURLMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]]
+
+# Also remove debug_toolbar from INSTALLED_APPS if it was added
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'debug_toolbar']
+
 # Allow test server host
 ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1']
 

@@ -154,19 +154,29 @@ def inventory_setup(db, store_with_products):
     from datetime import date, timedelta
     from decimal import Decimal
     from apps.inventory.models import (
-        StockLocation, StockLevel, StockBatch, StockMovement,
+        StockLocation, LocationType, StockLevel, StockBatch, StockMovement,
         Supplier, PurchaseOrder, PurchaseOrderLine
+    )
+
+    # Create location types
+    warehouse_type, _ = LocationType.objects.get_or_create(
+        code='warehouse',
+        defaults={'name': 'Warehouse', 'is_active': True},
+    )
+    pharmacy_type, _ = LocationType.objects.get_or_create(
+        code='pharmacy',
+        defaults={'name': 'Pharmacy', 'is_active': True},
     )
 
     # Create locations
     warehouse = StockLocation.objects.create(
         name='Main Warehouse',
-        location_type='warehouse',
+        location_type=warehouse_type,
         is_active=True,
     )
     pharmacy = StockLocation.objects.create(
         name='Pharmacy',
-        location_type='dispensing',
+        location_type=pharmacy_type,
         is_active=True,
     )
 
