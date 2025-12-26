@@ -55,17 +55,81 @@
                 <!-- Right side actions -->
                 <div class="flex items-center space-x-4">
                     {% block header_actions %}{% endblock %}
+
+                    <!-- Language Switcher -->
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1">
+                            <span class="text-sm font-medium uppercase">{{ LANGUAGE_CODE }}</span>
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-32 p-2 shadow border border-base-300">
+                            {% get_available_languages as languages %}
+                            {% for lang_code, lang_name in languages %}
+                            <li>
+                                <a href="#" onclick="document.getElementById('admin-lang-form-{{ lang_code }}').submit(); return false;">
+                                    {{ lang_name }}
+                                </a>
+                                <form id="admin-lang-form-{{ lang_code }}" action="{% url 'set_language' %}" method="post" class="hidden">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="language" value="{{ lang_code }}">
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Profile Dropdown -->
                     <div class="dropdown dropdown-end">
                         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                             <div class="w-10 rounded-full bg-error text-white flex items-center justify-center">
                                 <span class="text-lg font-bold">{{ user.email|slice:":1"|upper }}</span>
                             </div>
                         </div>
-                        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow border border-base-300">
-                            <li class="menu-title">{{ user.email }}</li>
-                            <li><a href="{% url 'superadmin:dashboard' %}">{% trans "Admin Dashboard" %}</a></li>
-                            <li><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
-                            <li><a href="{% url 'accounts:logout' %}">{% trans "Logout" %}</a></li>
+                        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-56 p-2 shadow border border-base-300">
+                            <!-- User Info -->
+                            <li class="menu-title">
+                                <span class="text-base-content">{{ user.email }}</span>
+                            </li>
+                            <div class="divider my-1"></div>
+
+                            <!-- Portal Switching -->
+                            <li class="menu-title"><span>{% trans "Switch Portal" %}</span></li>
+                            <li>
+                                <a href="{% url 'superadmin:dashboard' %}" class="text-error">
+                                    {% include "components/icons/feather.html" with icon="shield" class="w-4 h-4" %}
+                                    {% trans "Admin Dashboard" %}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'practice:dashboard' %}">
+                                    {% include "components/icons/feather.html" with icon="briefcase" class="w-4 h-4" %}
+                                    {% trans "Staff Portal" %}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'core:portal_dashboard' %}">
+                                    {% include "components/icons/feather.html" with icon="home" class="w-4 h-4" %}
+                                    {% trans "Customer Portal" %}
+                                </a>
+                            </li>
+                            <div class="divider my-1"></div>
+
+                            <!-- Profile & Logout -->
+                            <li>
+                                <a href="{% url 'accounts:profile' %}">
+                                    {% include "components/icons/feather.html" with icon="user" class="w-4 h-4" %}
+                                    {% trans "Profile" %}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'accounts:logout' %}">
+                                    {% include "components/icons/feather.html" with icon="log-out" class="w-4 h-4" %}
+                                    {% trans "Logout" %}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
