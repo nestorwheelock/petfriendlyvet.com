@@ -188,6 +188,24 @@ class Product(models.Model):
         help_text='List of ages: puppy, kitten, adult, senior'
     )
 
+    # Inventory Item Integration
+    inventory_item = models.OneToOneField(
+        'inventory.InventoryItem',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='store_product',
+        help_text='Link to central inventory item for SAT compliance'
+    )
+    tax_rate_override = models.ForeignKey(
+        'billing.TaxRate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products_override',
+        help_text='Override the default tax rate for this product'
+    )
+
     # SEO
     meta_title = models.CharField(max_length=200, blank=True)
     meta_description = models.TextField(blank=True)
@@ -242,6 +260,23 @@ class Product(models.Model):
         if self.max_order_quantity is not None:
             return self.max_order_quantity
         return getattr(settings, 'STORE_DEFAULT_MAX_ORDER_QUANTITY', 99)
+
+    def get_tax_rate(self):
+        """Return effective tax rate for this product.
+
+        Priority:
+        1. tax_rate_override (if set)
+        2. inventory_item.tax_rate (if linked)
+        3. Default TaxRate (is_default=True)
+        """
+        from apps.billing.models import TaxRate
+
+        if self.tax_rate_override:
+            return self.tax_rate_override
+        if self.inventory_item:
+            return self.inventory_item.tax_rate
+        # Fallback to default tax rate
+        return TaxRate.objects.filter(is_default=True).first()
 
 
 class ProductImage(models.Model):
