@@ -2,6 +2,7 @@
 
 Provides:
 - StoreSettings: Store-wide configuration (singleton)
+- ProductType: Dynamic product classification (physical, service, bundle, etc.)
 - Category: Product categories with hierarchy
 - Product: Products with bilingual content and inventory
 - ProductImage: Multiple images per product
@@ -68,6 +69,49 @@ class StoreSettings(models.Model):
         if self.free_shipping_threshold and subtotal >= self.free_shipping_threshold:
             return Decimal('0')
         return self.default_shipping_cost
+
+
+class ProductType(models.Model):
+    """Dynamic product type classification.
+
+    Allows flexible categorization of products without hardcoded choices.
+    Examples: physical, service, bundle, dropship, subscription
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Unique identifier (e.g., 'physical', 'service')"
+    )
+    name = models.CharField(max_length=100)
+    name_es = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+
+    # Behavior flags
+    requires_inventory = models.BooleanField(
+        default=False,
+        help_text="Products of this type need inventory tracking"
+    )
+    requires_service_module = models.BooleanField(
+        default=False,
+        help_text="Products of this type link to service/procedure records"
+    )
+    allows_shipping = models.BooleanField(
+        default=True,
+        help_text="Products of this type can be shipped"
+    )
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Product Type"
+        verbose_name_plural = "Product Types"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Category(models.Model):

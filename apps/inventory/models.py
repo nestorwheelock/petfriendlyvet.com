@@ -1,6 +1,7 @@
 """Inventory management models for S-024.
 
 Provides:
+- InventoryCategory: Internal inventory categorization
 - InventoryItem: Central inventory item model for all item types
 - LocationType: Database-driven location types
 - StockLocation: Physical storage locations
@@ -22,6 +23,66 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
 User = get_user_model()
+
+
+class InventoryCategory(models.Model):
+    """Internal inventory categorization for operations.
+
+    Separate from store categories - these are for internal
+    inventory management and operational requirements.
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text=_("Unique identifier (e.g., 'medication', 'food')")
+    )
+    name = models.CharField(_('name'), max_length=100)
+    name_es = models.CharField(_('name (Spanish)'), max_length=100, blank=True)
+    description = models.TextField(_('description'), blank=True)
+
+    # Operational requirements
+    requires_refrigeration = models.BooleanField(
+        _('requires refrigeration'),
+        default=False,
+        help_text=_('Items in this category need temperature-controlled storage')
+    )
+    requires_controlled_access = models.BooleanField(
+        _('requires controlled access'),
+        default=False,
+        help_text=_('Items require restricted access (e.g., controlled substances)')
+    )
+    is_pharmaceutical = models.BooleanField(
+        _('pharmaceutical'),
+        default=False,
+        help_text=_('Items are pharmaceuticals requiring special handling')
+    )
+    is_perishable = models.BooleanField(
+        _('perishable'),
+        default=False,
+        help_text=_('Items have expiration dates that must be tracked')
+    )
+
+    # Display
+    icon = models.CharField(
+        _('icon'),
+        max_length=50,
+        blank=True,
+        help_text=_('Icon name for UI display')
+    )
+    sort_order = models.PositiveIntegerField(_('sort order'), default=0)
+    is_active = models.BooleanField(_('active'), default=True)
+
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+        verbose_name = _('inventory category')
+        verbose_name_plural = _('inventory categories')
+
+    def __str__(self):
+        return self.name
 
 
 class InventoryItem(models.Model):

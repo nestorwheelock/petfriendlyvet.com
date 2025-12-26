@@ -1,4 +1,17 @@
-"""Practice models for staff and clinic management."""
+"""Practice models for staff, clinic management, and veterinary procedures.
+
+Provides:
+- StaffProfile: Staff profiles with roles and permissions
+- Shift: Staff work shifts
+- TimeEntry: Time tracking
+- ClinicSettings: Clinic configuration
+- ClinicalNote: Clinical notes (SOAP format)
+- Task: Staff task management
+- ProcedureCategory: Categories for veterinary procedures
+- VetProcedure: Veterinary services/procedures
+"""
+from decimal import Decimal
+
 from django.db import models
 from django.conf import settings
 
@@ -293,3 +306,122 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProcedureCategory(models.Model):
+    """Categories for veterinary procedures.
+
+    Groups procedures for organization and reporting.
+    Examples: Consultation, Surgery, Vaccination, Dental, Lab Work
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Unique identifier (e.g., 'surgery', 'dental')"
+    )
+    name = models.CharField(max_length=100)
+    name_es = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+
+    icon = models.CharField(max_length=50, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+        verbose_name = 'Procedure Category'
+        verbose_name_plural = 'Procedure Categories'
+
+    def __str__(self):
+        return self.name
+
+
+class VetProcedure(models.Model):
+    """Veterinary procedure/service definition.
+
+    This is the service-module-specific model for veterinary clinics.
+    Other business types would have their own service models:
+    - AutoShop: RepairService
+    - Restaurant: MenuItem
+    - WaterDelivery: DeliveryService
+    """
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Internal procedure code (e.g., 'CONSULT-GEN')"
+    )
+    name = models.CharField(max_length=200)
+    name_es = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+
+    category = models.ForeignKey(
+        ProcedureCategory,
+        on_delete=models.PROTECT,
+        related_name='procedures'
+    )
+
+    # Pricing
+    base_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Standard price for this procedure"
+    )
+    price_varies = models.BooleanField(
+        default=False,
+        help_text="Price depends on factors (size, complexity, etc.)"
+    )
+
+    # Time
+    duration_minutes = models.PositiveIntegerField(
+        default=30,
+        help_text="Expected duration in minutes"
+    )
+
+    # SAT codes for Mexican tax compliance
+    sat_product_code = models.ForeignKey(
+        'billing.SATProductCode',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="SAT Clave Producto for CFDI invoicing"
+    )
+    sat_unit_code = models.ForeignKey(
+        'billing.SATUnitCode',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="SAT Clave Unidad for CFDI invoicing"
+    )
+
+    # Requirements
+    requires_appointment = models.BooleanField(default=True)
+    requires_hospitalization = models.BooleanField(default=False)
+    requires_anesthesia = models.BooleanField(default=False)
+    requires_vet_license = models.BooleanField(
+        default=True,
+        help_text="Must be performed by licensed veterinarian"
+    )
+
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_visible_online = models.BooleanField(
+        default=True,
+        help_text="Show in online booking system"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'name']
+        verbose_name = 'Veterinary Procedure'
+        verbose_name_plural = 'Veterinary Procedures'
+
+    def __str__(self):
+        return self.name

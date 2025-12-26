@@ -260,3 +260,43 @@ class FeatureFlag(TimeStampedModel):
 
     def __str__(self):
         return self.key
+
+
+class Tag(models.Model):
+    """Flexible tagging for products, procedures, and other entities.
+
+    Tags can be used across multiple models for filtering and organization.
+    Examples: Bestseller, New Arrival, On Sale, Prescription Required
+    """
+
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    color = models.CharField(
+        max_length=7,
+        default='#6B7280',
+        help_text="Hex color code for display (e.g., '#10B981')"
+    )
+    icon = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Icon name for display"
+    )
+
+    is_visible = models.BooleanField(
+        default=True,
+        help_text="Show this tag publicly"
+    )
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Tag'
+        verbose_name_plural = 'Tags'
+
+    def __str__(self):
+        return self.name
