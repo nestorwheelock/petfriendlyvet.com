@@ -1,0 +1,131 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit Account" %}{% else %}{% trans "Add Account" %}{% endif %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'accounting:account_list' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Chart of Accounts" %}
+        </a>
+    </nav>
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if object %}{% trans "Edit Account" %}{% else %}{% trans "Add Account" %}{% endif %}
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 text-red-700 p-4 rounded-lg">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_code" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Account Code" %} *
+                    </label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="id_account_type" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Account Type" %} *
+                    </label>
+                    {{ form.account_type }}
+                    {% if form.account_type.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.account_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Account Name" %} *
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_parent" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Parent Account" %}
+                </label>
+                {{ form.parent }}
+                {% if form.parent.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.parent.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">{% trans "Optional. Select a parent account if this is a sub-account." %}</p>
+            </div>
+
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Description" %}
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="border-t pt-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-4">{% trans "Account Properties" %}</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        {{ form.is_bank }}
+                        <label for="id_is_bank" class="ml-2 text-sm text-gray-700">
+                            {% trans "Bank Account" %}
+                        </label>
+                        <span class="ml-2 text-sm text-gray-500">{% trans "(Cash or checking account)" %}</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        {{ form.is_ar }}
+                        <label for="id_is_ar" class="ml-2 text-sm text-gray-700">
+                            {% trans "Accounts Receivable" %}
+                        </label>
+                        <span class="ml-2 text-sm text-gray-500">{% trans "(Customer invoices)" %}</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        {{ form.is_ap }}
+                        <label for="id_is_ap" class="ml-2 text-sm text-gray-700">
+                            {% trans "Accounts Payable" %}
+                        </label>
+                        <span class="ml-2 text-sm text-gray-500">{% trans "(Vendor bills)" %}</span>
+                    </div>
+
+                    <div class="flex items-center">
+                        {{ form.is_active }}
+                        <label for="id_is_active" class="ml-2 text-sm text-gray-700">
+                            {% trans "Active" %}
+                        </label>
+                        <span class="ml-2 text-sm text-gray-500">{% trans "(Inactive accounts are hidden)" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                    {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Create Account" %}{% endif %}
+                </button>
+                <a href="{% url 'accounting:account_list' %}" class="flex-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-6 rounded-lg font-medium text-center transition-colors">
+                    {% trans "Cancel" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock staff_content %}

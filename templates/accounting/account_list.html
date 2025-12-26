@@ -1,0 +1,103 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Chart of Accounts" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'accounting:dashboard' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Accounting" %}
+        </a>
+    </nav>
+
+    <div class="mb-8 flex justify-between items-start">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Chart of Accounts" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "View and manage accounts" %}</p>
+        </div>
+        <a href="{% url 'accounting:account_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {% trans "Add Account" %}
+        </a>
+    </div>
+
+    <!-- Assets -->
+    <div class="bg-white rounded-xl shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 bg-green-50">
+            <h2 class="text-lg font-semibold text-green-800">{% trans "Assets" %}</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for account in asset_accounts %}
+            <a href="{% url 'accounting:account_detail' pk=account.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">{{ account.code }} - {{ account.name }}</span>
+                    <span class="text-green-600 font-semibold">${{ account.balance }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-4 text-gray-500">{% trans "No asset accounts" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Liabilities -->
+    <div class="bg-white rounded-xl shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
+            <h2 class="text-lg font-semibold text-red-800">{% trans "Liabilities" %}</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for account in liability_accounts %}
+            <a href="{% url 'accounting:account_detail' pk=account.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">{{ account.code }} - {{ account.name }}</span>
+                    <span class="text-red-600 font-semibold">${{ account.balance }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-4 text-gray-500">{% trans "No liability accounts" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="bg-white rounded-xl shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
+            <h2 class="text-lg font-semibold text-blue-800">{% trans "Revenue" %}</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for account in revenue_accounts %}
+            <a href="{% url 'accounting:account_detail' pk=account.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">{{ account.code }} - {{ account.name }}</span>
+                    <span class="text-blue-600 font-semibold">${{ account.balance }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-4 text-gray-500">{% trans "No revenue accounts" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="bg-white rounded-xl shadow">
+        <div class="px-6 py-4 border-b border-gray-200 bg-orange-50">
+            <h2 class="text-lg font-semibold text-orange-800">{% trans "Expenses" %}</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for account in expense_accounts %}
+            <a href="{% url 'accounting:account_detail' pk=account.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">{{ account.code }} - {{ account.name }}</span>
+                    <span class="text-orange-600 font-semibold">${{ account.balance }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-4 text-gray-500">{% trans "No expense accounts" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock staff_content %}
