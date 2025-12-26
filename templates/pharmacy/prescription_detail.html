@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{{ prescription.medication.name }} - {% trans "Prescription" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Back link -->
     <div class="mb-6">
@@ -188,4 +188,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock portal_content %}

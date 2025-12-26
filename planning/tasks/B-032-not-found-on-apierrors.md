@@ -1,0 +1,28 @@
+# B-032: Not Found on /api/errors/
+
+**Severity**: Low
+**Status**: Open
+**Error Type**: not_found
+**Status Code**: 404
+
+## Description
+
+HTTP 404 error detected on URL pattern: /api/errors/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/api/errors/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `97ace328593389bf`
+- **Error Type**: not_found
+- **HTTP Status**: 404
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production

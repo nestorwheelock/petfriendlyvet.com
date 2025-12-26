@@ -1,0 +1,54 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Email Templates" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'marketing:dashboard' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Marketing" %}
+        </a>
+    </nav>
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Email Templates" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Reusable email templates" %}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for template in templates %}
+        <div class="bg-white rounded-xl shadow hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-gray-900">{{ template.name }}</h3>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                        {{ template.get_template_type_display }}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">{{ template.subject|truncatechars:60 }}</p>
+                <p class="text-xs text-gray-500 mt-4">{% trans "Updated" %}: {{ template.updated_at|date:"M d, Y" }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-xl shadow p-12 text-center text-gray-500">
+            {% trans "No templates found" %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="mt-6 flex justify-center">
+        <nav class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow text-primary-600">&larr;</a>
+            {% endif %}
+            <span class="px-4 py-2 bg-white rounded-lg shadow text-gray-700">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow text-primary-600">&rarr;</a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock staff_content %}

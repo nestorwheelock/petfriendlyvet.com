@@ -41,6 +41,10 @@ RUN pip install --no-cache-dir -r requirements/production.txt
 # Copy application code
 COPY --chown=app:app . .
 
+# Create media directories with proper ownership
+RUN mkdir -p /app/media/pets /app/media/pet_documents /app/media/products /app/media/categories \
+    && chown -R app:app /app/media
+
 # Collect static files
 RUN python manage.py collectstatic --noinput --clear
 

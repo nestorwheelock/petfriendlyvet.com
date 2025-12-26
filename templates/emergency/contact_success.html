@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Request Submitted" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-xl shadow overflow-hidden">
         <div class="bg-green-500 text-white p-6 text-center">
@@ -90,4 +90,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

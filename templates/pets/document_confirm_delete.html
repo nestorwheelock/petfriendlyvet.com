@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Delete Document" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -37,4 +37,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

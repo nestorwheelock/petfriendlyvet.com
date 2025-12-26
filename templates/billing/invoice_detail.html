@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{{ invoice.invoice_number }}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Back link -->
     <div class="mb-6">
@@ -148,4 +148,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

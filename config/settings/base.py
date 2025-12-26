@@ -117,6 +117,7 @@ TEMPLATES = [
                 'django.template.context_processors.i18n',
                 'apps.store.context_processors.cart',
                 'apps.store.context_processors.store_settings',
+                'apps.core.context_processors.navigation',
             ],
         },
     },

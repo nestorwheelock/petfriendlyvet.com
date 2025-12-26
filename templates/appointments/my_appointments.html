@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load static i18n %}
 
 {% block title %}{% trans "Mis Citas" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <section class="py-16">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-8">
@@ -107,4 +107,4 @@
         {% endif %}
     </div>
 </section>
-{% endblock %}
+{% endblock portal_content %}

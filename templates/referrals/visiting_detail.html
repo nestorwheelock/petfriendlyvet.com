@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_staff.html" %}
 {% load i18n %}
 
 {% block title %}{{ schedule.specialist.name }} - {{ schedule.date|date:"M d" }}{% endblock %}
 
-{% block content %}
+{% block staff_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <a href="{% url 'referrals:visiting_schedule' %}" class="text-primary-600 hover:text-primary-700 font-medium">

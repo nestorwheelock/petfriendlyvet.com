@@ -1,0 +1,28 @@
+# B-001: Forbidden on /accounting/
+
+**Severity**: Medium
+**Status**: Open
+**Error Type**: forbidden
+**Status Code**: 403
+
+## Description
+
+HTTP 403 error detected on URL pattern: /accounting/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/accounting/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `96e2ba03f11c87fb`
+- **Error Type**: forbidden
+- **HTTP Status**: 403
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production

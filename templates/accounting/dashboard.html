@@ -1,0 +1,102 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accounting Dashboard" %}{% endblock %}
+
+{% block breadcrumb %}
+<li><span class="mx-2 text-gray-400">/</span></li>
+<li class="text-gray-700 font-medium">{% trans "Accounting" %}</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Accounting" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Financial management and reporting" %}</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Assets" %}</div>
+            <div class="text-3xl font-bold text-green-600 mt-2">${{ total_assets }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Liabilities" %}</div>
+            <div class="text-3xl font-bold text-red-600 mt-2">${{ total_liabilities }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Revenue" %}</div>
+            <div class="text-3xl font-bold text-blue-600 mt-2">${{ total_revenue }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Expenses" %}</div>
+            <div class="text-3xl font-bold text-orange-600 mt-2">${{ total_expenses }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Journal Entries -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Journal Entries" %}</h2>
+                <a href="{% url 'accounting:journal_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for entry in recent_journals %}
+                <a href="{% url 'accounting:journal_detail' pk=entry.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                    <div class="flex justify-between">
+                        <span class="font-medium">{{ entry.reference }}</span>
+                        <span class="text-sm text-gray-500">{{ entry.date|date:"M d, Y" }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">{{ entry.description|truncatechars:50 }}</p>
+                </a>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No journal entries" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pending Bills -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Pending Bills" %}</h2>
+                <a href="{% url 'accounting:bill_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for bill in pending_bills %}
+                <a href="{% url 'accounting:bill_detail' pk=bill.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                    <div class="flex justify-between">
+                        <span class="font-medium">{{ bill.vendor.name }}</span>
+                        <span class="text-sm font-semibold text-red-600">${{ bill.total }}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ bill.bill_number }} - Due {{ bill.due_date|date:"M d, Y" }}</p>
+                </a>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No pending bills" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="{% url 'accounting:account_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">📊</div>
+            <div class="font-medium">{% trans "Chart of Accounts" %}</div>
+        </a>
+        <a href="{% url 'accounting:vendor_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">🏢</div>
+            <div class="font-medium">{% trans "Vendors" %}</div>
+        </a>
+        <a href="{% url 'accounting:budget_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">💰</div>
+            <div class="font-medium">{% trans "Budgets" %}</div>
+        </a>
+        <a href="{% url 'accounting:reconciliation_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">🏦</div>
+            <div class="font-medium">{% trans "Reconciliations" %}</div>
+        </a>
+    </div>
+</div>
+{% endblock staff_content %}

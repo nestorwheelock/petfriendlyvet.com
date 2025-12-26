@@ -1,0 +1,167 @@
+{% extends "base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Portal" %}{% endblock %}
+
+{% block portal_content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Welcome back!" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Here's what's happening with your pets." %}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- My Pets Section -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "My Pets" %}</h2>
+                    <a href="{% url 'pets:pet_add' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        + {% trans "Add Pet" %}
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for pet in pets %}
+                    <a href="{% url 'pets:pet_detail' pk=pet.pk %}" class="flex items-center px-6 py-4 hover:bg-gray-50">
+                        <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg">
+                            {{ pet.name|slice:":1"|upper }}
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="font-medium text-gray-900">{{ pet.name }}</div>
+                            <div class="text-sm text-gray-500">{{ pet.species|title }} - {{ pet.breed }}</div>
+                        </div>
+                        {% include "components/icons/feather.html" with icon="chevron-right" class="w-5 h-5 text-gray-400" %}
+                    </a>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center">
+                        <div class="text-gray-400 mb-2">
+                            {% include "components/icons/feather.html" with icon="heart" class="w-12 h-12 mx-auto" %}
+                        </div>
+                        <p class="text-gray-500 mb-4">{% trans "You haven't added any pets yet." %}</p>
+                        <a href="{% url 'pets:pet_add' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                            {% trans "Add Your First Pet" %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Upcoming Appointments" %}</h2>
+                    <a href="{% url 'appointments:book' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        + {% trans "Book Appointment" %}
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for appt in upcoming_appointments %}
+                    <a href="{% url 'appointments:detail' pk=appt.pk %}" class="flex items-center px-6 py-4 hover:bg-gray-50">
+                        <div class="w-12 h-12 rounded-lg bg-blue-100 flex flex-col items-center justify-center text-blue-600">
+                            <div class="text-xs font-medium">{{ appt.scheduled_start|date:"M" }}</div>
+                            <div class="text-lg font-bold leading-none">{{ appt.scheduled_start|date:"d" }}</div>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="font-medium text-gray-900">{{ appt.service.name }}</div>
+                            <div class="text-sm text-gray-500">{{ appt.pet.name }} - {{ appt.scheduled_start|time:"H:i" }}</div>
+                        </div>
+                        {% include "components/icons/feather.html" with icon="chevron-right" class="w-5 h-5 text-gray-400" %}
+                    </a>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center">
+                        <p class="text-gray-500 mb-4">{% trans "No upcoming appointments" %}</p>
+                        <a href="{% url 'appointments:book' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                            {% trans "Book an Appointment" %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Orders" %}</h2>
+                    <a href="{% url 'store:order_list' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        {% trans "View All" %}
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    {% for order in recent_orders %}
+                    <a href="{% url 'store:order_detail' order_number=order.order_number %}" class="flex items-center px-6 py-4 hover:bg-gray-50">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">{% trans "Order" %} #{{ order.id }}</div>
+                            <div class="text-sm text-gray-500">{{ order.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-medium text-gray-900">${{ order.total }}</div>
+                            <span class="px-2 py-1 text-xs rounded-full
+                                {% if order.status == 'delivered' %}bg-green-100 text-green-800
+                                {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center text-gray-500">
+                        {% trans "No orders yet" %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-8">
+            <!-- Loyalty Points Card -->
+            <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl shadow text-white p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold">{% trans "Loyalty Points" %}</h3>
+                    {% include "components/icons/feather.html" with icon="star" class="w-6 h-6" %}
+                </div>
+                {% if loyalty_account %}
+                <div class="text-4xl font-bold mb-2">{{ loyalty_account.points_balance }}</div>
+                <div class="text-primary-100 text-sm">{% trans "Available points" %}</div>
+                <a href="{% url 'loyalty:dashboard' %}" class="mt-4 inline-block text-sm text-white underline hover:no-underline">
+                    {% trans "View Rewards" %} &rarr;
+                </a>
+                {% else %}
+                <div class="text-primary-100">
+                    {% trans "Join our loyalty program to start earning points!" %}
+                </div>
+                <a href="{% url 'loyalty:dashboard' %}" class="mt-4 inline-block bg-white text-primary-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-50">
+                    {% trans "Learn More" %}
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="font-semibold text-gray-900">{% trans "Quick Actions" %}</h3>
+                </div>
+                <div class="p-4 space-y-2">
+                    <a href="{% url 'appointments:book' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50">
+                        {% include "components/icons/feather.html" with icon="calendar" class="w-5 h-5 text-gray-400 mr-3" %}
+                        <span class="text-sm font-medium text-gray-700">{% trans "Book Appointment" %}</span>
+                    </a>
+                    <a href="{% url 'pharmacy:prescription_list' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50">
+                        {% include "components/icons/feather.html" with icon="pill" class="w-5 h-5 text-gray-400 mr-3" %}
+                        <span class="text-sm font-medium text-gray-700">{% trans "My Prescriptions" %}</span>
+                    </a>
+                    <a href="{% url 'billing:invoice_list' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50">
+                        {% include "components/icons/feather.html" with icon="credit-card" class="w-5 h-5 text-gray-400 mr-3" %}
+                        <span class="text-sm font-medium text-gray-700">{% trans "Billing" %}</span>
+                    </a>
+                    <a href="{% url 'emergency:home' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 text-red-600">
+                        {% include "components/icons/feather.html" with icon="alert-circle" class="w-5 h-5 mr-3" %}
+                        <span class="text-sm font-medium">{% trans "Emergency Help" %}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock portal_content %}

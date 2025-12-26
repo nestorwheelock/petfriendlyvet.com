@@ -1,0 +1,72 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{{ vendor.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'accounting:vendor_list' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Vendors" %}
+        </a>
+    </nav>
+
+    <!-- Vendor Header -->
+    <div class="bg-white rounded-xl shadow mb-8">
+        <div class="px-6 py-6">
+            <h1 class="text-2xl font-bold text-gray-900">{{ vendor.name }}</h1>
+            {% if vendor.rfc %}<p class="text-gray-500 mt-1">RFC: {{ vendor.rfc }}</p>{% endif %}
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-gray-200">
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Contact" %}</div>
+                    <div class="font-medium">{{ vendor.contact_name|default:"-" }}</div>
+                    {% if vendor.email %}<div class="text-sm text-gray-600">{{ vendor.email }}</div>{% endif %}
+                    {% if vendor.phone %}<div class="text-sm text-gray-600">{{ vendor.phone }}</div>{% endif %}
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Payment Terms" %}</div>
+                    <div class="font-medium">{{ vendor.get_payment_terms_display }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Balance" %}</div>
+                    <div class="text-2xl font-bold {% if vendor.balance > 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                        ${{ vendor.balance }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bills -->
+    <div class="bg-white rounded-xl shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Bills" %}</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for bill in bills %}
+            <a href="{% url 'accounting:bill_detail' pk=bill.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="font-medium">{{ bill.bill_number }}</span>
+                        <span class="text-sm text-gray-500 ml-2">{{ bill.bill_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold">${{ bill.total }}</div>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if bill.status == 'paid' %}bg-green-100 text-green-800
+                            {% elif bill.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif bill.status == 'partial' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ bill.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-8 text-center text-gray-500">{% trans "No bills for this vendor" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock staff_content %}

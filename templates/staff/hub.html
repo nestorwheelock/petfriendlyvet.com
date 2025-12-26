@@ -1,0 +1,118 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Staff Hub" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Staff Hub" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Welcome back! Here's your daily overview." %}</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-lg">
+                    {% include "components/icons/feather.html" with icon="calendar" class="w-6 h-6 text-blue-600" %}
+                </div>
+                <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-500">{% trans "Appointments Today" %}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.appointments_today }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-yellow-100 rounded-lg">
+                    {% include "components/icons/feather.html" with icon="shopping-bag" class="w-6 h-6 text-yellow-600" %}
+                </div>
+                <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-500">{% trans "Pending Orders" %}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.pending_orders }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-lg">
+                    {% include "components/icons/feather.html" with icon="heart" class="w-6 h-6 text-green-600" %}
+                </div>
+                <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-500">{% trans "Total Pets" %}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.total_pets }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Quick Access Modules -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Quick Access" %}</h2>
+                </div>
+                <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="{% url 'practice:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="users" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Practice" %}</span>
+                    </a>
+                    <a href="{% url 'inventory:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="package" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Inventory" %}</span>
+                    </a>
+                    <a href="{% url 'accounting:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="dollar-sign" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Accounting" %}</span>
+                    </a>
+                    <a href="{% url 'marketing:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="mail" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Marketing" %}</span>
+                    </a>
+                    <a href="{% url 'crm:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="heart" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "CRM" %}</span>
+                    </a>
+                    <a href="{% url 'reports:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="bar-chart-2" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Reports" %}</span>
+                    </a>
+                    <a href="{% url 'audit:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="shield" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Audit" %}</span>
+                    </a>
+                    <a href="{% url 'referrals:dashboard' %}" class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-primary-300 transition-colors">
+                        {% include "components/icons/feather.html" with icon="share-2" class="w-8 h-8 text-gray-600 mb-2" %}
+                        <span class="text-sm font-medium text-gray-900">{% trans "Referrals" %}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Activity" %}</h2>
+                </div>
+                <div class="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                    {% for log in recent_activity %}
+                    <div class="px-6 py-3">
+                        <div class="text-sm text-gray-900">{{ log.action }}</div>
+                        <div class="text-xs text-gray-500">
+                            {{ log.user.email|default:"System" }} - {{ log.created_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="px-6 py-8 text-center text-gray-500">
+                        {% trans "No recent activity" %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock staff_content %}

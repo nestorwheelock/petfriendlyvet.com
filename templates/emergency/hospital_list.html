@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Emergency Hospitals" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <div>
@@ -104,4 +104,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock portal_content %}

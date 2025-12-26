@@ -1,0 +1,80 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Journal Entries" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'accounting:dashboard' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Accounting" %}
+        </a>
+    </nav>
+
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Journal Entries" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "View and manage journal entries" %}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Date" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Reference" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Description" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Amount" %}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for entry in journals %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ entry.date|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ entry.reference }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ entry.description|truncatechars:50 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if entry.is_posted %}
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">{% trans "Posted" %}</span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">{% trans "Draft" %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">${{ entry.total_debit }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'accounting:journal_detail' pk=entry.pk %}" class="text-primary-600 hover:text-primary-900">{% trans "View" %}</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">{% trans "No journal entries found" %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if is_paginated %}
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div class="flex justify-between">
+                <div>
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="text-primary-600 hover:text-primary-700">&larr; {% trans "Previous" %}</a>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-700">
+                    {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+                </div>
+                <div>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="text-primary-600 hover:text-primary-700">{% trans "Next" %} &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock staff_content %}

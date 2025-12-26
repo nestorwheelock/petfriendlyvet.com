@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n humanize loyalty_tags %}
 
 {% block title %}{% trans "Confirm Redemption" %}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-xl shadow overflow-hidden">
         <div class="p-6 border-b border-gray-200">
@@ -49,4 +49,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}

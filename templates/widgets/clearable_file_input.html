@@ -1,0 +1,66 @@
+{% load i18n %}
+<div class="clearable-file-input" x-data="{ hasFile: {{ is_initial|yesno:'true,false' }}, previewUrl: '{{ initial_url|default:'' }}', fileName: '{{ initial_text|default:'' }}' }">
+    {% if is_initial %}
+    <div class="mb-3 flex items-center space-x-4" x-show="hasFile && !$refs.fileInput?.files?.length">
+        <div class="flex-shrink-0">
+            {% if widget.attrs.accept == 'image/*' %}
+            <img :src="previewUrl" alt="Current photo" class="h-20 w-20 object-cover rounded-lg border border-gray-200">
+            {% else %}
+            <div class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate" x-text="fileName">{{ initial_text }}</p>
+            <p class="text-xs text-gray-500">{% trans "Currently uploaded" %}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="flex items-center space-x-3">
+        <div class="flex-1">
+            <input type="{{ widget.type }}"
+                   name="{{ widget.name }}"
+                   {% include "django/forms/widgets/attrs.html" %}
+                   x-ref="fileInput"
+                   @change="
+                       if ($refs.fileInput.files.length) {
+                           fileName = $refs.fileInput.files[0].name;
+                           if ($refs.fileInput.files[0].type.startsWith('image/')) {
+                               previewUrl = URL.createObjectURL($refs.fileInput.files[0]);
+                           }
+                           hasFile = true;
+                       }
+                   ">
+        </div>
+        {% if is_initial %}
+        <button type="button"
+                class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                x-show="hasFile"
+                @click="
+                    hasFile = false;
+                    $refs.fileInput.value = '';
+                    $refs.clearCheckbox.checked = true;
+                ">
+            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            {% trans "Remove" %}
+        </button>
+        <input type="checkbox"
+               name="{{ checkbox_name }}"
+               id="{{ checkbox_id }}"
+               x-ref="clearCheckbox"
+               class="hidden"
+               {% if widget.value != True %}{% endif %}>
+        {% endif %}
+    </div>
+
+    <div class="mt-2" x-show="hasFile && previewUrl && '{{ widget.attrs.accept }}' === 'image/*'">
+        <p class="text-xs text-gray-500 mb-1">{% trans "Preview:" %}</p>
+        <img :src="previewUrl" alt="Preview" class="h-32 w-32 object-cover rounded-lg border border-gray-200">
+    </div>
+</div>

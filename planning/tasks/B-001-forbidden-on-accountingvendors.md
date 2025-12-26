@@ -1,0 +1,28 @@
+# B-001: Forbidden on /accounting/vendors/
+
+**Severity**: Medium
+**Status**: Open
+**Error Type**: forbidden
+**Status Code**: 403
+
+## Description
+
+HTTP 403 error detected on URL pattern: /accounting/vendors/
+
+## Steps to Reproduce
+
+1. Navigate to URL pattern: `/accounting/vendors/`
+2. The error occurs automatically
+
+## Technical Details
+
+- **Fingerprint**: `9776f4761122bce3`
+- **Error Type**: forbidden
+- **HTTP Status**: 403
+
+## Definition of Done
+
+- [ ] Root cause identified
+- [ ] Fix implemented
+- [ ] Tests written to prevent regression
+- [ ] Fix verified in production

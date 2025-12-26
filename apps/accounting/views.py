@@ -196,20 +196,11 @@ class AccountDeleteView(StaffRequiredMixin, DeleteView):
     context_object_name = 'account'
 
     def form_valid(self, form):
-        account = self.get_object()
-        # Soft delete - just deactivate
-        account.is_active = False
-        account.save(update_fields=['is_active', 'updated_at'])
-        messages.success(self.request, _('Account "%(name)s" has been deactivated.') % {'name': account.name})
-        return super().delete(self.request)
-
-    def delete(self, request, *args, **kwargs):
-        # Override to do soft delete
+        from django.http import HttpResponseRedirect
         self.object = self.get_object()
         self.object.is_active = False
         self.object.save(update_fields=['is_active', 'updated_at'])
-        messages.success(request, _('Account "%(name)s" has been deactivated.') % {'name': self.object.name})
-        from django.http import HttpResponseRedirect
+        messages.success(self.request, _('Account "%(name)s" has been deactivated.') % {'name': self.object.name})
         return HttpResponseRedirect(self.get_success_url())
 
 

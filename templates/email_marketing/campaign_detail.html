@@ -1,0 +1,119 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{{ campaign.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="mb-6">
+        <a href="{% url 'marketing:campaign_list' %}" class="text-primary-600 hover:text-primary-700">
+            &larr; {% trans "Back to Campaigns" %}
+        </a>
+    </nav>
+
+    <!-- Campaign Header -->
+    <div class="bg-white rounded-xl shadow mb-8">
+        <div class="px-6 py-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ campaign.name }}</h1>
+                    <p class="text-gray-500 mt-1">{{ campaign.subject }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-medium rounded-full
+                    {% if campaign.status == 'sent' %}bg-green-100 text-green-800
+                    {% elif campaign.status == 'scheduled' %}bg-blue-100 text-blue-800
+                    {% elif campaign.status == 'draft' %}bg-gray-100 text-gray-800
+                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ campaign.get_status_display }}
+                </span>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mt-6 pt-6 border-t border-gray-200">
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Recipients" %}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ campaign.total_recipients }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Sent" %}</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ campaign.total_sent }}</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Opened" %}</div>
+                    <div class="text-2xl font-bold text-green-600">
+                        {{ campaign.total_opened }}
+                        <span class="text-sm font-normal text-gray-500">({{ campaign.open_rate|floatformat:1 }}%)</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Clicked" %}</div>
+                    <div class="text-2xl font-bold text-purple-600">
+                        {{ campaign.total_clicked }}
+                        <span class="text-sm font-normal text-gray-500">({{ campaign.click_rate|floatformat:1 }}%)</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Bounced" %}</div>
+                    <div class="text-2xl font-bold text-red-600">{{ campaign.total_bounced }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Campaign Details -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Details" %}</h2>
+            </div>
+            <div class="px-6 py-4 space-y-4">
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "From" %}</div>
+                    <div class="font-medium">{{ campaign.from_name }} &lt;{{ campaign.from_email }}&gt;</div>
+                </div>
+                {% if campaign.segment %}
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Segment" %}</div>
+                    <div class="font-medium">{{ campaign.segment.name }}</div>
+                </div>
+                {% endif %}
+                {% if campaign.sent_at %}
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Sent At" %}</div>
+                    <div class="font-medium">{{ campaign.sent_at|date:"M d, Y H:i" }}</div>
+                </div>
+                {% endif %}
+                <div>
+                    <div class="text-sm text-gray-500">{% trans "Created By" %}</div>
+                    <div class="font-medium">{{ campaign.created_by.get_full_name|default:campaign.created_by.email }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sends -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Recipients" %}</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for send in recent_sends %}
+                <div class="px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-gray-900">{{ send.subscription.email }}</span>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if send.status == 'opened' %}bg-green-100 text-green-800
+                            {% elif send.status == 'clicked' %}bg-blue-100 text-blue-800
+                            {% elif send.status == 'bounced' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ send.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-6 py-8 text-center text-gray-500">{% trans "No sends yet" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock staff_content %}

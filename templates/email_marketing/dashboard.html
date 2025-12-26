@@ -1,0 +1,88 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Marketing Dashboard" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% trans "Email Marketing" %}</h1>
+        <p class="text-gray-600 mt-1">{% trans "Campaigns, subscribers, and automation" %}</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Total Subscribers" %}</div>
+            <div class="text-3xl font-bold text-blue-600 mt-2">{{ total_subscribers }}</div>
+            <p class="text-sm text-gray-500 mt-1">{{ active_subscribers }} {% trans "active" %}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Campaigns" %}</div>
+            <div class="text-3xl font-bold text-green-600 mt-2">{{ total_campaigns }}</div>
+            <p class="text-sm text-gray-500 mt-1">{{ sent_campaigns }} {% trans "sent" %}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Templates" %}</div>
+            <div class="text-3xl font-bold text-purple-600 mt-2">{{ total_templates }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-medium text-gray-500">{% trans "Automations" %}</div>
+            <div class="text-3xl font-bold text-orange-600 mt-2">{{ total_sequences }}</div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <a href="{% url 'marketing:campaign_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">📧</div>
+            <div class="font-medium">{% trans "Campaigns" %}</div>
+        </a>
+        <a href="{% url 'marketing:subscriber_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">👥</div>
+            <div class="font-medium">{% trans "Subscribers" %}</div>
+        </a>
+        <a href="{% url 'marketing:template_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">📄</div>
+            <div class="font-medium">{% trans "Templates" %}</div>
+        </a>
+        <a href="{% url 'marketing:segment_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">🎯</div>
+            <div class="font-medium">{% trans "Segments" %}</div>
+        </a>
+        <a href="{% url 'marketing:sequence_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+            <div class="text-2xl mb-2">🔄</div>
+            <div class="font-medium">{% trans "Automations" %}</div>
+        </a>
+    </div>
+
+    <!-- Recent Campaigns -->
+    <div class="bg-white rounded-xl shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Campaigns" %}</h2>
+            <a href="{% url 'marketing:campaign_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for campaign in recent_campaigns %}
+            <a href="{% url 'marketing:campaign_detail' pk=campaign.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="font-medium text-gray-900">{{ campaign.name }}</span>
+                        <p class="text-sm text-gray-600 mt-1">{{ campaign.subject|truncatechars:50 }}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                        {% if campaign.status == 'sent' %}bg-green-100 text-green-800
+                        {% elif campaign.status == 'scheduled' %}bg-blue-100 text-blue-800
+                        {% elif campaign.status == 'draft' %}bg-gray-100 text-gray-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ campaign.get_status_display }}
+                    </span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-6 py-8 text-center text-gray-500">{% trans "No campaigns yet" %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock staff_content %}

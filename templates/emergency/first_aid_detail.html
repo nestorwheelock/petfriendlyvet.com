@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{{ guide.title }}{% endblock %}
 
-{% block content %}
+{% block portal_content %}
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <a href="{% url 'emergency:first_aid_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
@@ -105,4 +105,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock portal_content %}
