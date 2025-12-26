@@ -4,9 +4,15 @@
         <div class="flex justify-between h-16">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href="{% url 'core:home' %}" class="flex items-center">
-                    <img src="{% static 'images/logo.png' %}" alt="Pet-Friendly Vet" class="h-10 w-auto">
-                    <span class="ml-2 text-xl font-bold text-primary-500 hidden sm:block">Pet-Friendly</span>
+                <a href="{% url 'core:home' %}" class="flex items-center" x-data="{ logoLoaded: false }">
+                    <img src="{% static 'images/logo.png' %}"
+                         alt="Pet-Friendly Vet"
+                         class="h-10 w-auto"
+                         x-show="logoLoaded"
+                         x-cloak
+                         @load="logoLoaded = true"
+                         @error="logoLoaded = false">
+                    <span x-show="!logoLoaded" class="text-xl font-bold text-primary-500">Pet-Friendly</span>
                 </a>
             </div>
 
