@@ -10,21 +10,22 @@ from apps.core.middleware.dynamic_urls import get_admin_token, get_staff_token
 
 
 # Staff navigation modules - all 10 staff backend sections
+# URLs are relative paths that get prefixed with /staff-{token}/ in templates
 STAFF_NAV = [
-    # Operations
-    {'id': 'practice', 'icon': 'users', 'label': _('Practice'), 'url': 'practice:dashboard', 'section': 'Operations'},
-    {'id': 'inventory', 'icon': 'package', 'label': _('Inventory'), 'url': 'inventory:dashboard', 'section': 'Operations'},
-    {'id': 'referrals', 'icon': 'share-2', 'label': _('Referrals'), 'url': 'referrals:dashboard', 'section': 'Operations'},
-    {'id': 'delivery', 'icon': 'truck', 'label': _('Delivery'), 'url': 'delivery:delivery_admin:dashboard', 'section': 'Operations'},
-    # Customers
-    {'id': 'crm', 'icon': 'heart', 'label': _('CRM'), 'url': 'crm:dashboard', 'section': 'Customers'},
-    {'id': 'marketing', 'icon': 'mail', 'label': _('Marketing'), 'url': 'marketing:dashboard', 'section': 'Customers'},
-    # Finance
-    {'id': 'accounting', 'icon': 'dollar-sign', 'label': _('Accounting'), 'url': 'accounting:dashboard', 'section': 'Finance'},
-    {'id': 'reports', 'icon': 'bar-chart-2', 'label': _('Reports'), 'url': 'reports:dashboard', 'section': 'Finance'},
-    # Admin
-    {'id': 'audit', 'icon': 'shield', 'label': _('Audit'), 'url': 'audit:dashboard', 'section': 'Admin'},
-    {'id': 'ai_chat', 'icon': 'message-circle', 'label': _('AI Chat'), 'url': 'ai_assistant:admin_chat', 'section': 'Admin'},
+    # Operations Section (operations/)
+    {'id': 'practice', 'icon': 'users', 'label': _('Practice'), 'url': 'practice:dashboard', 'path': 'operations/practice/', 'section': 'Operations'},
+    {'id': 'inventory', 'icon': 'package', 'label': _('Inventory'), 'url': 'inventory:dashboard', 'path': 'operations/inventory/', 'section': 'Operations'},
+    {'id': 'referrals', 'icon': 'share-2', 'label': _('Referrals'), 'url': 'referrals:dashboard', 'path': 'operations/referrals/', 'section': 'Operations'},
+    {'id': 'delivery', 'icon': 'truck', 'label': _('Delivery'), 'url': 'delivery:delivery_admin:dashboard', 'path': 'operations/delivery/', 'section': 'Operations'},
+    # Customers Section (customers/)
+    {'id': 'crm', 'icon': 'heart', 'label': _('CRM'), 'url': 'crm:dashboard', 'path': 'customers/crm/', 'section': 'Customers'},
+    {'id': 'marketing', 'icon': 'mail', 'label': _('Marketing'), 'url': 'marketing:dashboard', 'path': 'customers/marketing/', 'section': 'Customers'},
+    # Finance Section (finance/)
+    {'id': 'accounting', 'icon': 'dollar-sign', 'label': _('Accounting'), 'url': 'accounting:dashboard', 'path': 'finance/accounting/', 'section': 'Finance'},
+    {'id': 'reports', 'icon': 'bar-chart-2', 'label': _('Reports'), 'url': 'reports:dashboard', 'path': 'finance/reports/', 'section': 'Finance'},
+    # Admin Section (admin-tools/)
+    {'id': 'audit', 'icon': 'shield', 'label': _('Audit'), 'url': 'audit:dashboard', 'path': 'admin-tools/audit/', 'section': 'Admin'},
+    {'id': 'ai_chat', 'icon': 'message-circle', 'label': _('AI Chat'), 'url': 'ai_assistant:admin_chat', 'path': 'admin-tools/ai-chat/admin/', 'section': 'Admin'},
 ]
 
 # Customer portal navigation - all 8 customer sections

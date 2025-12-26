@@ -27,7 +27,9 @@ BLOCKED_PATTERNS = [
 ]
 
 # Direct module URLs that should be blocked (must use /staff-{token}/...)
+# Block both old-style direct paths AND new grouped paths when accessed directly
 DIRECT_MODULE_PATTERNS = [
+    # Old-style direct module access (legacy, blocked)
     re.compile(r'^/accounting(/.*)?$'),
     re.compile(r'^/inventory(/.*)?$'),
     re.compile(r'^/appointments(/.*)?$'),
@@ -37,6 +39,16 @@ DIRECT_MODULE_PATTERNS = [
     re.compile(r'^/reports(/.*)?$'),
     re.compile(r'^/communications(/.*)?$'),
     re.compile(r'^/medical-records(/.*)?$'),
+    re.compile(r'^/practice(/.*)?$'),
+    re.compile(r'^/referrals(/.*)?$'),
+    re.compile(r'^/crm(/.*)?$'),
+    re.compile(r'^/marketing(/.*)?$'),
+    re.compile(r'^/audit(/.*)?$'),
+    # New grouped paths (must use /staff-{token}/section/...)
+    re.compile(r'^/operations(/.*)?$'),
+    re.compile(r'^/customers(/.*)?$'),
+    re.compile(r'^/finance(/.*)?$'),
+    re.compile(r'^/admin-tools(/.*)?$'),
 ]
 
 # Public paths that never require tokens

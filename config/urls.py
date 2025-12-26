@@ -23,6 +23,7 @@ urlpatterns = [
 
 # i18n URLs (language prefix)
 urlpatterns += i18n_patterns(
+    # Public/customer-facing URLs
     path('', include('apps.core.urls')),
     path('accounts/', include('apps.accounts.urls')),
     path('pets/', include('apps.pets.urls')),
@@ -31,20 +32,39 @@ urlpatterns += i18n_patterns(
     path('pharmacy/', include('apps.pharmacy.urls')),
     path('billing/', include('apps.billing.urls')),
     path('chat/', include('apps.ai_assistant.urls')),
-    path('crm/', include('apps.crm.urls')),
-    path('practice/', include('apps.practice.urls')),
     path('notifications/', include('apps.notifications.urls')),
     path('services/', include('apps.services.urls')),
     path('travel/', include('apps.travel.urls')),
     path('loyalty/', include('apps.loyalty.urls')),
     path('emergency/', include('apps.emergency.urls')),
-    path('inventory/', include('apps.inventory.urls')),
-    path('referrals/', include('apps.referrals.urls')),
-    path('reports/', include('apps.reports.urls')),
-    path('accounting/', include('apps.accounting.urls')),
-    path('audit/', include('apps.audit.urls')),
-    path('marketing/', include('apps.email_marketing.urls')),
+
+    # =========================================================
+    # Staff Portal URLs (Grouped by Section)
+    # Accessed via /staff-{token}/section/module/
+    # Middleware rewrites to /section/module/
+    # =========================================================
+
+    # Operations Section
+    path('operations/practice/', include('apps.practice.urls')),
+    path('operations/inventory/', include('apps.inventory.urls')),
+    path('operations/referrals/', include('apps.referrals.urls')),
+    path('operations/delivery/', include('apps.delivery.admin_urls')),
+
+    # Customers Section
+    path('customers/crm/', include('apps.crm.urls')),
+    path('customers/marketing/', include('apps.email_marketing.urls')),
+
+    # Finance Section
+    path('finance/accounting/', include('apps.accounting.urls')),
+    path('finance/reports/', include('apps.reports.urls')),
+
+    # Admin Section
+    path('admin-tools/audit/', include('apps.audit.urls')),
+    path('admin-tools/ai-chat/', include('apps.ai_assistant.urls')),
+
+    # Superadmin (system administration)
     path('superadmin/', include('apps.superadmin.urls')),
+
     prefix_default_language=False,
 )
 

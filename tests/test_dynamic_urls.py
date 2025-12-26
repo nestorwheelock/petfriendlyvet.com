@@ -273,3 +273,81 @@ class TestPublicPagesNotBlocked:
         request = rf.get('/static/css/output.css')
         response = middleware(request)
         assert response.status_code == 200
+
+
+@pytest.mark.django_db
+class TestGroupedURLStructure:
+    """Tests for the grouped URL structure (T-099)."""
+
+    def test_direct_operations_path_returns_404(self, rf, middleware):
+        """Test that /operations/ directly returns 404."""
+        request = rf.get('/operations/practice/')
+        with pytest.raises(Http404):
+            middleware(request)
+
+    def test_direct_customers_path_returns_404(self, rf, middleware):
+        """Test that /customers/ directly returns 404."""
+        request = rf.get('/customers/crm/')
+        with pytest.raises(Http404):
+            middleware(request)
+
+    def test_direct_finance_path_returns_404(self, rf, middleware):
+        """Test that /finance/ directly returns 404."""
+        request = rf.get('/finance/accounting/')
+        with pytest.raises(Http404):
+            middleware(request)
+
+    def test_direct_admin_tools_path_returns_404(self, rf, middleware):
+        """Test that /admin-tools/ directly returns 404."""
+        request = rf.get('/admin-tools/audit/')
+        with pytest.raises(Http404):
+            middleware(request)
+
+    def test_staff_token_accesses_operations(self, rf, middleware, staff_user):
+        """Test that valid staff token allows access to operations section."""
+        request = rf.get('/staff-xyz789/operations/practice/')
+        add_session_to_request(request)
+        request.user = staff_user
+        request.session['staff_token'] = 'xyz789'
+        request.session.save()
+
+        response = middleware(request)
+        assert response.status_code == 200
+        # Path should be rewritten to /operations/practice/
+        assert request.path == '/operations/practice/'
+
+    def test_staff_token_accesses_customers(self, rf, middleware, staff_user):
+        """Test that valid staff token allows access to customers section."""
+        request = rf.get('/staff-xyz789/customers/crm/')
+        add_session_to_request(request)
+        request.user = staff_user
+        request.session['staff_token'] = 'xyz789'
+        request.session.save()
+
+        response = middleware(request)
+        assert response.status_code == 200
+        assert request.path == '/customers/crm/'
+
+    def test_staff_token_accesses_finance(self, rf, middleware, staff_user):
+        """Test that valid staff token allows access to finance section."""
+        request = rf.get('/staff-xyz789/finance/accounting/')
+        add_session_to_request(request)
+        request.user = staff_user
+        request.session['staff_token'] = 'xyz789'
+        request.session.save()
+
+        response = middleware(request)
+        assert response.status_code == 200
+        assert request.path == '/finance/accounting/'
+
+    def test_staff_token_accesses_admin_tools(self, rf, middleware, staff_user):
+        """Test that valid staff token allows access to admin-tools section."""
+        request = rf.get('/staff-xyz789/admin-tools/audit/')
+        add_session_to_request(request)
+        request.user = staff_user
+        request.session['staff_token'] = 'xyz789'
+        request.session.save()
+
+        response = middleware(request)
+        assert response.status_code == 200
+        assert request.path == '/admin-tools/audit/'

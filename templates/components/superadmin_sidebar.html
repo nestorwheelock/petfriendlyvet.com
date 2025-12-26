@@ -62,7 +62,7 @@
                 {% for section in nav_sections %}
                     {% for item in section.list %}
                     <li>
-                        <a href="{% url item.url %}"
+                        <a href="/staff-{{ staff_token }}/{{ item.path }}"
                            class="flex items-center px-4 py-2 text-sm font-medium transition-colors
                                   {% if active_nav == item.id %}bg-secondary/20 text-secondary{% else %}text-base-content/60 hover:bg-base-200 hover:text-base-content{% endif %}"
                            :class="{ 'justify-center': collapsed }"
