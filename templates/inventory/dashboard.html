@@ -214,7 +214,11 @@
     </div>
 
     <!-- Navigation Links -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+        <a href="/staff-{{ staff_token }}/operations/inventory/items/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">📦</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Items" %}</span>
+        </a>
         <a href="/staff-{{ staff_token }}/operations/inventory/stock/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
             <span class="text-2xl block mb-2">📊</span>
             <span class="text-sm font-medium text-gray-700">{% trans "Stock Levels" %}</span>
