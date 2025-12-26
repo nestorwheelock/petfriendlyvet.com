@@ -173,6 +173,14 @@ class Product(models.Model):
         on_delete=models.PROTECT,
         related_name='products'
     )
+    product_type = models.ForeignKey(
+        ProductType,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='products',
+        help_text='Product type (physical, service, bundle, etc.)'
+    )
     description = models.TextField(blank=True)
     description_es = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
