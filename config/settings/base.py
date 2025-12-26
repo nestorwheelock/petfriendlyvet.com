@@ -154,7 +154,8 @@ LOGOUT_REDIRECT_URL = 'core:home'
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'apps.accounts.backends.EmailBackend',  # Authenticate with email
+    'django.contrib.auth.backends.ModelBackend',  # Fallback to username
 ]
 
 
