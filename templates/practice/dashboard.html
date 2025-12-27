@@ -162,19 +162,39 @@
                 </h3>
                 <ul class="text-sm space-y-1">
                     <li><a href="/staff-{{ staff_token }}/operations/practice/staff/" class="text-blue-600 hover:underline">Staff List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/staff/add/" class="text-green-600 hover:underline">+ Add Staff</a></li>
                     <li class="text-gray-400 text-xs">staff/&lt;pk&gt;/ - Staff Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">staff/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">staff/&lt;pk&gt;/deactivate/ - Deactivate (needs ID)</li>
                 </ul>
             </div>
 
-            <!-- Schedule & Time -->
+            <!-- Schedule & Shifts -->
             <div class="bg-white rounded-lg p-4 shadow-sm">
                 <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                    <span>📅</span> Schedule & Time
+                    <span>📅</span> Schedule & Shifts
                 </h3>
                 <ul class="text-sm space-y-1">
                     <li><a href="/staff-{{ staff_token }}/operations/practice/schedule/" class="text-blue-600 hover:underline">Schedule</a></li>
                     <li><a href="/staff-{{ staff_token }}/operations/practice/shifts/" class="text-blue-600 hover:underline">Shift List</a></li>
-                    <li><a href="/staff-{{ staff_token }}/operations/practice/time/" class="text-blue-600 hover:underline">Time Tracking</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/shifts/add/" class="text-green-600 hover:underline">+ Add Shift</a></li>
+                    <li class="text-gray-400 text-xs">shifts/&lt;pk&gt;/ - Shift Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">shifts/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">shifts/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Time Tracking -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>⏰</span> Time Tracking
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/time/" class="text-blue-600 hover:underline">Time Entries</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/time/clock-in/" class="text-green-600 hover:underline">Clock In</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/time/clock-out/" class="text-orange-600 hover:underline">Clock Out</a></li>
+                    <li class="text-gray-400 text-xs">time/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">time/&lt;pk&gt;/approve/ - Approve (needs ID)</li>
                 </ul>
             </div>
 
@@ -185,7 +205,10 @@
                 </h3>
                 <ul class="text-sm space-y-1">
                     <li><a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="text-blue-600 hover:underline">Task List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/tasks/add/" class="text-green-600 hover:underline">+ Add Task</a></li>
                     <li class="text-gray-400 text-xs">tasks/&lt;pk&gt;/ - Task Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">tasks/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">tasks/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
                 </ul>
             </div>
 
