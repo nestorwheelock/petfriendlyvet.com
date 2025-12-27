@@ -624,3 +624,21 @@ class TimeEntryCRUDTests(TestCase):
         self.assertEqual(response.status_code, 302)
         entry.refresh_from_db()
         self.assertTrue(entry.is_approved)
+
+    def test_clock_in_without_staff_profile_shows_error(self):
+        """User without StaffProfile gets error message."""
+        # Create a staff user WITHOUT a StaffProfile
+        user_no_profile = User.objects.create_user(
+            username='noprofile',
+            email='noprofile@test.com',
+            password='testpass123',
+            is_staff=True,
+            role='staff'
+        )
+        self.client.logout()
+        self.client.login(username='noprofile', password='testpass123')
+
+        response = self.client.post(f'{self.base_url}/clock-in/', follow=True)
+        self.assertEqual(response.status_code, 200)
+        # Should show error message
+        self.assertContains(response, 'do not have a staff profile')
