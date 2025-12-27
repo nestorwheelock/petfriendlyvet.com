@@ -32,7 +32,7 @@
     {% if encounter.patient.pet.owner %}
     <div class="text-xs text-gray-500 mb-2">
         <span class="text-gray-400">{% trans "Owner" %}:</span>
-        <a href="/staff-{{ staff_token }}/customers/crm/customers/{{ encounter.patient.pet.owner.id }}/"
+        <a href="/staff-{{ staff_token }}/customers/crm/customers/by-user/{{ encounter.patient.pet.owner.id }}/"
            target="_blank"
            class="text-gray-600 hover:text-primary-600 inline-flex items-center gap-1">
             {{ encounter.patient.pet.owner.get_full_name|default:encounter.patient.pet.owner.email }}

@@ -1,11 +1,15 @@
 """Views for CRM functionality."""
 from datetime import timedelta
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import TemplateView, ListView, DetailView
 
+from apps.accounts.decorators import require_permission
 from apps.accounts.mixins import ModulePermissionMixin
+from apps.accounts.models import User
 from .models import OwnerProfile, CustomerTag, Interaction
 
 
@@ -90,3 +94,23 @@ class CustomerDetailView(CRMPermissionMixin, DetailView):
         context['pets'] = customer.user.pets.all()
 
         return context
+
+
+@login_required
+@require_permission('crm', 'view')
+def customer_by_user(request, user_id):
+    """Redirect to customer detail by user ID.
+
+    This is used from encounter cards where we have user.id (pet owner)
+    but need to display the OwnerProfile CRM page.
+    """
+    user = get_object_or_404(User, pk=user_id)
+
+    # Get or create OwnerProfile for this user
+    profile, created = OwnerProfile.objects.get_or_create(user=user)
+
+    # Get staff token for redirect
+    staff_token = request.session.get('staff_token', '')
+
+    # Redirect to the profile detail page
+    return redirect(f'/staff-{staff_token}/customers/crm/customers/{profile.pk}/')
