@@ -496,6 +496,36 @@ def task_detail(request, pk):
     context = {
         'task': task,
     }
+
+    # Add time tracking context if user has an Employee record
+    try:
+        from apps.hr.models import TimeEntry as HRTimeEntry
+        employee = request.user.employee
+
+        # Check for open time entry (for this task or any)
+        open_entry = HRTimeEntry.objects.filter(
+            employee=employee,
+            clock_out__isnull=True
+        ).first()
+        context['open_entry'] = open_entry
+        context['is_clocked_in_for_task'] = open_entry and open_entry.task_id == task.pk
+
+        # Get time entries for this task
+        task_entries = HRTimeEntry.objects.filter(
+            task=task
+        ).select_related('employee__user').order_by('-date', '-clock_in')[:10]
+        context['task_time_entries'] = task_entries
+
+        # Calculate total hours for this task
+        from decimal import Decimal
+        total_hours = sum(
+            e.hours_worked for e in task.time_entries.filter(clock_out__isnull=False)
+        )
+        context['task_total_hours'] = total_hours
+        context['has_employee'] = True
+    except Exception:
+        context['has_employee'] = False
+
     return render(request, 'practice/task_detail.html', context)
 
 

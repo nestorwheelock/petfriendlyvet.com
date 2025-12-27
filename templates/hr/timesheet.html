@@ -68,10 +68,41 @@
     </div>
     {% endif %}
 
+    <!-- Task Filter -->
+    {% if tasks_with_entries %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <form method="get" class="flex items-center gap-4">
+            <label for="task-filter" class="text-sm font-medium text-gray-700">{% trans "Filter by Task:" %}</label>
+            <select id="task-filter" name="task" class="select select-bordered select-sm" onchange="this.form.submit()">
+                <option value="">{% trans "All Tasks" %}</option>
+                {% for task in tasks_with_entries %}
+                <option value="{{ task.pk }}" {% if selected_task.pk == task.pk %}selected{% endif %}>
+                    {{ task.title|truncatechars:40 }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if selected_task %}
+            <a href="?" class="text-sm text-primary-600 hover:underline">{% trans "Clear filter" %}</a>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+
     <!-- Time Entries Table -->
     <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Time Entries" %}</h2>
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+                {% if selected_task %}
+                {% blocktrans with task=selected_task.title|truncatechars:30 %}Time Entries for "{{ task }}"{% endblocktrans %}
+                {% else %}
+                {% trans "Recent Time Entries" %}
+                {% endif %}
+            </h2>
+            {% if selected_task %}
+            <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ selected_task.pk }}/" class="text-sm text-primary-600 hover:underline">
+                {% trans "View Task" %} →
+            </a>
+            {% endif %}
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">

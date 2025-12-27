@@ -275,23 +275,46 @@ def _get_timesheet_url(request):
 
 @login_required
 def timesheet_view(request):
-    """View employee timesheet."""
+    """View employee timesheet with optional task filter."""
     try:
         employee = request.user.employee
     except Employee.DoesNotExist:
         messages.error(request, _('No employee record found for your account.'))
         return redirect('core:dashboard')
 
-    entries = TimeEntry.objects.filter(employee=employee).order_by('-date', '-clock_in')[:30]
+    # Base queryset
+    entries = TimeEntry.objects.filter(employee=employee)
+
+    # Apply task filter if specified
+    task_id = request.GET.get('task')
+    selected_task = None
+    if task_id:
+        try:
+            from apps.practice.models import Task
+            selected_task = Task.objects.get(pk=task_id)
+            entries = entries.filter(task=selected_task)
+        except (ValueError, Task.DoesNotExist):
+            pass
+
+    entries = entries.order_by('-date', '-clock_in')[:30]
+
     open_entry = TimeEntry.objects.filter(
         employee=employee,
         clock_out__isnull=True
     ).first()
 
+    # Get list of tasks that have time entries for this employee
+    from apps.practice.models import Task
+    tasks_with_entries = Task.objects.filter(
+        time_entries__employee=employee
+    ).distinct().order_by('title')
+
     return render(request, 'hr/timesheet.html', {
         'employee': employee,
         'entries': entries,
         'open_entry': open_entry,
+        'tasks_with_entries': tasks_with_entries,
+        'selected_task': selected_task,
     })
 
 
