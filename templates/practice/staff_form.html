@@ -1,0 +1,175 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+        <p class="text-gray-600 mt-1">
+            {% if editing %}{% trans "Update staff member details" %}{% else %}{% trans "Create a new staff member account" %}{% endif %}
+        </p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        {% for error in form.non_field_errors %}
+        <p class="text-red-800">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6 space-y-6">
+        {% csrf_token %}
+
+        {% if not editing %}
+        <div class="border-b pb-4">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Account Information" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Email" %} *
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_first_name" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "First Name" %} *
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Last Name" %} *
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Password" %} *
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.password1.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Confirm Password" %} *
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="border-b pb-4">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Staff Profile" %}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_role" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Role" %} *
+                    </label>
+                    {{ form.role }}
+                    {% if form.role.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.role.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_title" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Title" %}
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Phone" %}
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_emergency_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Emergency Phone" %}
+                    </label>
+                    {{ form.emergency_phone }}
+                    {% if form.emergency_phone.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.emergency_phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_hire_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Hire Date" %}
+                    </label>
+                    {{ form.hire_date }}
+                    {% if form.hire_date.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.hire_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "DEA Credentials" %}</h2>
+            <p class="text-gray-600 text-sm mb-4">{% trans "Required for veterinarians who prescribe controlled substances" %}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_dea_number" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "DEA Number" %}
+                    </label>
+                    {{ form.dea_number }}
+                    {% if form.dea_number.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.dea_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_dea_expiration" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "DEA Expiration" %}
+                    </label>
+                    {{ form.dea_expiration }}
+                    {% if form.dea_expiration.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.dea_expiration.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="/staff-{{ staff_token }}/operations/practice/staff/" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Staff Member" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

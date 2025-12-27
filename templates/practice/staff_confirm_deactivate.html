@@ -1,0 +1,53 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Deactivate Staff Member" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Deactivate Staff Member" %}</h1>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <p class="text-amber-800">
+                {% blocktrans with name=staff.user.get_full_name %}
+                Are you sure you want to deactivate "{{ name }}"? They will no longer be able to access the system.
+                {% endblocktrans %}
+            </p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-medium text-gray-900 mb-2">{% trans "Staff Details" %}</h3>
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-500">{% trans "Name" %}:</dt>
+                <dd class="text-gray-900">{{ staff.user.get_full_name }}</dd>
+                <dt class="text-gray-500">{% trans "Email" %}:</dt>
+                <dd class="text-gray-900">{{ staff.user.email }}</dd>
+                <dt class="text-gray-500">{% trans "Role" %}:</dt>
+                <dd class="text-gray-900">{{ staff.get_role_display }}</dd>
+                {% if staff.title %}
+                <dt class="text-gray-500">{% trans "Title" %}:</dt>
+                <dd class="text-gray-900">{{ staff.title }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p class="text-blue-800 text-sm">
+                <strong>{% trans "Note" %}:</strong>
+                {% trans "This is a soft delete. The staff member's data will be preserved and they can be reactivated later if needed." %}
+            </p>
+        </div>
+
+        <form method="post" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <a href="/staff-{{ staff_token }}/operations/practice/staff/" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-warning">
+                {% trans "Deactivate Staff Member" %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

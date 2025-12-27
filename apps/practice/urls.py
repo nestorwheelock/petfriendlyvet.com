@@ -11,7 +11,10 @@ urlpatterns = [
 
     # Staff
     path('staff/', views.staff_list, name='staff_list'),
+    path('staff/add/', views.staff_create, name='staff_create'),
     path('staff/<int:pk>/', views.staff_detail, name='staff_detail'),
+    path('staff/<int:pk>/edit/', views.staff_edit, name='staff_edit'),
+    path('staff/<int:pk>/deactivate/', views.staff_deactivate, name='staff_deactivate'),
 
     # Schedule
     path('schedule/', views.schedule, name='schedule'),

@@ -10,6 +10,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from apps.billing.models import SATProductCode, SATUnitCode
 from apps.core.utils import staff_redirect
 from apps.inventory.models import InventoryItem
+from .forms import StaffCreateForm, StaffEditForm
 from .models import (
     StaffProfile, Shift, TimeEntry, Task, ClinicSettings,
     ProcedureCategory, VetProcedure, ProcedureConsumable
@@ -100,6 +101,76 @@ def staff_detail(request, pk):
         'assigned_tasks': assigned_tasks,
     }
     return render(request, 'practice/staff_detail.html', context)
+
+
+@staff_member_required
+def staff_create(request):
+    """Create a new staff member (User + StaffProfile)."""
+    if request.method == 'POST':
+        form = StaffCreateForm(request.POST)
+        if form.is_valid():
+            profile = form.save()
+            messages.success(
+                request,
+                f'Staff member "{profile.user.get_full_name()}" created successfully.'
+            )
+            return staff_redirect(request, 'practice:staff_list')
+    else:
+        form = StaffCreateForm()
+
+    context = {
+        'form': form,
+        'title': 'Add Staff Member',
+    }
+    return render(request, 'practice/staff_form.html', context)
+
+
+@staff_member_required
+def staff_edit(request, pk):
+    """Edit an existing staff member's profile."""
+    staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
+
+    if request.method == 'POST':
+        form = StaffEditForm(request.POST, instance=staff)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                f'Staff member "{staff.user.get_full_name()}" updated successfully.'
+            )
+            return staff_redirect(request, 'practice:staff_list')
+    else:
+        form = StaffEditForm(instance=staff)
+
+    context = {
+        'form': form,
+        'staff': staff,
+        'title': f'Edit {staff.user.get_full_name()}',
+        'editing': True,
+    }
+    return render(request, 'practice/staff_form.html', context)
+
+
+@staff_member_required
+def staff_deactivate(request, pk):
+    """Deactivate a staff member (soft delete)."""
+    staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
+
+    if request.method == 'POST':
+        staff.is_active = False
+        staff.user.is_active = False
+        staff.save()
+        staff.user.save()
+        messages.success(
+            request,
+            f'Staff member "{staff.user.get_full_name()}" has been deactivated.'
+        )
+        return staff_redirect(request, 'practice:staff_list')
+
+    context = {
+        'staff': staff,
+    }
+    return render(request, 'practice/staff_confirm_deactivate.html', context)
 
 
 @staff_member_required
