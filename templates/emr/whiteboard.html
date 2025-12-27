@@ -92,11 +92,13 @@
                      data-state="{{ state_code }}">
                     {% for encounter in encounters %}
                     {% include "emr/partials/encounter_card.html" with encounter=encounter %}
-                    {% empty %}
-                    <div class="empty-placeholder text-center py-8 text-gray-400 text-sm">
+                    {% endfor %}
+                    {# Placeholder always in DOM, hidden via JS when cards exist #}
+                    <div class="empty-placeholder text-center py-8 text-gray-400 text-sm"
+                         {% if encounters %}style="display: none;"{% endif %}>
+                        {% include "components/icons/feather.html" with icon="inbox" class="w-6 h-6 mx-auto mb-2 opacity-50" %}
                         {% trans "Drop here" %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
             {% endwith %}
@@ -266,8 +268,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Move to correct column if not already there
             if (correctColumn && currentColumn && correctColumn !== currentColumn) {
                 correctColumn.appendChild(card);
-                updateColumnCounts();
             }
+
+            // Always update counts to show/hide placeholders correctly
+            updateColumnCounts();
         }
     });
 });
