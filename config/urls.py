@@ -44,8 +44,13 @@ urlpatterns += i18n_patterns(
     # Middleware rewrites to /section/module/
     # =========================================================
 
+    # Core Section (People, Organizations, Relationships, Pets)
+    path('core/parties/', include('apps.parties.urls')),
+    path('core/pets/', include('apps.pets.urls')),
+
     # Operations Section
     path('operations/practice/', include('apps.practice.urls')),
+    path('operations/clinical/', include('apps.emr.urls')),
     path('operations/hr/', include('apps.hr.urls')),
     path('operations/inventory/', include('apps.inventory.urls')),
     path('operations/referrals/', include('apps.referrals.urls')),

@@ -9,12 +9,16 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.middleware.dynamic_urls import get_admin_token, get_staff_token
 
 
-# Staff navigation modules - all 11 staff backend sections
+# Staff navigation modules - all 12 staff backend sections
 # URLs are relative paths that get prefixed with /staff-{token}/ in templates
 STAFF_NAV = [
+    # Core Section (core/) - People, Organizations, Relationships, Pets
+    {'id': 'parties', 'icon': 'users', 'label': _('Parties'), 'url': 'parties:dashboard', 'path': 'core/parties/', 'section': 'Core'},
+    {'id': 'pets', 'icon': 'heart', 'label': _('Pets'), 'url': 'pets:pet_list', 'path': 'core/pets/', 'section': 'Core'},
     # Operations Section (operations/)
-    {'id': 'practice', 'icon': 'users', 'label': _('Practice'), 'url': 'practice:dashboard', 'path': 'operations/practice/', 'section': 'Operations'},
-    {'id': 'hr', 'icon': 'briefcase', 'label': _('HR'), 'url': 'hr:employee_list', 'path': 'operations/hr/', 'section': 'Operations'},
+    {'id': 'practice', 'icon': 'stethoscope', 'label': _('Practice'), 'url': 'practice:dashboard', 'path': 'operations/practice/', 'section': 'Operations'},
+    {'id': 'clinical', 'icon': 'activity', 'label': _('Clinical'), 'url': 'emr:whiteboard', 'path': 'operations/clinical/', 'section': 'Operations'},
+    {'id': 'hr', 'icon': 'briefcase', 'label': _('HR'), 'url': 'hr:dashboard', 'path': 'operations/hr/', 'section': 'Operations'},
     {'id': 'inventory', 'icon': 'package', 'label': _('Inventory'), 'url': 'inventory:dashboard', 'path': 'operations/inventory/', 'section': 'Operations'},
     {'id': 'referrals', 'icon': 'share-2', 'label': _('Referrals'), 'url': 'referrals:dashboard', 'path': 'operations/referrals/', 'section': 'Operations'},
     {'id': 'delivery', 'icon': 'truck', 'label': _('Delivery'), 'url': 'delivery:delivery_admin:dashboard', 'path': 'operations/delivery/', 'section': 'Operations'},

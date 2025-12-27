@@ -1,0 +1,115 @@
+{% extends "base_staff.html" %}
+{% load static i18n emr_tags %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-500">{% trans "Clinical" %}</span>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Whiteboard" %}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block header_actions %}
+<!-- Location Selector -->
+<div class="flex items-center gap-2">
+    <label for="location-select" class="text-sm font-medium text-gray-600">{% trans "Location" %}:</label>
+    <form method="post" action="{% url 'emr:select_location' %}" class="inline">
+        {% csrf_token %}
+        <select name="location_id" id="location-select"
+                onchange="this.form.submit()"
+                class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
+            <option value="">{% trans "Select location..." %}</option>
+            {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if location and location.id == loc.id %}selected{% endif %}>
+                {{ loc.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+{% endblock %}
+
+{% block staff_content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900">{% trans "Encounter Whiteboard" %}</h1>
+        {% if location %}
+        <span class="badge badge-lg bg-primary-100 text-primary-800">
+            {% include "components/icons/feather.html" with icon="map-pin" class="w-4 h-4 inline mr-1" %}
+            {{ location.name }}
+        </span>
+        {% endif %}
+    </div>
+
+    {% if needs_location %}
+    <!-- Location Selection Required -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <div class="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+            {% include "components/icons/feather.html" with icon="map-pin" class="w-6 h-6 text-yellow-600" %}
+        </div>
+        <h2 class="text-lg font-semibold text-yellow-800 mb-2">{% trans "Select a Location" %}</h2>
+        <p class="text-yellow-700 mb-4">{% trans "Please select a clinic location to view the encounter whiteboard." %}</p>
+
+        <form method="post" action="{% url 'emr:select_location' %}" class="max-w-xs mx-auto">
+            {% csrf_token %}
+            <select name="location_id" class="w-full border-gray-300 rounded-md shadow-sm mb-3">
+                <option value="">{% trans "Choose location..." %}</option>
+                {% for loc in locations %}
+                <option value="{{ loc.id }}">{{ loc.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary w-full">
+                {% trans "Select Location" %}
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <!-- Whiteboard Kanban -->
+    <div class="overflow-x-auto">
+        <div class="flex gap-4 min-w-max pb-4">
+            {% for state_code, state_label in pipeline_states %}
+            {% with encounters=encounters_by_state|default_if_none:"{}"|get_item:state_code %}
+            <div class="w-72 flex-shrink-0">
+                <!-- Column Header -->
+                <div class="bg-gray-100 rounded-t-lg px-4 py-3 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-700">{{ state_label }}</h3>
+                        <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">
+                            {{ encounters|length|default:"0" }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Column Cards -->
+                <div class="bg-gray-50 rounded-b-lg min-h-96 p-2 space-y-2"
+                     id="column-{{ state_code }}"
+                     hx-trigger="htmx:afterSwap"
+                     hx-swap="innerHTML">
+                    {% for encounter in encounters %}
+                    {% include "emr/partials/encounter_card.html" with encounter=encounter %}
+                    {% empty %}
+                    <div class="text-center py-8 text-gray-400 text-sm">
+                        {% trans "No encounters" %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
