@@ -1,8 +1,8 @@
 """HR views for CRUD operations and time tracking."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
@@ -10,13 +10,73 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     ListView,
+    TemplateView,
     UpdateView,
 )
 
 from apps.accounts.mixins import ModulePermissionMixin
+from apps.core.middleware.dynamic_urls import get_staff_token
 
 from .forms import DepartmentForm, EmployeeForm, PositionForm, TimeEntryForm, ShiftForm
 from .models import Department, Employee, Position, TimeEntry, Shift
+
+
+class StaffTokenSuccessUrlMixin:
+    """Mixin to build success URLs with staff token."""
+
+    success_path = None  # Override in subclass, e.g., 'departments/'
+
+    def get_success_url(self):
+        token = get_staff_token(self.request)
+        return f'/staff-{token}/operations/hr/{self.success_path}'
+
+
+class HRDashboardView(ModulePermissionMixin, TemplateView):
+    """HR Dashboard with KPIs and quick links."""
+
+    template_name = 'hr/dashboard.html'
+    required_module = 'hr'
+    required_action = 'view'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = timezone.now().date()
+
+        # KPIs
+        context['total_employees'] = Employee.objects.filter(status='active').count()
+        context['total_departments'] = Department.objects.filter(is_active=True).count()
+        context['total_positions'] = Position.objects.filter(is_active=True).count()
+
+        # Today's shifts
+        context['shifts_today'] = Shift.objects.filter(date=today).count()
+
+        # Pending time entries (not approved)
+        context['pending_approvals'] = TimeEntry.objects.filter(is_approved=False).count()
+
+        # Employees by status
+        context['employees_by_status'] = Employee.objects.values('status').annotate(
+            count=Count('id')
+        ).order_by('-count')
+
+        # Employees by department
+        context['employees_by_dept'] = Department.objects.filter(
+            is_active=True
+        ).annotate(
+            employee_count=Count('employees')
+        ).order_by('-employee_count')[:5]
+
+        # Recent hires (last 30 days)
+        thirty_days_ago = today - timezone.timedelta(days=30)
+        context['recent_hires'] = Employee.objects.filter(
+            hire_date__gte=thirty_days_ago
+        ).select_related('user', 'department', 'position').order_by('-hire_date')[:5]
+
+        # Today's schedule
+        context['todays_shifts'] = Shift.objects.filter(
+            date=today
+        ).select_related('employee__user', 'department').order_by('start_time')[:10]
+
+        return context
 
 
 class DepartmentListView(ModulePermissionMixin, ListView):
@@ -32,13 +92,13 @@ class DepartmentListView(ModulePermissionMixin, ListView):
         return Department.objects.select_related('parent', 'manager__user')
 
 
-class DepartmentCreateView(ModulePermissionMixin, CreateView):
+class DepartmentCreateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, CreateView):
     """Create a new department."""
 
     model = Department
     form_class = DepartmentForm
     template_name = 'hr/department_form.html'
-    success_url = reverse_lazy('hr:department_list')
+    success_path = 'departments/'
     required_module = 'hr'
     required_action = 'create'
 
@@ -47,13 +107,13 @@ class DepartmentCreateView(ModulePermissionMixin, CreateView):
         return super().form_valid(form)
 
 
-class DepartmentUpdateView(ModulePermissionMixin, UpdateView):
+class DepartmentUpdateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, UpdateView):
     """Update an existing department."""
 
     model = Department
     form_class = DepartmentForm
     template_name = 'hr/department_form.html'
-    success_url = reverse_lazy('hr:department_list')
+    success_path = 'departments/'
     required_module = 'hr'
     required_action = 'edit'
 
@@ -62,12 +122,12 @@ class DepartmentUpdateView(ModulePermissionMixin, UpdateView):
         return super().form_valid(form)
 
 
-class DepartmentDeleteView(ModulePermissionMixin, DeleteView):
+class DepartmentDeleteView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, DeleteView):
     """Delete a department."""
 
     model = Department
     template_name = 'hr/department_confirm_delete.html'
-    success_url = reverse_lazy('hr:department_list')
+    success_path = 'departments/'
     required_module = 'hr'
     required_action = 'delete'
 
@@ -89,13 +149,13 @@ class PositionListView(ModulePermissionMixin, ListView):
         return Position.objects.select_related('department')
 
 
-class PositionCreateView(ModulePermissionMixin, CreateView):
+class PositionCreateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, CreateView):
     """Create a new position."""
 
     model = Position
     form_class = PositionForm
     template_name = 'hr/position_form.html'
-    success_url = reverse_lazy('hr:position_list')
+    success_path = 'positions/'
     required_module = 'hr'
     required_action = 'create'
 
@@ -104,13 +164,13 @@ class PositionCreateView(ModulePermissionMixin, CreateView):
         return super().form_valid(form)
 
 
-class PositionUpdateView(ModulePermissionMixin, UpdateView):
+class PositionUpdateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, UpdateView):
     """Update an existing position."""
 
     model = Position
     form_class = PositionForm
     template_name = 'hr/position_form.html'
-    success_url = reverse_lazy('hr:position_list')
+    success_path = 'positions/'
     required_module = 'hr'
     required_action = 'edit'
 
@@ -119,12 +179,12 @@ class PositionUpdateView(ModulePermissionMixin, UpdateView):
         return super().form_valid(form)
 
 
-class PositionDeleteView(ModulePermissionMixin, DeleteView):
+class PositionDeleteView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, DeleteView):
     """Delete a position."""
 
     model = Position
     template_name = 'hr/position_confirm_delete.html'
-    success_url = reverse_lazy('hr:position_list')
+    success_path = 'positions/'
     required_module = 'hr'
     required_action = 'delete'
 
@@ -163,13 +223,13 @@ class EmployeeDetailView(ModulePermissionMixin, DetailView):
         )
 
 
-class EmployeeCreateView(ModulePermissionMixin, CreateView):
+class EmployeeCreateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, CreateView):
     """Create a new employee."""
 
     model = Employee
     form_class = EmployeeForm
     template_name = 'hr/employee_form.html'
-    success_url = reverse_lazy('hr:employee_list')
+    success_path = 'employees/'
     required_module = 'hr'
     required_action = 'create'
 
@@ -178,13 +238,13 @@ class EmployeeCreateView(ModulePermissionMixin, CreateView):
         return super().form_valid(form)
 
 
-class EmployeeUpdateView(ModulePermissionMixin, UpdateView):
+class EmployeeUpdateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, UpdateView):
     """Update an existing employee."""
 
     model = Employee
     form_class = EmployeeForm
     template_name = 'hr/employee_form.html'
-    success_url = reverse_lazy('hr:employee_list')
+    success_path = 'employees/'
     required_module = 'hr'
     required_action = 'edit'
 
@@ -193,18 +253,24 @@ class EmployeeUpdateView(ModulePermissionMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EmployeeDeleteView(ModulePermissionMixin, DeleteView):
+class EmployeeDeleteView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, DeleteView):
     """Delete an employee."""
 
     model = Employee
     template_name = 'hr/employee_confirm_delete.html'
-    success_url = reverse_lazy('hr:employee_list')
+    success_path = 'employees/'
     required_module = 'hr'
     required_action = 'delete'
 
     def form_valid(self, form):
         messages.success(self.request, _('Employee deleted successfully.'))
         return super().form_valid(form)
+
+
+def _get_timesheet_url(request):
+    """Build timesheet URL with staff token."""
+    token = get_staff_token(request)
+    return f'/staff-{token}/operations/hr/time/'
 
 
 @login_required
@@ -231,9 +297,11 @@ def timesheet_view(request):
 
 @login_required
 def clock_in_view(request):
-    """Clock in for the current employee."""
+    """Clock in for the current employee, optionally for a specific task."""
+    timesheet_url = _get_timesheet_url(request)
+
     if request.method != 'POST':
-        return redirect('hr:timesheet')
+        return redirect(timesheet_url)
 
     try:
         employee = request.user.employee
@@ -248,23 +316,39 @@ def clock_in_view(request):
 
     if open_entry:
         messages.warning(request, _('You are already clocked in.'))
-        return redirect('hr:timesheet')
+        return redirect(timesheet_url)
+
+    # Check for optional task_id
+    task = None
+    task_id = request.POST.get('task_id')
+    if task_id:
+        from apps.practice.models import Task
+        try:
+            task = Task.objects.get(pk=task_id)
+        except Task.DoesNotExist:
+            pass
 
     now = timezone.now()
     TimeEntry.objects.create(
         employee=employee,
         date=now.date(),
         clock_in=now,
+        task=task,
     )
-    messages.success(request, _('Clocked in successfully.'))
-    return redirect('hr:timesheet')
+    if task:
+        messages.success(request, _('Clocked in for task: %(task)s') % {'task': task.title})
+    else:
+        messages.success(request, _('Clocked in successfully.'))
+    return redirect(timesheet_url)
 
 
 @login_required
 def clock_out_view(request):
     """Clock out for the current employee."""
+    timesheet_url = _get_timesheet_url(request)
+
     if request.method != 'POST':
-        return redirect('hr:timesheet')
+        return redirect(timesheet_url)
 
     try:
         employee = request.user.employee
@@ -279,12 +363,12 @@ def clock_out_view(request):
 
     if not open_entry:
         messages.warning(request, _('You are not currently clocked in.'))
-        return redirect('hr:timesheet')
+        return redirect(timesheet_url)
 
     open_entry.clock_out = timezone.now()
     open_entry.save()
     messages.success(request, _('Clocked out successfully.'))
-    return redirect('hr:timesheet')
+    return redirect(timesheet_url)
 
 
 class ShiftListView(ModulePermissionMixin, ListView):
@@ -302,13 +386,13 @@ class ShiftListView(ModulePermissionMixin, ListView):
         ).order_by('date', 'start_time')
 
 
-class ShiftCreateView(ModulePermissionMixin, CreateView):
+class ShiftCreateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, CreateView):
     """Create a new shift."""
 
     model = Shift
     form_class = ShiftForm
     template_name = 'hr/shift_form.html'
-    success_url = reverse_lazy('hr:shift_list')
+    success_path = 'schedule/'
     required_module = 'hr'
     required_action = 'create'
 
@@ -317,13 +401,13 @@ class ShiftCreateView(ModulePermissionMixin, CreateView):
         return super().form_valid(form)
 
 
-class ShiftUpdateView(ModulePermissionMixin, UpdateView):
+class ShiftUpdateView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, UpdateView):
     """Update an existing shift."""
 
     model = Shift
     form_class = ShiftForm
     template_name = 'hr/shift_form.html'
-    success_url = reverse_lazy('hr:shift_list')
+    success_path = 'schedule/'
     required_module = 'hr'
     required_action = 'edit'
 
@@ -332,12 +416,12 @@ class ShiftUpdateView(ModulePermissionMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ShiftDeleteView(ModulePermissionMixin, DeleteView):
+class ShiftDeleteView(StaffTokenSuccessUrlMixin, ModulePermissionMixin, DeleteView):
     """Delete a shift."""
 
     model = Shift
     template_name = 'hr/shift_confirm_delete.html'
-    success_url = reverse_lazy('hr:shift_list')
+    success_path = 'schedule/'
     required_module = 'hr'
     required_action = 'delete'
 

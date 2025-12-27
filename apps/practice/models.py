@@ -35,6 +35,14 @@ class StaffProfile(models.Model):
         on_delete=models.CASCADE,
         related_name='staff_profile'
     )
+    employee = models.ForeignKey(
+        'hr.Employee',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='staff_profiles',
+        help_text='Link to HR Employee record for unified tracking'
+    )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     title = models.CharField(max_length=100, blank=True)
 

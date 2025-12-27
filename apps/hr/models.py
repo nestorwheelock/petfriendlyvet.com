@@ -224,6 +224,15 @@ class TimeEntry(models.Model):
         related_name='time_entries',
         verbose_name=_('employee'),
     )
+    task = models.ForeignKey(
+        'practice.Task',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='time_entries',
+        verbose_name=_('task'),
+        help_text=_('Optional task this time entry is associated with'),
+    )
     date = models.DateField(_('date'))
     clock_in = models.DateTimeField(_('clock in'))
     clock_out = models.DateTimeField(_('clock out'), null=True, blank=True)
