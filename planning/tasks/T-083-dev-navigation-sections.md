@@ -1,5 +1,7 @@
 # T-083: Add Dev Navigation Sections to All Module Dashboards
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 ## AI Coding Brief
 **Role**: Frontend Developer
 **Objective**: Add temporary dev navigation sections to all module dashboards showing all available URLs

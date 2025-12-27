@@ -1,5 +1,7 @@
 # T-085: Staff Profile CRUD Operations
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 > **STOP! READ THIS FIRST:**
 > Before writing ANY code, complete the [TDD STOP GATE](../TDD_STOP_GATE.md)
 >

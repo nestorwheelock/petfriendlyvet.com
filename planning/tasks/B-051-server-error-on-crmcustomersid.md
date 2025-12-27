@@ -1,5 +1,7 @@
 # B-051: Server Error on /crm/customers/{id}/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: High
 **Status**: Open
 **Error Type**: server_error

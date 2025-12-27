@@ -1,5 +1,7 @@
 # B-001: Forbidden on /staff/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Medium
 **Status**: Open
 **Error Type**: forbidden

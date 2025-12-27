@@ -1,5 +1,7 @@
 # T-095: Integration Tests & Documentation
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story**: S-010 Role-Based Access Control System
 **Priority**: LOW
 **Estimate**: 2 hours

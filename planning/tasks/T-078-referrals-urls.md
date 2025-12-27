@@ -1,5 +1,7 @@
 # T-078: Referrals App URLs
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: Task
 **Priority**: Medium (Specialist Workflow)
 **Estimate**: 5 hours

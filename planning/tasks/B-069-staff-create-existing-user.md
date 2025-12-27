@@ -1,5 +1,7 @@
 # B-069: Cannot Create Staff Profile for Existing User
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: High
 **Affected Component**: apps/practice/forms.py (StaffCreateForm)
 **Discovered**: 2025-12-26

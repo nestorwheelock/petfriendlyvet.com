@@ -1,5 +1,7 @@
 # T-074: Emergency App Customer-Facing URLs
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: Task
 **Priority**: Critical (Safety-related)
 **Estimate**: 4 hours

@@ -1,5 +1,7 @@
 # B-013: Not Found on /delivery
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Low
 **Status**: Open
 **Error Type**: not_found

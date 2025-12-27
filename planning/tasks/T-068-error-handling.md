@@ -1,5 +1,7 @@
 # T-068: Fix Error Message Leakage
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 > **Parent Story:** [S-027 Security Hardening](../stories/S-027-security-hardening.md)
 
 **Task Type:** Security Fix

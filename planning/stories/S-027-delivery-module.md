@@ -1,5 +1,7 @@
 # S-027: Delivery Module Core Infrastructure
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: Epic / Feature
 **Priority**: High
 **Estimate**: 5 days

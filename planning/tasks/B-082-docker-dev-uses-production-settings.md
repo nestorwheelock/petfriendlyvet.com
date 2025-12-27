@@ -1,5 +1,7 @@
 # B-082: Docker Dev Environment Uses Production Settings
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Medium
 **Affected Component**: Docker/WhiteNoise/Static Files
 **Discovered**: 2025-12-26

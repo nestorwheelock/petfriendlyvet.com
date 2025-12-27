@@ -1,5 +1,7 @@
 # B-068: Clock In/Out Not Saving Time Entries
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: High
 **Affected Component**: apps/practice/views.py (clock_in, clock_out)
 **Discovered**: 2025-12-26

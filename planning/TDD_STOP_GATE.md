@@ -1,5 +1,7 @@
 # TDD STOP GATE (MANDATORY)
 
+> **REQUIRED READING:** [SYSTEM_CHARTER.md](../SYSTEM_CHARTER.md) - Non-negotiable architectural rules
+
 ## THE 26-STEP DEVELOPMENT CYCLE
 
 This project follows a **26-step iterative development cycle**. The TDD Stop Gate ensures steps 7-10 (Test-Driven Development) are never skipped.
@@ -12,6 +14,7 @@ This project follows a **26-step iterative development cycle**. The TDD Stop Gat
 ```
 === TDD STOP GATE ===
 Task: [task ID and name]
+[x] I have read SYSTEM_CHARTER.md
 [x] I have read the task's required reading docs
 [x] I have read the task's Test Cases section
 [x] I am writing TESTS FIRST (not implementation)

@@ -2,6 +2,8 @@
 
 **IMPORTANT:** All tasks and user stories MUST follow these standards. Reference this document before starting any implementation work.
 
+> **ALSO READ:** [SYSTEM_CHARTER.md](../SYSTEM_CHARTER.md) - Non-negotiable architectural rules that govern all development.
+
 ---
 
 ## Quick Reference Checklist

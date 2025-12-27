@@ -1,5 +1,7 @@
 # T-081: Improve Docker CSS Development Workflow
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Related Story**: Infrastructure Improvement
 **Estimate**: 1 hour
 **Status**: In Progress

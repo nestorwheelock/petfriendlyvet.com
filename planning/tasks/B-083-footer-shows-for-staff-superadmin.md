@@ -1,5 +1,7 @@
 # B-083: Footer Shows for Staff and Superadmin Users
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Medium
 **Affected Component**: templates/base layouts
 **Discovered**: 2025-12-26

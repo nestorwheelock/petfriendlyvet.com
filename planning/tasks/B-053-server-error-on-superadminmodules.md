@@ -1,5 +1,7 @@
 # B-053: Server Error on /superadmin/modules/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: High
 **Status**: Open
 **Error Type**: server_error

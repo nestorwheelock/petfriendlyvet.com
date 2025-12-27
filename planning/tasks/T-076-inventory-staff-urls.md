@@ -1,5 +1,7 @@
 # T-076: Inventory App Staff-Facing URLs
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: Task
 **Priority**: High (Operations)
 **Estimate**: 6 hours

@@ -1,5 +1,7 @@
 # T-092: Data Migration
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story**: S-010 Role-Based Access Control System
 **Priority**: HIGH (blocking)
 **Estimate**: 3 hours

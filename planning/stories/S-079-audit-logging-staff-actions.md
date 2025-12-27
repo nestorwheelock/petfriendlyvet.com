@@ -1,5 +1,7 @@
 # S-079: Audit Logging for Staff Actions
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: User Story
 **Priority**: High
 **Estimate**: 1 day

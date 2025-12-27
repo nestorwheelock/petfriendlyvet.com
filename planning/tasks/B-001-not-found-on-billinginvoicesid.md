@@ -1,5 +1,7 @@
 # B-001: Not Found on /billing/invoices/{id}/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Low
 **Status**: Open
 **Error Type**: not_found

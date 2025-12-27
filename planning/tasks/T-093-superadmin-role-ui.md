@@ -1,5 +1,7 @@
 # T-093: Superadmin Role Management UI
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story**: S-010 Role-Based Access Control System
 **Priority**: MEDIUM
 **Estimate**: 4 hours

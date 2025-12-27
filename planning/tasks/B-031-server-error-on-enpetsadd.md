@@ -1,5 +1,7 @@
 # B-031: Server Error on /en/pets/add/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: High
 **Status**: Resolved
 **Error Type**: server_error

@@ -1,5 +1,7 @@
 # S-028: Production Error Monitoring and Graceful Degradation
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: User Story
 **Priority**: High
 **Estimate**: 3-4 days

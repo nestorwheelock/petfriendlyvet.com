@@ -1,5 +1,7 @@
 # B-035: Method Not Allowed on /en/chat/
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Medium
 **Status**: Open
 **Error Type**: method_not_allowed

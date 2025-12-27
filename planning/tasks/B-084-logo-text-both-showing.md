@@ -1,5 +1,7 @@
 # B-084: Logo and Text Both Displaying in Navigation
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Severity**: Minor (UI/UX)
 **Affected Component**: templates/components/header.html
 **Discovered**: 2025-12-26

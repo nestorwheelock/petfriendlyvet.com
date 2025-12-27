@@ -1,5 +1,7 @@
 # T-077: Practice App Staff URLs
 
+> **REQUIRED READING:** Before implementation, review [SYSTEM_CHARTER.md](../../SYSTEM_CHARTER.md)
+
 **Story Type**: Task
 **Priority**: Medium (Internal Efficiency)
 **Estimate**: 5 hours
