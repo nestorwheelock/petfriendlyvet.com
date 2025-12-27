@@ -9,7 +9,12 @@ User = get_user_model()
 
 
 class StaffCreateForm(forms.Form):
-    """Combined form to create User + StaffProfile together."""
+    """Combined form to create User + StaffProfile together.
+
+    Supports two scenarios:
+    1. New user: Creates User + StaffProfile (password required)
+    2. Existing user without StaffProfile: Links existing User to new StaffProfile
+    """
 
     # User fields
     email = forms.EmailField(
@@ -28,10 +33,12 @@ class StaffCreateForm(forms.Form):
     )
     password1 = forms.CharField(
         label='Password',
+        required=False,  # Not required for existing users
         widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full'})
     )
     password2 = forms.CharField(
         label='Confirm Password',
+        required=False,  # Not required for existing users
         widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full'})
     )
 
@@ -75,10 +82,22 @@ class StaffCreateForm(forms.Form):
         })
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.existing_user = None  # Will be set if email matches existing user
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError('A user with this email already exists.')
+        try:
+            existing_user = User.objects.get(email=email)
+            # Check if user already has a StaffProfile
+            if hasattr(existing_user, 'staff_profile'):
+                raise ValidationError('This user already has a staff profile.')
+            # Store the existing user for use in save()
+            self.existing_user = existing_user
+        except User.DoesNotExist:
+            # New user - will create in save()
+            self.existing_user = None
         return email
 
     def clean(self):
@@ -86,33 +105,55 @@ class StaffCreateForm(forms.Form):
         password1 = cleaned_data.get('password1')
         password2 = cleaned_data.get('password2')
 
-        if password1 and password2 and password1 != password2:
-            raise ValidationError('Passwords do not match.')
+        # Only require passwords for new users
+        if self.existing_user is None:
+            if not password1:
+                self.add_error('password1', 'Password is required for new users.')
+            if not password2:
+                self.add_error('password2', 'Password confirmation is required for new users.')
+            elif password1 and password2 and password1 != password2:
+                raise ValidationError('Passwords do not match.')
+        else:
+            # For existing users, passwords are ignored
+            pass
 
         return cleaned_data
 
     def save(self):
-        """Create User and StaffProfile."""
-        email = self.cleaned_data['email']
-        username = email.split('@')[0]
+        """Create User (if needed) and StaffProfile."""
+        if self.existing_user:
+            # Use existing user, just update their staff status and name if needed
+            user = self.existing_user
+            user.is_staff = True
+            user.role = 'staff'
+            # Update name if provided
+            if self.cleaned_data.get('first_name'):
+                user.first_name = self.cleaned_data['first_name']
+            if self.cleaned_data.get('last_name'):
+                user.last_name = self.cleaned_data['last_name']
+            user.save()
+        else:
+            # Create new user
+            email = self.cleaned_data['email']
+            username = email.split('@')[0]
 
-        # Ensure unique username
-        base_username = username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
+            # Ensure unique username
+            base_username = username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
 
-        # Create User
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=self.cleaned_data['password1'],
-            first_name=self.cleaned_data['first_name'],
-            last_name=self.cleaned_data['last_name'],
-            is_staff=True,
-            role='staff',
-        )
+            # Create User
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=self.cleaned_data['password1'],
+                first_name=self.cleaned_data['first_name'],
+                last_name=self.cleaned_data['last_name'],
+                is_staff=True,
+                role='staff',
+            )
 
         # Create StaffProfile
         profile = StaffProfile.objects.create(

@@ -228,6 +228,84 @@ class StaffCreateFormTests(TestCase):
         })
         self.assertTrue(form.is_valid())
 
+    def test_form_allows_existing_user_without_profile(self):
+        """Form should allow creating StaffProfile for existing user without one."""
+        from apps.practice.forms import StaffCreateForm
+        # Create existing user WITHOUT StaffProfile
+        existing_user = User.objects.create_user(
+            username='existinguser',
+            email='existing@example.com',
+            password='oldpassword',
+            first_name='Existing',
+            last_name='User',
+        )
+        # Try to create staff with same email - should succeed
+        form = StaffCreateForm(data={
+            'email': 'existing@example.com',
+            'first_name': 'Existing',
+            'last_name': 'User',
+            'password1': '',  # No password needed for existing user
+            'password2': '',
+            'role': 'receptionist',
+        })
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+
+    def test_form_rejects_user_with_existing_profile(self):
+        """Form should reject if user already has StaffProfile."""
+        from apps.practice.forms import StaffCreateForm
+        from apps.practice.models import StaffProfile
+        # Create user WITH StaffProfile
+        user_with_profile = User.objects.create_user(
+            username='hasprofile',
+            email='hasprofile@example.com',
+            password='testpass',
+            first_name='Has',
+            last_name='Profile',
+        )
+        StaffProfile.objects.create(user=user_with_profile, role='receptionist')
+        # Try to create staff with same email - should fail
+        form = StaffCreateForm(data={
+            'email': 'hasprofile@example.com',
+            'first_name': 'Has',
+            'last_name': 'Profile',
+            'password1': '',
+            'password2': '',
+            'role': 'vet_tech',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+
+    def test_form_save_creates_profile_for_existing_user(self):
+        """save() should create StaffProfile for existing user."""
+        from apps.practice.forms import StaffCreateForm
+        from apps.practice.models import StaffProfile
+        # Create existing user WITHOUT StaffProfile
+        existing_user = User.objects.create_user(
+            username='existinguser2',
+            email='existing2@example.com',
+            password='oldpassword',
+            first_name='Existing',
+            last_name='User',
+        )
+        self.assertFalse(hasattr(existing_user, 'staff_profile'))
+        # Create staff profile for them
+        form = StaffCreateForm(data={
+            'email': 'existing2@example.com',
+            'first_name': 'Existing',
+            'last_name': 'User',
+            'password1': '',
+            'password2': '',
+            'role': 'receptionist',
+        })
+        self.assertTrue(form.is_valid())
+        profile = form.save()
+        # Verify profile was created and linked to existing user
+        self.assertEqual(profile.user.pk, existing_user.pk)
+        self.assertEqual(profile.role, 'receptionist')
+        # Verify user is now staff
+        existing_user.refresh_from_db()
+        self.assertTrue(existing_user.is_staff)
+
 
 class StaffEditFormTests(TestCase):
     """Test StaffEditForm validation."""
