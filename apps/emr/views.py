@@ -187,16 +187,26 @@ def transition_encounter(request, encounter_id):
 
     Creates ClinicalEvent for audit trail.
     Returns updated encounter card partial for HTMX.
+
+    For transitions to 'roomed' with multiple rooms:
+    - If no room selected, returns room picker partial
+    - If room selected via exam_room_id, completes transition
     """
     encounter = get_object_or_404(Encounter, id=encounter_id)
     new_state = request.POST.get('new_state')
+    exam_room_id = request.POST.get('exam_room_id')
+
+    # Convert room_id to int if provided
+    if exam_room_id:
+        try:
+            exam_room_id = int(exam_room_id)
+        except (ValueError, TypeError):
+            return HttpResponseBadRequest("Invalid exam_room_id")
 
     # Validate state
     valid_states = [s[0] for s in Encounter.PIPELINE_STATES]
     if new_state not in valid_states:
         return HttpResponseBadRequest("Invalid state")
-
-    old_state = encounter.pipeline_state
 
     # Use service function to transition
     try:
@@ -204,7 +214,15 @@ def transition_encounter(request, encounter_id):
             encounter=encounter,
             new_state=new_state,
             user=request.user,
+            exam_room_id=exam_room_id,
         )
+    except encounters.RoomSelectionRequired as e:
+        # Return room picker partial for HTMX
+        return render(request, 'emr/partials/room_picker.html', {
+            'encounter': encounter,
+            'rooms': e.available_rooms,
+            'staff_token': request.session.get('staff_token', ''),
+        })
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
 

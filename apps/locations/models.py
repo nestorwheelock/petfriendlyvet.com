@@ -87,3 +87,60 @@ class Location(models.Model):
         if self.country:
             parts.append(self.country)
         return '\n'.join(parts) if parts else ''
+
+
+class ExamRoom(models.Model):
+    """Exam rooms belonging to a location.
+
+    Policy: Rooms are SOFT-DEACTIVATED (is_active=False), never deleted.
+    This preserves historical encounter references.
+    """
+
+    location = models.ForeignKey(
+        'Location',
+        on_delete=models.CASCADE,
+        related_name='exam_rooms',
+        verbose_name=_('location'),
+    )
+    name = models.CharField(
+        _('name'),
+        max_length=30,
+        help_text=_('Room identifier, e.g., "Room 1", "Exam A", "Surgery"'),
+    )
+
+    ROOM_TYPES = [
+        ('exam', _('Exam Room')),
+        ('surgery', _('Surgery')),
+        ('imaging', _('Imaging')),
+        ('treatment', _('Treatment')),
+        ('isolation', _('Isolation')),
+    ]
+    room_type = models.CharField(
+        _('room type'),
+        max_length=20,
+        choices=ROOM_TYPES,
+        default='exam',
+    )
+
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_('Set to False to retire a room without deleting'),
+    )
+    display_order = models.PositiveIntegerField(
+        _('display order'),
+        default=0,
+        help_text=_('Order in room selection lists (lower first)'),
+    )
+
+    class Meta:
+        verbose_name = _('exam room')
+        verbose_name_plural = _('exam rooms')
+        ordering = ['display_order', 'name']
+        unique_together = [['location', 'name']]
+        indexes = [
+            models.Index(fields=['location', 'is_active', 'display_order']),
+        ]
+
+    def __str__(self):
+        return self.name

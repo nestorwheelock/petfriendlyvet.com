@@ -15,6 +15,23 @@ from apps.practice.models import PatientRecord
 from . import events
 
 
+class RoomSelectionRequired(Exception):
+    """Raised when transition to 'roomed' requires room selection.
+
+    Raised when a location has multiple active rooms and no room_id
+    was provided. The caller should present the available_rooms to
+    the user for selection.
+
+    CRITICAL: This exception is raised BEFORE any state change occurs.
+    No partial transitions - either the full transition succeeds or
+    this exception is raised.
+    """
+
+    def __init__(self, available_rooms):
+        self.available_rooms = available_rooms
+        super().__init__("Room selection required")
+
+
 def get_whiteboard_data(location: Location, include_completed: bool = True) -> dict:
     """Get encounters grouped by pipeline state for whiteboard display.
 
@@ -198,21 +215,37 @@ def check_in_appointment(appointment, location, user) -> tuple[Encounter, bool]:
 
 
 @transaction.atomic
-def transition_state(encounter: Encounter, new_state: str, user) -> Encounter:
+def transition_state(
+    encounter: Encounter,
+    new_state: str,
+    user,
+    exam_room_id: int = None,
+) -> Encounter:
     """Transition encounter to a new pipeline state.
 
     Creates a ClinicalEvent for the audit trail.
+
+    For transitions to 'roomed' state:
+    - If location has 0 rooms: proceeds without room assignment
+    - If location has 1 room: auto-assigns that room
+    - If location has >1 rooms and exam_room_id provided: assigns that room
+    - If location has >1 rooms and no exam_room_id: raises RoomSelectionRequired
+
+    CRITICAL: RoomSelectionRequired is raised BEFORE any state change.
+    No partial transitions occur.
 
     Args:
         encounter: The encounter to transition.
         new_state: The target state.
         user: The user performing the transition.
+        exam_room_id: Optional room ID when transitioning to 'roomed'.
 
     Returns:
         The updated Encounter.
 
     Raises:
-        ValueError: If the state transition is invalid.
+        ValueError: If the state transition is invalid or room_id is invalid.
+        RoomSelectionRequired: If transitioning to 'roomed' requires room selection.
     """
     valid_states = [s[0] for s in Encounter.PIPELINE_STATES]
     if new_state not in valid_states:
@@ -223,8 +256,35 @@ def transition_state(encounter: Encounter, new_state: str, user) -> Encounter:
     if old_state == new_state:
         return encounter  # No-op
 
-    # Update state
+    # ROOM VALIDATION FIRST - before any state change
+    # This ensures no partial transitions occur
+    selected_room = None
+    if new_state == 'roomed':
+        available_rooms = encounter.location.exam_rooms.filter(is_active=True)
+        room_count = available_rooms.count()
+
+        if room_count == 0:
+            # No rooms configured - proceed without room
+            selected_room = None
+        elif room_count == 1:
+            # Auto-assign the only room
+            selected_room = available_rooms.first()
+        elif exam_room_id:
+            # Validate provided room belongs to this location
+            selected_room = available_rooms.filter(id=exam_room_id).first()
+            if not selected_room:
+                raise ValueError("Invalid room for this location")
+        else:
+            # Multiple rooms, none selected - BLOCK TRANSITION
+            # Do NOT change pipeline_state - raise exception first
+            raise RoomSelectionRequired(available_rooms)
+
+    # NOW safe to proceed with state change
     encounter.pipeline_state = new_state
+
+    # Assign room if transitioning to roomed
+    if new_state == 'roomed' and selected_room:
+        encounter.exam_room = selected_room
 
     # Set timestamp for the new state
     now = timezone.now()
@@ -243,7 +303,15 @@ def transition_state(encounter: Encounter, new_state: str, user) -> Encounter:
 
     encounter.save()
 
-    # Log clinical event
+    # Log state transition event
     events.log_state_transition(encounter, old_state, new_state, user)
+
+    # Log room assignment as separate ClinicalEvent (append-only audit)
+    if new_state == 'roomed' and selected_room:
+        events.log_room_assignment(
+            encounter=encounter,
+            room=selected_room,
+            user=user,
+        )
 
     return encounter

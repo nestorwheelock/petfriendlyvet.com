@@ -129,3 +129,29 @@ def log_clinical_note(patient, user, note_text: str, encounter=None) -> Clinical
         summary=note_text[:500],  # Truncate to field max
         is_significant=False,
     )
+
+
+def log_room_assignment(encounter, room, user) -> ClinicalEvent:
+    """Log that a patient was assigned to an exam room.
+
+    This creates an append-only audit record per SYSTEM_CHARTER.md.
+
+    Args:
+        encounter: The encounter being roomed.
+        room: The ExamRoom assigned.
+        user: The user performing the assignment.
+
+    Returns:
+        The created ClinicalEvent.
+    """
+    return ClinicalEvent.objects.create(
+        patient=encounter.patient,
+        encounter=encounter,
+        location=encounter.location,
+        event_type='state_change',
+        event_subtype='room_assignment',
+        occurred_at=timezone.now(),
+        recorded_by=user,
+        summary=f"Roomed: {room.name}",
+        is_significant=False,
+    )

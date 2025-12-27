@@ -1,0 +1,56 @@
+{% load i18n %}
+{# HTMX partial - returned when room selection is required #}
+{# Displayed as a modal overlay for selecting exam room #}
+{# Note: This replaces the encounter card, so we target this picker on room selection #}
+{# The response will return the updated encounter card which replaces this picker #}
+
+<div id="encounter-{{ encounter.id }}"
+     data-state="{{ encounter.pipeline_state }}"
+     class="relative">
+    {# Preserve card positioning in the kanban column #}
+
+    {# Modal overlay #}
+    <div id="room-picker-modal-{{ encounter.id }}"
+         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+         onclick="if(event.target === this) { document.getElementById('room-picker-modal-{{ encounter.id }}').remove(); }">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4"
+             onclick="event.stopPropagation()">
+            <h3 class="font-bold text-lg mb-4">{% trans "Select Exam Room" %}</h3>
+
+            <p class="text-sm text-gray-600 mb-4">
+                {{ encounter.patient.pet.name }} - {{ encounter.chief_complaint|truncatewords:10|default:_("No complaint") }}
+            </p>
+
+            <div class="space-y-2">
+                {% for room in rooms %}
+                <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
+                        hx-vals='{"new_state": "roomed", "exam_room_id": "{{ room.id }}"}'
+                        hx-target="#encounter-{{ encounter.id }}"
+                        hx-swap="outerHTML"
+                        class="btn btn-block btn-outline justify-start">
+                    {% include "components/icons/feather.html" with icon="home" class="w-4 h-4 mr-2" %}
+                    {{ room.name }}
+                    {% if room.room_type != 'exam' %}
+                    <span class="badge badge-sm ml-auto">{{ room.get_room_type_display }}</span>
+                    {% endif %}
+                </button>
+                {% empty %}
+                <p class="text-gray-500 text-center py-4">{% trans "No rooms available" %}</p>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <button onclick="document.getElementById('room-picker-modal-{{ encounter.id }}').remove()"
+                        class="btn btn-ghost btn-block">
+                    {% trans "Cancel" %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Placeholder card while modal is shown #}
+    <div class="bg-gray-100 rounded-lg border border-gray-200 p-3 opacity-50">
+        <div class="font-semibold text-gray-700">{{ encounter.patient.pet.name }}</div>
+        <p class="text-xs text-gray-500">{% trans "Selecting room..." %}</p>
+    </div>
+</div>

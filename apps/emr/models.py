@@ -104,7 +104,16 @@ class Encounter(models.Model):
         _('room'),
         max_length=50,
         blank=True,
-        help_text=_('Exam room or treatment area'),
+        help_text=_('LEGACY: Use exam_room FK instead'),
+    )
+    exam_room = models.ForeignKey(
+        'locations.ExamRoom',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='encounters',
+        verbose_name=_('exam room'),
+        help_text=_('Assigned exam room from location'),
     )
 
     # Encounter classification
