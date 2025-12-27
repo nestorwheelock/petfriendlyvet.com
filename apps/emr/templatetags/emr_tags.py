@@ -6,6 +6,17 @@ register = template.Library()
 
 
 @register.filter
+def get_item(dictionary, key):
+    """Get an item from a dictionary by key.
+
+    Usage: {{ mydict|get_item:key }}
+    """
+    if dictionary is None:
+        return []
+    return dictionary.get(key, [])
+
+
+@register.filter
 def duration_clock(value):
     """Convert datetime to clock-style duration (H:MM or :MM).
 
