@@ -126,8 +126,6 @@ class Appointment(models.Model):
         on_delete=models.PROTECT,
         related_name='appointments',
         verbose_name=_('location'),
-        null=True,
-        blank=True,
         help_text=_('Clinic location for this appointment')
     )
     veterinarian = models.ForeignKey(
