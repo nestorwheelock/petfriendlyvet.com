@@ -147,7 +147,7 @@
                 hx-vals='{"new_state": "completed"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
-                class="btn btn-xs btn-success">
+                class="btn btn-xs btn-warning">
             {% trans "Complete" %}
         </button>
         {% elif encounter.pipeline_state == 'completed' %}
