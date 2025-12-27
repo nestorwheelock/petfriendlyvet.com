@@ -10,7 +10,7 @@
             {% if role %}{% trans "Edit Role" %}{% else %}{% trans "Create Role" %}{% endif %}
         </h1>
         <p class="text-base-content/60">
-            {% if role %}{% trans "Update role settings and hierarchy level" %}{% else %}{% trans "Create a new custom role with specific permissions" %}{% endif %}
+            {% if role %}{% trans "Update role settings" %}{% else %}{% trans "Create a new custom role" %}{% endif %}
         </p>
     </div>
 
@@ -46,11 +46,11 @@
                     {% endif %}
                 </div>
 
-                <!-- Hierarchy Level -->
+                <!-- Sort Order -->
                 <div class="form-control">
                     <label class="label" for="id_hierarchy_level">
-                        <span class="label-text font-medium">{% trans "Hierarchy Level" %}</span>
-                        <span class="label-text-alt text-base-content/50">{% trans "10-99, higher = more authority" %}</span>
+                        <span class="label-text font-medium">{% trans "Sort Order" %}</span>
+                        <span class="label-text-alt text-base-content/50">{% trans "1-99, controls display order in lists" %}</span>
                     </label>
                     {{ form.hierarchy_level }}
                     {% if form.hierarchy_level.errors %}
@@ -58,16 +58,9 @@
                         <span class="label-text-alt text-error">{{ form.hierarchy_level.errors.0 }}</span>
                     </label>
                     {% endif %}
-                    <div class="mt-2 text-sm text-base-content/60">
-                        <p>{% trans "Recommended levels:" %}</p>
-                        <ul class="list-disc list-inside ml-2 mt-1">
-                            <li>{% trans "10: Customers" %}</li>
-                            <li>{% trans "20-30: Staff (receptionists, technicians)" %}</li>
-                            <li>{% trans "40: Senior Staff (veterinarians)" %}</li>
-                            <li>{% trans "60: Managers" %}</li>
-                            <li>{% trans "80: Administrators" %}</li>
-                        </ul>
-                    </div>
+                    <p class="text-sm text-base-content/60 mt-1">
+                        {% trans "Lower numbers appear first. Permissions are managed separately via the permission matrix." %}
+                    </p>
                 </div>
 
                 <!-- Description -->

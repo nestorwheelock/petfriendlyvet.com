@@ -33,7 +33,7 @@ class RoleForm(forms.ModelForm):
             }),
             'hierarchy_level': forms.NumberInput(attrs={
                 'class': 'input input-bordered w-full',
-                'min': 10,
+                'min': 1,
                 'max': 99,
             }),
             'is_active': forms.CheckboxInput(attrs={

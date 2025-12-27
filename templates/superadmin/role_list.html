@@ -26,7 +26,7 @@
                     <thead>
                         <tr>
                             <th>{% trans "Role" %}</th>
-                            <th>{% trans "Hierarchy" %}</th>
+                            <th>{% trans "Order" %}</th>
                             <th>{% trans "Users" %}</th>
                             <th>{% trans "Status" %}</th>
                             <th>{% trans "Description" %}</th>
@@ -41,9 +41,7 @@
                                 <div class="text-xs text-base-content/50">{{ role.slug }}</div>
                             </td>
                             <td>
-                                <span class="badge {% if role.hierarchy_level >= 80 %}badge-error{% elif role.hierarchy_level >= 60 %}badge-warning{% elif role.hierarchy_level >= 40 %}badge-secondary{% elif role.hierarchy_level >= 20 %}badge-primary{% else %}badge-ghost{% endif %}">
-                                    {{ role.hierarchy_level }}
-                                </span>
+                                <span class="badge badge-ghost">{{ role.hierarchy_level }}</span>
                             </td>
                             <td>{{ role.user_count }}</td>
                             <td>
@@ -80,48 +78,13 @@
         </div>
     </div>
 
-    <!-- Hierarchy Legend -->
+    <!-- Info Card -->
     <div class="card bg-base-100 shadow-lg">
         <div class="card-body">
-            <h2 class="card-title text-base-content mb-4">{% trans "Hierarchy Levels" %}</h2>
-            <p class="text-base-content/60 mb-4">{% trans "Higher numbers indicate more authority. Users can only manage users with lower hierarchy levels." %}</p>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div class="p-4 bg-base-200 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-ghost">10</span>
-                        <span class="font-semibold">{% trans "Customer" %}</span>
-                    </div>
-                    <p class="text-sm text-base-content/70">{% trans "Pet owners" %}</p>
-                </div>
-                <div class="p-4 bg-base-200 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-primary">20-30</span>
-                        <span class="font-semibold">{% trans "Staff" %}</span>
-                    </div>
-                    <p class="text-sm text-base-content/70">{% trans "Receptionists, techs" %}</p>
-                </div>
-                <div class="p-4 bg-base-200 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-secondary">40</span>
-                        <span class="font-semibold">{% trans "Senior Staff" %}</span>
-                    </div>
-                    <p class="text-sm text-base-content/70">{% trans "Veterinarians" %}</p>
-                </div>
-                <div class="p-4 bg-base-200 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-warning">60</span>
-                        <span class="font-semibold">{% trans "Managers" %}</span>
-                    </div>
-                    <p class="text-sm text-base-content/70">{% trans "Department heads" %}</p>
-                </div>
-                <div class="p-4 bg-base-200 rounded-lg border-2 border-error/30">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="badge badge-error">80+</span>
-                        <span class="font-semibold">{% trans "Admin" %}</span>
-                    </div>
-                    <p class="text-sm text-base-content/70">{% trans "Full system access" %}</p>
-                </div>
-            </div>
+            <h2 class="card-title text-base-content mb-2">{% trans "Managing Permissions" %}</h2>
+            <p class="text-base-content/60">
+                {% trans "Click the shield icon next to any role to manage its permissions. The permission matrix lets you control access to each module (view, create, edit, delete, approve, manage)." %}
+            </p>
         </div>
     </div>
 </div>
