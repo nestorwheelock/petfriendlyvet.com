@@ -1,0 +1,147 @@
+{% extends "base_staff.html" %}
+{% load static i18n %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-500">{% trans "Operations" %}</span>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Appointments" %}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="space-y-6">
+    <!-- Header with View Controls -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ start_of_week|date:"M j" }} - {{ end_of_week|date:"M j, Y" }}
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">
+                {{ total_count }} {% trans "appointment" %}{{ total_count|pluralize:"s" }} {% trans "this week" %}
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- View Switcher -->
+            <div class="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+                <a href="?view=day&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="px-3 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100">
+                    {% trans "Day" %}
+                </a>
+                <a href="?view=week&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="px-3 py-1.5 text-sm font-medium rounded-md bg-primary-100 text-primary-700">
+                    {% trans "Week" %}
+                </a>
+                <a href="?view=month&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="px-3 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100">
+                    {% trans "Month" %}
+                </a>
+            </div>
+
+            <!-- Week Navigation -->
+            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white">
+                <button onclick="navigateWeek(-1)" class="px-2 py-1.5 hover:bg-gray-100 rounded-l-lg">
+                    {% include "components/icons/feather.html" with icon="chevron-left" class="w-4 h-4" %}
+                </button>
+                <a href="?view=week&date={{ today|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="px-3 py-1.5 text-sm font-medium hover:bg-gray-100">{% trans "This Week" %}</a>
+                <button onclick="navigateWeek(1)" class="px-2 py-1.5 hover:bg-gray-100 rounded-r-lg">
+                    {% include "components/icons/feather.html" with icon="chevron-right" class="w-4 h-4" %}
+                </button>
+            </div>
+
+            <!-- Status Filter -->
+            <select id="status-filter" class="text-sm border-gray-300 rounded-md shadow-sm">
+                <option value="">{% trans "All Status" %}</option>
+                <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>{% trans "Scheduled" %}</option>
+                <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>{% trans "Confirmed" %}</option>
+                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>{% trans "In Progress" %}</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+            </select>
+
+            <!-- New Appointment -->
+            <a href="/staff-{{ staff_token }}/operations/appointments/add/" class="btn btn-primary">
+                {% include "components/icons/feather.html" with icon="plus" class="w-4 h-4 mr-2" %}
+                {% trans "New" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Weekly Grid -->
+    <div class="grid grid-cols-7 gap-4">
+        {% for day in week_days %}
+        <div class="bg-white rounded-lg shadow-sm border {% if day.is_today %}border-primary-300 ring-2 ring-primary-100{% else %}border-gray-200{% endif %}">
+            <!-- Day Header -->
+            <div class="px-3 py-2 border-b border-gray-100 {% if day.is_today %}bg-primary-50{% else %}bg-gray-50{% endif %}">
+                <a href="?view=day&date={{ day.date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="block hover:text-primary-600">
+                    <div class="text-xs font-medium text-gray-500 uppercase">{{ day.day_name }}</div>
+                    <div class="text-lg font-bold {% if day.is_today %}text-primary-600{% else %}text-gray-900{% endif %}">
+                        {{ day.date|date:"j" }}
+                    </div>
+                </a>
+                {% if day.count > 0 %}
+                <div class="text-xs text-gray-500">{{ day.count }} apt{{ day.count|pluralize:"s" }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Appointments -->
+            <div class="p-2 space-y-2 min-h-[200px] max-h-[400px] overflow-y-auto">
+                {% for item in day.appointments %}
+                {% with apt=item.appointment %}
+                <a href="/staff-{{ staff_token }}/operations/appointments/{{ apt.pk }}/"
+                   class="block p-2 rounded border text-xs hover:shadow-sm transition-shadow
+                    {% if apt.status == 'scheduled' %}bg-blue-50 border-blue-200
+                    {% elif apt.status == 'confirmed' %}bg-green-50 border-green-200
+                    {% elif apt.status == 'in_progress' %}bg-yellow-50 border-yellow-200
+                    {% elif apt.status == 'completed' %}bg-gray-50 border-gray-200
+                    {% elif apt.status == 'cancelled' %}bg-red-50 border-red-200 opacity-60
+                    {% elif apt.status == 'no_show' %}bg-orange-50 border-orange-200 opacity-60
+                    {% endif %}">
+                    <div class="font-semibold text-gray-900">{{ apt.scheduled_start|time:"H:i" }}</div>
+                    <div class="font-medium text-gray-800 truncate">{{ apt.pet.name|default:"No Pet" }}</div>
+                    <div class="text-gray-500 truncate">{{ apt.service.name }}</div>
+                </a>
+                {% endwith %}
+                {% empty %}
+                <div class="text-xs text-gray-400 text-center py-4">{% trans "No appointments" %}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+const startOfWeek = new Date('{{ start_of_week|date:"Y-m-d" }}');
+const statusFilter = '{{ status_filter }}';
+
+function navigateWeek(weeks) {
+    const newDate = new Date(startOfWeek);
+    newDate.setDate(newDate.getDate() + (weeks * 7));
+    const dateStr = newDate.toISOString().split('T')[0];
+    let url = '?view=week&date=' + dateStr;
+    if (statusFilter) url += '&status=' + statusFilter;
+    window.location.href = url;
+}
+
+document.getElementById('status-filter').addEventListener('change', function() {
+    const dateStr = startOfWeek.toISOString().split('T')[0];
+    let url = '?view=week&date=' + dateStr;
+    if (this.value) url += '&status=' + this.value;
+    window.location.href = url;
+});
+</script>
+{% endblock %}

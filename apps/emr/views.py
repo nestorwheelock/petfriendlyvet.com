@@ -13,6 +13,7 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.accounts.decorators import require_permission
 from apps.locations.models import Location
 from apps.practice.models import PatientRecord
 
@@ -65,7 +66,7 @@ def staff_required(view_func):
 
 
 @login_required
-@staff_required
+@require_permission('emr', 'view')
 def whiteboard(request):
     """Encounter whiteboard - Kanban board by pipeline state.
 
@@ -88,6 +89,7 @@ def whiteboard(request):
                 'location': None,
                 'locations': locations,
                 'needs_location': True,
+                'hide_sidebar': True,  # Full-width whiteboard
             })
 
     # Get encounters grouped by pipeline state
@@ -99,11 +101,12 @@ def whiteboard(request):
         'needs_location': False,
         'pipeline_states': Encounter.PIPELINE_STATES,
         'encounters_by_state': encounter_data,
+        'hide_sidebar': True,  # Full-width whiteboard
     })
 
 
 @login_required
-@staff_required
+@require_permission('emr', 'view')
 @require_POST
 def select_location(request):
     """Set selected location in session."""
@@ -123,7 +126,7 @@ def select_location(request):
 
 
 @login_required
-@staff_required
+@require_permission('emr', 'view')
 def patient_summary(request, patient_id):
     """Patient clinical summary.
 
@@ -176,7 +179,7 @@ def patient_summary(request, patient_id):
 
 
 @login_required
-@staff_required
+@require_permission('emr', 'edit')
 @require_POST
 def transition_encounter(request, encounter_id):
     """Transition encounter to new pipeline state.

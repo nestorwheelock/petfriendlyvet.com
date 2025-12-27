@@ -15,34 +15,51 @@ from apps.practice.models import PatientRecord
 from . import events
 
 
-def get_whiteboard_data(location: Location) -> dict:
+def get_whiteboard_data(location: Location, include_completed: bool = True) -> dict:
     """Get encounters grouped by pipeline state for whiteboard display.
 
     Args:
         location: The location to filter by.
+        include_completed: If True, include today's completed encounters.
 
     Returns:
         Dict mapping state -> list of encounters
     """
+    # Active states always shown
+    active_states = [
+        'scheduled', 'checked_in', 'roomed', 'in_exam',
+        'pending_orders', 'awaiting_results', 'treatment', 'checkout'
+    ]
+
+    # Get active encounters
     encounters_qs = Encounter.objects.filter(
         location=location,
+        pipeline_state__in=active_states,
     ).select_related(
         'patient__pet',
         'assigned_vet',
         'assigned_tech',
     ).order_by('created_at')
 
-    # Only show active encounters (not completed/cancelled/no_show)
-    active_states = [
-        'scheduled', 'checked_in', 'roomed', 'in_exam',
-        'pending_orders', 'awaiting_results', 'treatment', 'checkout'
-    ]
-    encounters_qs = encounters_qs.filter(pipeline_state__in=active_states)
-
     # Group by state
     by_state = defaultdict(list)
     for encounter in encounters_qs:
         by_state[encounter.pipeline_state].append(encounter)
+
+    # Include today's completed encounters
+    if include_completed:
+        today = timezone.now().date()
+        completed_qs = Encounter.objects.filter(
+            location=location,
+            pipeline_state='completed',
+            discharged_at__date=today,
+        ).select_related(
+            'patient__pet',
+            'assigned_vet',
+            'assigned_tech',
+        ).order_by('-discharged_at')[:20]  # Limit to recent 20
+
+        by_state['completed'] = list(completed_qs)
 
     return dict(by_state)
 

@@ -34,12 +34,17 @@ def location(db, organization):
 
 @pytest.fixture
 def staff_user(db):
-    """Create staff user with EMR permissions."""
+    """Create staff user with EMR permissions.
+
+    Uses superuser to bypass permission checks in tests.
+    In production, users would have permissions via Roles.
+    """
     user = User.objects.create_user(
         username="staffuser",
         email="staff@test.com",
         password="testpass123",
         is_staff=True,
+        is_superuser=True,  # Grants all module permissions
     )
     return user
 

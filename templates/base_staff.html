@@ -7,10 +7,13 @@
 
 {% block content %}
 <div class="flex h-screen bg-gray-100" x-data="{ sidebarOpen: false }">
-    <!-- Staff Sidebar -->
+    <!-- Staff Sidebar (hidden on fullwidth pages) -->
+    {% if not hide_sidebar %}
     {% include "components/staff_sidebar.html" %}
+    {% endif %}
 
-    <!-- Mobile sidebar toggle -->
+    <!-- Mobile sidebar toggle (hidden on fullwidth pages) -->
+    {% if not hide_sidebar %}
     <div class="fixed bottom-4 left-4 lg:hidden z-40">
         <button @click="sidebarOpen = !sidebarOpen; document.getElementById('staff-sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-overlay').classList.toggle('hidden')"
                 class="p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
@@ -19,6 +22,7 @@
             </svg>
         </button>
     </div>
+    {% endif %}
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">

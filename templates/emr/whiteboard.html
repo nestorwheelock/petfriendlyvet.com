@@ -21,7 +21,8 @@
 {% endblock %}
 
 {% block header_actions %}
-<!-- Location Selector -->
+{% if not needs_location %}
+<!-- Location Selector - only show when a location is already selected -->
 <div class="flex items-center gap-2">
     <label for="location-select" class="text-sm font-medium text-gray-600">{% trans "Location" %}:</label>
     <form method="post" action="/staff-{{ staff_token }}/operations/clinical/select-location/" class="inline">
@@ -38,21 +39,11 @@
         </select>
     </form>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block staff_content %}
-<div class="space-y-6">
-    <!-- Page Header -->
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-gray-900">{% trans "Encounter Whiteboard" %}</h1>
-        {% if location %}
-        <span class="badge badge-lg bg-primary-100 text-primary-800">
-            {% include "components/icons/feather.html" with icon="map-pin" class="w-4 h-4 inline mr-1" %}
-            {{ location.name }}
-        </span>
-        {% endif %}
-    </div>
-
+<div class="space-y-4">
     {% if needs_location %}
     <!-- Location Selection Required -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
@@ -78,30 +69,32 @@
     {% else %}
     <!-- Whiteboard Kanban -->
     <div class="overflow-x-auto">
-        <div class="flex gap-4 min-w-max pb-4">
+        <div class="flex gap-3 min-w-max pb-4" id="kanban-board">
             {% for state_code, state_label in pipeline_states %}
             {% with encounters=encounters_by_state|default_if_none:"{}"|get_item:state_code %}
-            <div class="w-72 flex-shrink-0">
+            <div class="w-60 flex-shrink-0">
                 <!-- Column Header -->
-                <div class="bg-gray-100 rounded-t-lg px-4 py-3 border-b border-gray-200">
+                <div class="bg-gray-100 rounded-t-lg px-4 py-3 border-b border-gray-200
+                    {% if state_code == 'completed' %}bg-green-50{% endif %}
+                    {% if state_code == 'cancelled' or state_code == 'no_show' %}bg-gray-200{% endif %}">
                     <div class="flex items-center justify-between">
                         <h3 class="font-semibold text-gray-700">{{ state_label }}</h3>
-                        <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">
+                        <span class="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded-full"
+                              id="count-{{ state_code }}">
                             {{ encounters|length|default:"0" }}
                         </span>
                     </div>
                 </div>
 
-                <!-- Column Cards -->
-                <div class="bg-gray-50 rounded-b-lg min-h-96 p-2 space-y-2"
+                <!-- Column Cards (Sortable) -->
+                <div class="kanban-column bg-gray-50 rounded-b-lg min-h-96 p-2 space-y-2"
                      id="column-{{ state_code }}"
-                     hx-trigger="htmx:afterSwap"
-                     hx-swap="innerHTML">
+                     data-state="{{ state_code }}">
                     {% for encounter in encounters %}
                     {% include "emr/partials/encounter_card.html" with encounter=encounter %}
                     {% empty %}
-                    <div class="text-center py-8 text-gray-400 text-sm">
-                        {% trans "No encounters" %}
+                    <div class="empty-placeholder text-center py-8 text-gray-400 text-sm">
+                        {% trans "Drop here" %}
                     </div>
                     {% endfor %}
                 </div>
@@ -110,6 +103,145 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Drag hint -->
+    <p class="text-xs text-gray-400 text-center mt-2">
+        {% include "components/icons/feather.html" with icon="move" class="w-3 h-3 inline mr-1" %}
+        {% trans "Drag cards to move between columns, or use the menu for more options" %}
+    </p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Drag-and-drop styling */
+.sortable-ghost {
+    opacity: 0.4;
+    background: #f3f4f6 !important;
+}
+.sortable-drag {
+    opacity: 1 !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    transform: rotate(2deg);
+    cursor: grabbing !important;
+}
+.sortable-chosen {
+    cursor: grabbing !important;
+}
+.kanban-column {
+    transition: background-color 0.2s;
+}
+.kanban-column.sortable-drag-over {
+    background-color: #e0f2fe !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SortableJS for drag-and-drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const staffToken = '{{ staff_token }}';
+    const csrfToken = '{{ csrf_token }}';
+
+    // Initialize sortable on each column
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        new Sortable(column, {
+            group: 'encounters',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            filter: '.empty-placeholder',
+            preventOnFilter: true,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+            onStart: function(evt) {
+                document.body.style.cursor = 'grabbing';
+            },
+            onEnd: function(evt) {
+                document.body.style.cursor = '';
+                const cardEl = evt.item;
+                const newColumn = evt.to;
+                const newState = newColumn.dataset.state;
+                const encounterId = cardEl.id.replace('encounter-', '');
+
+                // Skip if dropped in same column or terminal states
+                if (evt.from === evt.to) return;
+                if (['completed', 'cancelled', 'no_show'].includes(newState)) {
+                    // Confirm before moving to terminal state
+                    if (!confirm('Move to ' + newState + '? This action will be logged.')) {
+                        evt.from.appendChild(cardEl);
+                        return;
+                    }
+                }
+
+                // POST transition
+                fetch(`/staff-${staffToken}/operations/clinical/encounters/${encounterId}/transition/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,
+                        'HX-Request': 'true',  // Required for endpoint to return card partial
+                    },
+                    body: `new_state=${newState}`
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Transition failed');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // Replace card with new HTML properly
+                    // Create a temporary container to parse the new HTML
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html.trim();
+                    const newCard = temp.firstChild;
+
+                    // Replace the old card with the new one
+                    // This keeps SortableJS working because we're replacing in place
+                    const oldCard = document.getElementById('encounter-' + encounterId);
+                    if (oldCard && newCard) {
+                        oldCard.replaceWith(newCard);
+                    }
+                    updateColumnCounts();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Revert on error - move card back to original column
+                    const movedCard = document.getElementById('encounter-' + encounterId);
+                    if (movedCard) {
+                        evt.from.appendChild(movedCard);
+                    }
+                    alert('Failed to move encounter. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Update column counts after drag
+    function updateColumnCounts() {
+        document.querySelectorAll('.kanban-column').forEach(column => {
+            const state = column.dataset.state;
+            const count = column.querySelectorAll('[id^="encounter-"]').length;
+            const countEl = document.getElementById('count-' + state);
+            if (countEl) {
+                countEl.textContent = count;
+            }
+
+            // Show/hide empty placeholder
+            const placeholder = column.querySelector('.empty-placeholder');
+            if (placeholder) {
+                placeholder.style.display = count > 0 ? 'none' : 'block';
+            }
+        });
+    }
+
+    // Initial count update
+    updateColumnCounts();
+});
+</script>
 {% endblock %}

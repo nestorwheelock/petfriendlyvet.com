@@ -1,0 +1,99 @@
+{% load i18n %}
+{# Shared header for appointment views - date navigation and view switcher #}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <!-- Left: Title and Date -->
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">{% trans "Appointments" %}</h1>
+        <p class="text-sm text-gray-500 mt-1">
+            {% if view_mode == 'month' %}
+                {{ month_name }}
+            {% elif view_mode == 'week' %}
+                {{ start_of_week|date:"M j" }} - {{ end_of_week|date:"M j, Y" }}
+            {% else %}
+                {{ selected_date|date:"l, F j, Y" }}
+            {% endif %}
+            <span class="text-gray-400 ml-2">({{ total_count }} {% trans "appointments" %})</span>
+        </p>
+    </div>
+
+    <!-- Right: Controls -->
+    <div class="flex flex-wrap items-center gap-3">
+        <!-- View Switcher -->
+        <div class="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+            <a href="?view=day&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="px-3 py-1.5 text-sm font-medium rounded-md {% if view_mode == 'day' %}bg-primary-100 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                {% trans "Day" %}
+            </a>
+            <a href="?view=week&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="px-3 py-1.5 text-sm font-medium rounded-md {% if view_mode == 'week' %}bg-primary-100 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                {% trans "Week" %}
+            </a>
+            <a href="?view=month&date={{ selected_date|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="px-3 py-1.5 text-sm font-medium rounded-md {% if view_mode == 'month' %}bg-primary-100 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+                {% trans "Month" %}
+            </a>
+        </div>
+
+        <!-- Date Navigation -->
+        <div class="inline-flex items-center gap-1">
+            {% if view_mode == 'month' %}
+                <a href="?view=month&date={{ prev_month|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-left" class="w-4 h-4" %}
+                </a>
+                <a href="?view=month&date={{ today|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">{% trans "Today" %}</a>
+                <a href="?view=month&date={{ next_month|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-right" class="w-4 h-4" %}
+                </a>
+            {% elif view_mode == 'week' %}
+                {% with prev_week=start_of_week|date:'Y-m-d' next_week=end_of_week|date:'Y-m-d' %}
+                <a href="?view=week&date={{ start_of_week|add_days:-7|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-left" class="w-4 h-4" %}
+                </a>
+                <a href="?view=week&date={{ today|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">{% trans "Today" %}</a>
+                <a href="?view=week&date={{ end_of_week|add_days:1|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-right" class="w-4 h-4" %}
+                </a>
+                {% endwith %}
+            {% else %}
+                <a href="?view=day&date={{ selected_date|add_days:-1|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-left" class="w-4 h-4" %}
+                </a>
+                <a href="?view=day&date={{ today|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">{% trans "Today" %}</a>
+                <a href="?view=day&date={{ selected_date|add_days:1|date:'Y-m-d' }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+                   class="btn btn-ghost btn-sm">
+                    {% include "components/icons/feather.html" with icon="chevron-right" class="w-4 h-4" %}
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Date Picker -->
+        <input type="date" value="{{ selected_date|date:'Y-m-d' }}"
+               onchange="window.location.href='?view={{ view_mode }}&date='+this.value+'{% if status_filter %}&status={{ status_filter }}{% endif %}'"
+               class="text-sm border-gray-300 rounded-md shadow-sm">
+
+        <!-- Status Filter -->
+        <select onchange="window.location.href='?view={{ view_mode }}&date={{ selected_date|date:'Y-m-d' }}&status='+this.value"
+                class="text-sm border-gray-300 rounded-md shadow-sm">
+            <option value="">{% trans "All Status" %}</option>
+            <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>{% trans "Scheduled" %}</option>
+            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>{% trans "Confirmed" %}</option>
+            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>{% trans "In Progress" %}</option>
+            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+        </select>
+
+        <!-- New Appointment -->
+        <a href="/staff-{{ staff_token }}/operations/appointments/add/" class="btn btn-primary">
+            {% include "components/icons/feather.html" with icon="plus" class="w-4 h-4 mr-2" %}
+            {% trans "New" %}
+        </a>
+    </div>
+</div>

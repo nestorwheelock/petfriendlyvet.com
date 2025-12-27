@@ -1,0 +1,218 @@
+{% extends "base_staff.html" %}
+{% load static i18n %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-500">{% trans "Operations" %}</span>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="/staff-{{ staff_token }}/operations/appointments/" class="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700">{% trans "Appointments" %}</a>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{{ appointment.pet.name|default:"Appointment" }}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {{ appointment.pet.name|default:"No Pet" }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ appointment.service.name }} - {{ appointment.scheduled_start|date:"l, F j, Y" }} at {{ appointment.scheduled_start|time:"H:i" }}
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/staff-{{ staff_token }}/operations/appointments/{{ appointment.pk }}/edit/"
+               class="btn btn-secondary">
+                {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4 mr-2" %}
+                {% trans "Edit" %}
+            </a>
+            {% if not encounter and appointment.status in 'scheduled,confirmed' %}
+            <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ appointment.pk }}/check-in/" class="inline">
+                {% csrf_token %}
+                {% if not appointment.location and locations.count > 1 %}
+                <select name="location_id" class="text-sm border-gray-300 rounded-md mr-2" required>
+                    <option value="">{% trans "Select location..." %}</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc.id }}">{{ loc.name }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    {% include "components/icons/feather.html" with icon="log-in" class="w-4 h-4 mr-2" %}
+                    {% trans "Check In" %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div>
+        <span class="px-3 py-1 text-sm font-medium rounded-full
+            {% if appointment.status == 'scheduled' %}bg-blue-100 text-blue-700
+            {% elif appointment.status == 'confirmed' %}bg-green-100 text-green-700
+            {% elif appointment.status == 'in_progress' %}bg-yellow-100 text-yellow-700
+            {% elif appointment.status == 'completed' %}bg-gray-100 text-gray-700
+            {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-700
+            {% elif appointment.status == 'no_show' %}bg-orange-100 text-orange-700
+            {% endif %}">
+            {{ appointment.get_status_display }}
+        </span>
+        {% if encounter %}
+        <a href="/staff-{{ staff_token }}/operations/clinical/"
+           class="ml-2 px-3 py-1 text-sm font-medium rounded-full bg-primary-100 text-primary-700 hover:bg-primary-200">
+            {% include "components/icons/feather.html" with icon="activity" class="w-3 h-3 inline mr-1" %}
+            {{ encounter.get_pipeline_state_display }}
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Appointment Details -->
+        <div class="bg-white shadow-sm rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Appointment Details" %}</h2>
+            <dl class="space-y-4">
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Date" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.scheduled_start|date:"l, F j, Y" }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Time" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.scheduled_start|time:"H:i" }} - {{ appointment.scheduled_end|time:"H:i" }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Service" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.service.name }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Duration" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.service.duration_minutes }} {% trans "minutes" %}</dd>
+                </div>
+                {% if appointment.location %}
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Location" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.location.name }}</dd>
+                </div>
+                {% endif %}
+                {% if appointment.veterinarian %}
+                <div class="flex justify-between">
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Veterinarian" %}</dt>
+                    <dd class="text-sm text-gray-900">{{ appointment.veterinarian.get_full_name|default:appointment.veterinarian.email }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        <!-- Patient & Owner -->
+        <div class="bg-white shadow-sm rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Patient & Owner" %}</h2>
+            <dl class="space-y-4">
+                {% if appointment.pet %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Patient" %}</dt>
+                    <dd class="mt-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                {% include "components/icons/feather.html" with icon="heart" class="w-5 h-5 text-primary-600" %}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ appointment.pet.name }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.pet.get_species_display }}{% if appointment.pet.breed %} / {{ appointment.pet.breed }}{% endif %}</p>
+                            </div>
+                        </div>
+                    </dd>
+                </div>
+                {% endif %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{% trans "Owner" %}</dt>
+                    <dd class="mt-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                                {% include "components/icons/feather.html" with icon="user" class="w-5 h-5 text-gray-600" %}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ appointment.owner.get_full_name|default:appointment.owner.email }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.owner.email }}</p>
+                            </div>
+                        </div>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if appointment.notes %}
+    <div class="bg-white shadow-sm rounded-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Notes" %}</h2>
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ appointment.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    {% if appointment.status not in 'completed,cancelled' %}
+    <div class="bg-white shadow-sm rounded-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Quick Actions" %}</h2>
+        <div class="flex flex-wrap gap-3">
+            {% if appointment.status == 'scheduled' %}
+            <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ appointment.pk }}/edit/" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="confirmed">
+                <button type="button" onclick="confirmAppointment()" class="btn btn-secondary btn-sm">
+                    {% include "components/icons/feather.html" with icon="check" class="w-4 h-4 mr-1" %}
+                    {% trans "Confirm" %}
+                </button>
+            </form>
+            {% endif %}
+
+            {% if appointment.status not in 'no_show' %}
+            <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ appointment.pk }}/no-show/" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm text-orange-600"
+                        onclick="return confirm('{% trans "Mark this appointment as no-show?" %}')">
+                    {% include "components/icons/feather.html" with icon="user-x" class="w-4 h-4 mr-1" %}
+                    {% trans "No Show" %}
+                </button>
+            </form>
+            {% endif %}
+
+            <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ appointment.pk }}/complete/" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm text-green-600"
+                        onclick="return confirm('{% trans "Mark this appointment as complete?" %}')">
+                    {% include "components/icons/feather.html" with icon="check-circle" class="w-4 h-4 mr-1" %}
+                    {% trans "Complete" %}
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Timestamps -->
+    <div class="text-xs text-gray-400 text-right">
+        {% trans "Created" %}: {{ appointment.created_at|date:"M j, Y H:i" }}
+        {% if appointment.confirmed_at %} | {% trans "Confirmed" %}: {{ appointment.confirmed_at|date:"M j, Y H:i" }}{% endif %}
+        {% if appointment.completed_at %} | {% trans "Completed" %}: {{ appointment.completed_at|date:"M j, Y H:i" }}{% endif %}
+    </div>
+</div>
+{% endblock %}

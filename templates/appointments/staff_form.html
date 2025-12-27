@@ -1,0 +1,190 @@
+{% extends "base_staff.html" %}
+{% load static i18n %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-500">{% trans "Operations" %}</span>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="/staff-{{ staff_token }}/operations/appointments/" class="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700">{% trans "Appointments" %}</a>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "New Appointment" %}{% endif %}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white shadow-sm rounded-lg">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-xl font-semibold text-gray-900">
+                {% if is_edit %}
+                {% trans "Edit Appointment" %}
+                {% else %}
+                {% trans "New Appointment" %}
+                {% endif %}
+            </h1>
+            {% if is_edit and appointment %}
+            <p class="mt-1 text-sm text-gray-500">
+                {{ appointment.pet.name|default:"No Pet" }} - {{ appointment.service.name }}
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="p-6 space-y-6">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        {% include "components/icons/feather.html" with icon="alert-circle" class="h-5 w-5 text-red-400" %}
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Owner & Pet -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_owner" class="block text-sm font-medium text-gray-700">{% trans "Owner" %} *</label>
+                    {{ form.owner }}
+                    {% if form.owner.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.owner.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_pet" class="block text-sm font-medium text-gray-700">{% trans "Pet" %}</label>
+                    {{ form.pet }}
+                    {% if form.pet.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.pet.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Service & Location -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_service" class="block text-sm font-medium text-gray-700">{% trans "Service" %} *</label>
+                    {{ form.service }}
+                    {% if form.service.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.service.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_location" class="block text-sm font-medium text-gray-700">{% trans "Location" %}</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.location.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Date, Time & Veterinarian -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="id_scheduled_date" class="block text-sm font-medium text-gray-700">{% trans "Date" %} *</label>
+                    {{ form.scheduled_date }}
+                    {% if form.scheduled_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.scheduled_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_scheduled_time" class="block text-sm font-medium text-gray-700">{% trans "Time" %} *</label>
+                    {{ form.scheduled_time }}
+                    {% if form.scheduled_time.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.scheduled_time.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_veterinarian" class="block text-sm font-medium text-gray-700">{% trans "Veterinarian" %}</label>
+                    {{ form.veterinarian }}
+                    {% if form.veterinarian.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.veterinarian.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status (only for edit) -->
+            {% if is_edit %}
+            <div>
+                <label for="id_status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Notes -->
+            <div>
+                <label for="id_notes" class="block text-sm font-medium text-gray-700">{% trans "Notes" %}</label>
+                {{ form.notes }}
+                <p class="mt-1 text-sm text-gray-500">{% trans "Internal notes about this appointment (reason for visit, special instructions, etc.)" %}</p>
+                {% if form.notes.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                <a href="/staff-{{ staff_token }}/operations/appointments/{% if is_edit %}{{ appointment.pk }}/{% endif %}"
+                   class="btn btn-ghost">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% include "components/icons/feather.html" with icon="save" class="w-4 h-4 mr-2" %}
+                    {% if is_edit %}{% trans "Save Changes" %}{% else %}{% trans "Create Appointment" %}{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Filter pets based on selected owner
+document.getElementById('id_owner').addEventListener('change', function() {
+    const ownerId = this.value;
+    const petSelect = document.getElementById('id_pet');
+
+    if (!ownerId) {
+        return;
+    }
+
+    // For now, we'll just show all pets
+    // In production, you'd want an AJAX endpoint to filter pets by owner
+});
+</script>
+{% endblock %}

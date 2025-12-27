@@ -44,7 +44,46 @@
                 <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>{% trans "In Progress" %}</option>
                 <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
             </select>
+            <!-- New Appointment -->
+            <a href="/staff-{{ staff_token }}/operations/appointments/add/" class="btn btn-primary">
+                {% include "components/icons/feather.html" with icon="plus" class="w-4 h-4 mr-2" %}
+                {% trans "New Appointment" %}
+            </a>
         </div>
+    </div>
+
+    <!-- Bulk Actions Bar (hidden until selection) -->
+    <div id="bulk-actions-bar" class="hidden bg-primary-50 border border-primary-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-primary-700">
+                <span id="selected-count">0</span> {% trans "selected" %}
+            </span>
+            <button type="button" onclick="clearSelection()" class="text-sm text-primary-600 hover:underline">
+                {% trans "Clear" %}
+            </button>
+        </div>
+        <form id="bulk-form" method="post" action="/staff-{{ staff_token }}/operations/appointments/bulk/" class="flex items-center gap-2">
+            {% csrf_token %}
+            <div id="bulk-ids-container"></div>
+            {% if locations.count > 1 %}
+            <select name="location_id" class="text-sm border-gray-300 rounded-md">
+                <option value="">{% trans "Select location..." %}</option>
+                {% for loc in locations %}
+                <option value="{{ loc.id }}">{{ loc.name }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            <select name="action" class="text-sm border-gray-300 rounded-md" required>
+                <option value="">{% trans "Select action..." %}</option>
+                <option value="check_in">{% trans "Check In All" %}</option>
+                <option value="confirm">{% trans "Confirm All" %}</option>
+                <option value="no_show">{% trans "Mark No Show" %}</option>
+                <option value="cancel">{% trans "Cancel All" %}</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">
+                {% trans "Apply" %}
+            </button>
+        </form>
     </div>
 
     <!-- Appointments Table -->
@@ -52,6 +91,10 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    <th class="px-4 py-3 w-10">
+                        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)"
+                               class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Time" %}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Patient" %}</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Owner" %}</th>
@@ -64,7 +107,11 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for item in appointments_data %}
                 {% with apt=item.appointment enc=item.encounter %}
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50" data-appointment-id="{{ apt.pk }}">
+                    <td class="px-4 py-4">
+                        <input type="checkbox" name="row-select" value="{{ apt.pk }}" onchange="updateSelection()"
+                               class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {{ apt.scheduled_start|time:"H:i" }}
                     </td>
@@ -74,9 +121,10 @@
                                 {% include "components/icons/feather.html" with icon="heart" class="w-4 h-4 text-primary-600" %}
                             </div>
                             <div>
-                                <div class="text-sm font-medium text-gray-900">
+                                <a href="/staff-{{ staff_token }}/operations/appointments/{{ apt.pk }}/"
+                                   class="text-sm font-medium text-gray-900 hover:text-primary-600">
                                     {{ apt.pet.name|default:"No Pet" }}
-                                </div>
+                                </a>
                                 <div class="text-xs text-gray-500">
                                     {{ apt.pet.species|default:"" }}{% if apt.pet.breed %} / {{ apt.pet.breed }}{% endif %}
                                 </div>
@@ -115,12 +163,17 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <!-- Edit Button (always visible) -->
+                        <a href="/staff-{{ staff_token }}/operations/appointments/{{ apt.pk }}/edit/"
+                           class="btn btn-ghost btn-sm mr-2" title="{% trans 'Edit' %}">
+                            {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4" %}
+                        </a>
                         {% if enc %}
-                        <!-- Already checked in - link to board -->
+                        <!-- Already checked in - link to encounter -->
                         <a href="/staff-{{ staff_token }}/operations/clinical/"
-                           class="btn btn-sm btn-secondary">
+                           class="btn btn-sm btn-primary">
                             {% include "components/icons/feather.html" with icon="activity" class="w-4 h-4 mr-1" %}
-                            {% trans "View on Board" %}
+                            {% trans "Open Encounter" %}
                         </a>
                         {% elif apt.status in 'scheduled,confirmed' %}
                         <!-- Check In Button -->
@@ -161,7 +214,7 @@
                 {% endwith %}
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                         {% include "components/icons/feather.html" with icon="calendar" class="w-12 h-12 mx-auto mb-4 text-gray-300" %}
                         <p class="text-lg font-medium">{% trans "No appointments" %}</p>
                         <p class="text-sm">{% trans "No appointments scheduled for this date." %}</p>
@@ -172,4 +225,50 @@
         </table>
     </div>
 </div>
+
+<script>
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('input[name="row-select"]:checked');
+    const count = checkboxes.length;
+    const bar = document.getElementById('bulk-actions-bar');
+    const countSpan = document.getElementById('selected-count');
+    const container = document.getElementById('bulk-ids-container');
+
+    countSpan.textContent = count;
+
+    if (count > 0) {
+        bar.classList.remove('hidden');
+        // Update hidden inputs
+        container.innerHTML = '';
+        checkboxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'appointment_ids';
+            input.value = cb.value;
+            container.appendChild(input);
+        });
+    } else {
+        bar.classList.add('hidden');
+    }
+
+    // Update select-all state
+    const allCheckboxes = document.querySelectorAll('input[name="row-select"]');
+    const selectAll = document.getElementById('select-all');
+    selectAll.checked = allCheckboxes.length > 0 && count === allCheckboxes.length;
+    selectAll.indeterminate = count > 0 && count < allCheckboxes.length;
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('input[name="row-select"]');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateSelection();
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('input[name="row-select"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    document.getElementById('select-all').checked = false;
+    updateSelection();
+}
+</script>
 {% endblock %}

@@ -31,12 +31,16 @@ def location(db, organization):
 
 @pytest.fixture
 def staff_user(db, django_user_model):
-    """Create staff user."""
+    """Create staff user with EMR permissions.
+
+    Uses superuser to bypass permission checks in tests.
+    """
     return django_user_model.objects.create_user(
         username='staff',
         email='staff@test.com',
         password='testpass123',
         is_staff=True,
+        is_superuser=True,  # Grants all module permissions
     )
 
 

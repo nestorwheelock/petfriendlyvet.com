@@ -6,16 +6,18 @@ Clear and reseed: python manage.py seed_dev_data --clear
 Creates:
 - 1 Organization
 - 1 Location
-- 3 Staff users (vet, tech, receptionist)
+- 3 Staff users (vet, tech, receptionist) with proper roles and permissions
 - 1 Customer + 3 Pets + PatientRecords
 - 3 Appointments today (2 scheduled, 1 cancelled)
 """
 from datetime import timedelta
 
+from django.contrib.auth.models import Group, Permission as DjangoPermission
+from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from apps.accounts.models import User
+from apps.accounts.models import User, Role, UserRole
 from apps.appointments.models import Appointment, ServiceType
 from apps.locations.models import Location
 from apps.parties.models import Organization
@@ -23,8 +25,86 @@ from apps.pets.models import Pet
 from apps.practice.models import PatientRecord
 
 
+# Staff role configurations with their permissions
+STAFF_ROLE_CONFIG = {
+    'seed_vet': {
+        'role_slug': 'veterinarian',
+        'permissions': [
+            'practice.view', 'practice.create', 'practice.edit', 'practice.manage',
+            'emr.view', 'emr.create', 'emr.edit', 'emr.finalize',
+            'appointments.view', 'appointments.create', 'appointments.edit',
+            'pets.view', 'pets.create', 'pets.edit',
+        ],
+    },
+    'seed_tech': {
+        'role_slug': 'vet-tech',
+        'permissions': [
+            'practice.view', 'practice.create',
+            'emr.view', 'emr.create',
+            'appointments.view', 'appointments.create',
+            'pets.view',
+        ],
+    },
+    'seed_reception': {
+        'role_slug': 'receptionist',
+        'permissions': [
+            'practice.view',
+            'appointments.view', 'appointments.create', 'appointments.edit',
+            'pets.view', 'pets.create',
+        ],
+    },
+}
+
+
 class Command(BaseCommand):
     help = 'Seed development data: org, location, staff, patients, appointments'
+
+    def ensure_permission_exists(self, codename):
+        """Ensure a module permission exists in the database."""
+        content_type = ContentType.objects.get_for_model(User)
+        permission, created = DjangoPermission.objects.get_or_create(
+            codename=codename,
+            defaults={
+                'name': f'Can {codename.replace(".", " ")}',
+                'content_type': content_type,
+            }
+        )
+        return permission
+
+    def assign_role_and_permissions(self, user, role_config):
+        """Assign role and permissions to a staff user."""
+        try:
+            role = Role.objects.get(slug=role_config['role_slug'])
+        except Role.DoesNotExist:
+            self.stdout.write(self.style.WARNING(
+                f'    Role {role_config["role_slug"]} not found, skipping role assignment'
+            ))
+            return
+
+        # Assign UserRole if not exists
+        user_role, ur_created = UserRole.objects.get_or_create(
+            user=user,
+            role=role,
+            defaults={'is_primary': True}
+        )
+        if ur_created:
+            self.stdout.write(self.style.SUCCESS(f'    Assigned role: {role.name}'))
+        else:
+            self.stdout.write(f'    Role already assigned: {role.name}')
+
+        # Ensure permissions exist and add to role's group
+        group = role.group
+        permissions_added = 0
+        for perm_codename in role_config['permissions']:
+            perm = self.ensure_permission_exists(perm_codename)
+            if perm not in group.permissions.all():
+                group.permissions.add(perm)
+                permissions_added += 1
+
+        if permissions_added > 0:
+            self.stdout.write(self.style.SUCCESS(
+                f'    Added {permissions_added} permissions to {group.name} group'
+            ))
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -94,6 +174,10 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f'  Staff exists: {user.get_full_name()}')
             staff_users[data['username']] = user
+
+            # Assign role and permissions from config
+            if data['username'] in STAFF_ROLE_CONFIG:
+                self.assign_role_and_permissions(user, STAFF_ROLE_CONFIG[data['username']])
 
         # 4. Customer with pets
         customer, created = User.objects.get_or_create(
