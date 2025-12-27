@@ -1,0 +1,147 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Consumable Items" %} - {{ procedure.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Consumable Items" %}</h1>
+            <p class="text-gray-600 mt-1">{{ procedure.name }}</p>
+        </div>
+        <a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Procedures" %}
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Summary Card -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Total Consumable Cost" %}</p>
+                <p class="text-2xl font-bold text-gray-900">${{ total_cost|floatformat:2 }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">{% trans "Items" %}</p>
+                <p class="text-2xl font-bold text-primary-600">{{ consumables.count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Current Consumables -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-semibold text-gray-900">{% trans "Assigned Consumables" %}</h2>
+            </div>
+            {% if consumables %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Item" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Qty" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Cost" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Required" %}</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for consumable in consumables %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ consumable.inventory_item.name }}</div>
+                                {% if consumable.notes %}
+                                <div class="text-xs text-gray-500">{{ consumable.notes }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ consumable.quantity }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${{ consumable.line_cost|floatformat:2 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if consumable.is_required %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">{% trans "Required" %}</span>
+                                {% else %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">{% trans "Optional" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <form method="post" action="/staff-{{ staff_token }}/operations/practice/procedures/{{ procedure.pk }}/consumables/{{ consumable.pk }}/remove/" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:text-red-800">
+                                        {% trans "Remove" %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-6 text-center text-gray-500">
+                {% trans "No consumable items assigned yet" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Add Consumable Form -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-semibold text-gray-900">{% trans "Add Consumable" %}</h2>
+            </div>
+            <form method="post" action="/staff-{{ staff_token }}/operations/practice/procedures/{{ procedure.pk }}/consumables/add/" class="p-6 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="inventory_item" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Item" %}
+                    </label>
+                    <select name="inventory_item" id="inventory_item" required class="select select-bordered w-full">
+                        <option value="">{% trans "Select item..." %}</option>
+                        {% for item in available_items %}
+                        <option value="{{ item.pk }}">{{ item.name }} (${{ item.cost_price }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Quantity" %}
+                    </label>
+                    <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" value="1.00"
+                           class="input input-bordered w-full">
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="is_required" checked class="checkbox checkbox-primary">
+                        <span class="text-sm text-gray-700">{% trans "Required" %}</span>
+                    </label>
+                </div>
+                <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Notes" %}
+                    </label>
+                    <input type="text" name="notes" id="notes" class="input input-bordered w-full"
+                           placeholder="{% trans 'Optional notes...' %}">
+                </div>
+                <button type="submit" class="btn btn-primary w-full">
+                    {% trans "Add Consumable" %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

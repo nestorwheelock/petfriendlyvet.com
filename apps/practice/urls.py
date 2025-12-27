@@ -36,6 +36,17 @@ urlpatterns = [
     path('procedures/<int:pk>/edit/', views.procedure_edit, name='procedure_edit'),
     path('procedures/<int:pk>/delete/', views.procedure_delete, name='procedure_delete'),
 
+    # Procedure Providers (qualified staff who can perform procedure)
+    path('procedures/<int:pk>/providers/', views.procedure_providers, name='procedure_providers'),
+    path('procedures/<int:pk>/providers/add/', views.procedure_add_provider, name='procedure_add_provider'),
+    path('procedures/<int:pk>/providers/remove/', views.procedure_remove_provider, name='procedure_remove_provider'),
+
+    # Procedure Consumables (inventory items consumed during procedure)
+    path('procedures/<int:pk>/consumables/', views.procedure_consumables, name='procedure_consumables'),
+    path('procedures/<int:pk>/consumables/add/', views.procedure_add_consumable, name='procedure_add_consumable'),
+    path('procedures/<int:pk>/consumables/<int:consumable_pk>/update/', views.procedure_update_consumable, name='procedure_update_consumable'),
+    path('procedures/<int:pk>/consumables/<int:consumable_pk>/remove/', views.procedure_remove_consumable, name='procedure_remove_consumable'),
+
     # Settings
     path('settings/', views.clinic_settings, name='clinic_settings'),
 ]

@@ -92,7 +92,7 @@
         </div>
 
         <div class="flex justify-end gap-4 pt-4 border-t">
-            <a href="{% url 'practice:category_list' %}" class="btn btn-ghost">
+            <a href="/staff-{{ staff_token }}/operations/practice/categories/" class="btn btn-ghost">
                 {% trans "Cancel" %}
             </a>
             <button type="submit" class="btn btn-primary">

@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Tasks" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Staff task management" %}</p>
         </div>
-        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Dashboard" %}
         </a>
     </div>
@@ -42,7 +42,7 @@
         <ul class="divide-y divide-gray-200">
             {% for task in tasks %}
             <li class="p-4 hover:bg-gray-50">
-                <a href="{% url 'practice:task_detail' task.pk %}" class="block">
+                <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/" class="block">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <p class="font-semibold text-gray-900">{{ task.title }}</p>

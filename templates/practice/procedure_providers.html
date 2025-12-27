@@ -1,0 +1,108 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Qualified Providers" %} - {{ procedure.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Qualified Providers" %}</h1>
+            <p class="text-gray-600 mt-1">{{ procedure.name }}</p>
+        </div>
+        <a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="text-primary-600 hover:text-primary-700 font-medium">
+            ← {% trans "Back to Procedures" %}
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Current Qualified Providers -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-semibold text-gray-900">{% trans "Assigned Providers" %}</h2>
+            </div>
+            {% if qualified_providers %}
+            <ul class="divide-y divide-gray-200">
+                {% for provider in qualified_providers %}
+                <li class="p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                            <span class="font-bold text-primary-600">
+                                {{ provider.user.first_name|slice:":1" }}{{ provider.user.last_name|slice:":1" }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">
+                                {{ provider.user.get_full_name|default:provider.user.username }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ provider.get_role_display }}</p>
+                        </div>
+                    </div>
+                    <form method="post" action="/staff-{{ staff_token }}/operations/practice/procedures/{{ procedure.pk }}/providers/remove/">
+                        {% csrf_token %}
+                        <input type="hidden" name="staff_id" value="{{ provider.pk }}">
+                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                            {% trans "Remove" %}
+                        </button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-6 text-center text-gray-500">
+                {% trans "No providers assigned yet" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Available Providers to Add -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-semibold text-gray-900">{% trans "Available Providers" %}</h2>
+            </div>
+            {% if available_providers %}
+            <ul class="divide-y divide-gray-200">
+                {% for provider in available_providers %}
+                <li class="p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span class="font-bold text-gray-600">
+                                {{ provider.user.first_name|slice:":1" }}{{ provider.user.last_name|slice:":1" }}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">
+                                {{ provider.user.get_full_name|default:provider.user.username }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ provider.get_role_display }}</p>
+                        </div>
+                    </div>
+                    <form method="post" action="/staff-{{ staff_token }}/operations/practice/procedures/{{ procedure.pk }}/providers/add/">
+                        {% csrf_token %}
+                        <input type="hidden" name="staff_id" value="{{ provider.pk }}">
+                        <button type="submit" class="text-primary-600 hover:text-primary-800 text-sm font-medium">
+                            {% trans "Add" %}
+                        </button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-6 text-center text-gray-500">
+                {% trans "All providers are already assigned" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

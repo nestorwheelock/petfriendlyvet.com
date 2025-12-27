@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Time Tracking" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Staff time entries" %}</p>
         </div>
-        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Dashboard" %}
         </a>
     </div>
@@ -48,7 +48,7 @@
                     {% for entry in entries %}
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
-                            <a href="{% url 'practice:staff_detail' entry.staff.pk %}" class="text-primary-600 hover:underline">
+                            <a href="/staff-{{ staff_token }}/operations/practice/staff/{{ entry.staff.pk }}/" class="text-primary-600 hover:underline">
                                 {{ entry.staff.user.get_full_name }}
                             </a>
                         </td>

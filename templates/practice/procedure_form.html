@@ -193,7 +193,7 @@
 
         <!-- Actions -->
         <div class="flex justify-end gap-4">
-            <a href="{% url 'practice:procedure_list' %}" class="btn btn-ghost">
+            <a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="btn btn-ghost">
                 {% trans "Cancel" %}
             </a>
             <button type="submit" class="btn btn-primary">

@@ -28,7 +28,7 @@
 
         <form method="post" class="flex justify-end gap-4">
             {% csrf_token %}
-            <a href="{% url 'practice:category_list' %}" class="btn btn-ghost">
+            <a href="/staff-{{ staff_token }}/operations/practice/categories/" class="btn btn-ghost">
                 {% trans "Cancel" %}
             </a>
             <button type="submit" class="btn btn-error">

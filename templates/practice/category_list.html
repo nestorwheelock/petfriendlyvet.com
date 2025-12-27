@@ -11,10 +11,10 @@
             <p class="text-gray-600 mt-1">{% trans "Organize procedures by category" %}</p>
         </div>
         <div class="flex gap-3">
-            <a href="{% url 'practice:procedure_list' %}" class="btn btn-outline">
+            <a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="btn btn-outline">
                 {% trans "Procedures" %}
             </a>
-            <a href="{% url 'practice:category_create' %}" class="btn btn-primary">
+            <a href="/staff-{{ staff_token }}/operations/practice/categories/add/" class="btn btn-primary">
                 + {% trans "Add Category" %}
             </a>
         </div>
@@ -77,10 +77,10 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{% url 'practice:category_edit' cat.pk %}" class="text-primary-600 hover:text-primary-900 mr-3">
+                        <a href="/staff-{{ staff_token }}/operations/practice/categories/{{ cat.pk }}/edit/" class="text-primary-600 hover:text-primary-900 mr-3">
                             {% trans "Edit" %}
                         </a>
-                        <a href="{% url 'practice:category_delete' cat.pk %}" class="text-red-600 hover:text-red-900">
+                        <a href="/staff-{{ staff_token }}/operations/practice/categories/{{ cat.pk }}/delete/" class="text-red-600 hover:text-red-900">
                             {% trans "Delete" %}
                         </a>
                     </td>
@@ -89,7 +89,7 @@
                 <tr>
                     <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                         {% trans "No categories found." %}
-                        <a href="{% url 'practice:category_create' %}" class="text-primary-600 hover:underline">
+                        <a href="/staff-{{ staff_token }}/operations/practice/categories/add/" class="text-primary-600 hover:underline">
                             {% trans "Add one now" %}
                         </a>
                     </td>

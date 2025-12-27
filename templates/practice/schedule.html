@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Weekly Schedule" %}</h1>
             <p class="text-gray-600 mt-1">{{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}</p>
         </div>
-        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Dashboard" %}
         </a>
     </div>

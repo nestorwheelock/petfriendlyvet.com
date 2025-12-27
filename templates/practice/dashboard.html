@@ -32,21 +32,29 @@
 
     <!-- Quick Links -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <a href="{% url 'practice:staff_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/practice/staff/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">👥</span>
             <span class="font-medium">{% trans "Staff Directory" %}</span>
         </a>
-        <a href="{% url 'practice:schedule' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/practice/schedule/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">📅</span>
             <span class="font-medium">{% trans "Schedule" %}</span>
         </a>
-        <a href="{% url 'practice:task_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">✅</span>
             <span class="font-medium">{% trans "Tasks" %}</span>
         </a>
-        <a href="{% url 'practice:time_tracking' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/practice/time/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">⏰</span>
             <span class="font-medium">{% trans "Time Tracking" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">🏥</span>
+            <span class="font-medium">{% trans "Procedures" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/practice/categories/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+            <span class="text-2xl">📁</span>
+            <span class="font-medium">{% trans "Categories" %}</span>
         </a>
     </div>
 
@@ -55,7 +63,7 @@
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900">{% trans "Today's Schedule" %}</h2>
-                <a href="{% url 'practice:schedule' %}" class="text-primary-600 text-sm hover:underline">
+                <a href="/staff-{{ staff_token }}/operations/practice/schedule/" class="text-primary-600 text-sm hover:underline">
                     {% trans "View All" %}
                 </a>
             </div>
@@ -91,7 +99,7 @@
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900">{% trans "Active Tasks" %}</h2>
-                <a href="{% url 'practice:task_list' %}" class="text-primary-600 text-sm hover:underline">
+                <a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="text-primary-600 text-sm hover:underline">
                     {% trans "View All" %}
                 </a>
             </div>
@@ -99,7 +107,7 @@
             <ul class="divide-y divide-gray-200">
                 {% for task in recent_tasks %}
                 <li class="p-4">
-                    <a href="{% url 'practice:task_detail' task.pk %}" class="block hover:bg-gray-50">
+                    <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/" class="block hover:bg-gray-50">
                         <div class="flex items-start justify-between">
                             <div>
                                 <p class="font-medium text-gray-900">{{ task.title }}</p>

@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Clinic Settings" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Clinic configuration and information" %}</p>
         </div>
-        <a href="{% url 'practice:dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Dashboard" %}
         </a>
     </div>

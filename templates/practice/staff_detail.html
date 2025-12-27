@@ -6,7 +6,7 @@
 {% block staff_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
-        <a href="{% url 'practice:staff_list' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+        <a href="/staff-{{ staff_token }}/operations/practice/staff/" class="text-primary-600 hover:text-primary-700 font-medium">
             ← {% trans "Back to Staff" %}
         </a>
     </div>
@@ -92,7 +92,7 @@
             <ul class="divide-y divide-gray-200">
                 {% for task in assigned_tasks %}
                 <li class="p-4">
-                    <a href="{% url 'practice:task_detail' task.pk %}" class="block hover:bg-gray-50">
+                    <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/" class="block hover:bg-gray-50">
                         <p class="font-medium">{{ task.title }}</p>
                         <span class="text-xs px-2 py-1 rounded-full
                             {% if task.priority == 'urgent' %}bg-red-100 text-red-800

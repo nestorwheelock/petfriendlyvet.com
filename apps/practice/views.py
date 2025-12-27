@@ -8,9 +8,11 @@ from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 
 from apps.billing.models import SATProductCode, SATUnitCode
+from apps.core.utils import staff_redirect
+from apps.inventory.models import InventoryItem
 from .models import (
     StaffProfile, Shift, TimeEntry, Task, ClinicSettings,
-    ProcedureCategory, VetProcedure
+    ProcedureCategory, VetProcedure, ProcedureConsumable
 )
 
 
@@ -270,11 +272,11 @@ def category_create(request):
 
         if not code or not name:
             messages.error(request, 'Code and name are required.')
-            return redirect('practice:category_create')
+            return staff_redirect(request, 'practice:category_create')
 
         if ProcedureCategory.objects.filter(code=code).exists():
             messages.error(request, f'Category with code "{code}" already exists.')
-            return redirect('practice:category_create')
+            return staff_redirect(request, 'practice:category_create')
 
         ProcedureCategory.objects.create(
             code=code,
@@ -285,7 +287,7 @@ def category_create(request):
             sort_order=sort_order,
         )
         messages.success(request, f'Category "{name}" created successfully.')
-        return redirect('practice:category_list')
+        return staff_redirect(request, 'practice:category_list')
 
     context = {
         'max_sort_order': ProcedureCategory.objects.count(),
@@ -309,11 +311,11 @@ def category_edit(request, pk):
 
         if not category.code or not category.name:
             messages.error(request, 'Code and name are required.')
-            return redirect('practice:category_edit', pk=pk)
+            return staff_redirect(request, 'practice:category_edit', pk=pk)
 
         category.save()
         messages.success(request, f'Category "{category.name}" updated successfully.')
-        return redirect('practice:category_list')
+        return staff_redirect(request, 'practice:category_list')
 
     context = {
         'category': category,
@@ -333,12 +335,12 @@ def category_delete(request, pk):
                 request,
                 f'Cannot delete "{category.name}" - it has {category.procedures.count()} procedures.'
             )
-            return redirect('practice:category_list')
+            return staff_redirect(request, 'practice:category_list')
 
         name = category.name
         category.delete()
         messages.success(request, f'Category "{name}" deleted successfully.')
-        return redirect('practice:category_list')
+        return staff_redirect(request, 'practice:category_list')
 
     context = {
         'category': category,
@@ -397,11 +399,11 @@ def procedure_create(request):
 
         if not code or not name or not category_id:
             messages.error(request, 'Code, name, and category are required.')
-            return redirect('practice:procedure_create')
+            return staff_redirect(request, 'practice:procedure_create')
 
         if VetProcedure.objects.filter(code=code).exists():
             messages.error(request, f'Procedure with code "{code}" already exists.')
-            return redirect('practice:procedure_create')
+            return staff_redirect(request, 'practice:procedure_create')
 
         VetProcedure.objects.create(
             code=code,
@@ -420,7 +422,7 @@ def procedure_create(request):
             sat_unit_code_id=sat_unit_code_id,
         )
         messages.success(request, f'Procedure "{name}" created successfully.')
-        return redirect('practice:procedure_list')
+        return staff_redirect(request, 'practice:procedure_list')
 
     categories = ProcedureCategory.objects.filter(is_active=True).order_by('sort_order')
     sat_product_codes = SATProductCode.objects.filter(
@@ -466,11 +468,11 @@ def procedure_edit(request, pk):
 
         if not procedure.code or not procedure.name or not procedure.category_id:
             messages.error(request, 'Code, name, and category are required.')
-            return redirect('practice:procedure_edit', pk=pk)
+            return staff_redirect(request, 'practice:procedure_edit', pk=pk)
 
         procedure.save()
         messages.success(request, f'Procedure "{procedure.name}" updated successfully.')
-        return redirect('practice:procedure_list')
+        return staff_redirect(request, 'practice:procedure_list')
 
     categories = ProcedureCategory.objects.filter(is_active=True).order_by('sort_order')
     sat_product_codes = SATProductCode.objects.filter(
@@ -497,9 +499,161 @@ def procedure_delete(request, pk):
         name = procedure.name
         procedure.delete()
         messages.success(request, f'Procedure "{name}" deleted successfully.')
-        return redirect('practice:procedure_list')
+        return staff_redirect(request, 'practice:procedure_list')
 
     context = {
         'procedure': procedure,
     }
     return render(request, 'practice/procedure_confirm_delete.html', context)
+
+
+# ============================================
+# Qualified Providers Views
+# ============================================
+
+@staff_member_required
+def procedure_providers(request, pk):
+    """View and manage qualified providers for a procedure."""
+    procedure = get_object_or_404(VetProcedure.objects.prefetch_related('qualified_providers'), pk=pk)
+
+    # Get all active staff profiles not already assigned
+    available_providers = StaffProfile.objects.filter(
+        is_active=True
+    ).exclude(
+        pk__in=procedure.qualified_providers.values_list('pk', flat=True)
+    ).select_related('user').order_by('user__first_name', 'user__last_name')
+
+    context = {
+        'procedure': procedure,
+        'qualified_providers': procedure.qualified_providers.select_related('user').order_by('user__first_name'),
+        'available_providers': available_providers,
+    }
+    return render(request, 'practice/procedure_providers.html', context)
+
+
+@staff_member_required
+def procedure_add_provider(request, pk):
+    """Add a qualified provider to a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff_id')
+        if staff_id:
+            staff = get_object_or_404(StaffProfile, pk=staff_id)
+            procedure.qualified_providers.add(staff)
+            messages.success(request, f'{staff.user.get_full_name()} added as qualified provider.')
+
+    return staff_redirect(request, 'practice:procedure_providers', pk=pk)
+
+
+@staff_member_required
+def procedure_remove_provider(request, pk):
+    """Remove a qualified provider from a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff_id')
+        if staff_id:
+            staff = get_object_or_404(StaffProfile, pk=staff_id)
+            procedure.qualified_providers.remove(staff)
+            messages.success(request, f'{staff.user.get_full_name()} removed from qualified providers.')
+
+    return staff_redirect(request, 'practice:procedure_providers', pk=pk)
+
+
+# ============================================
+# Procedure Consumables Views
+# ============================================
+
+@staff_member_required
+def procedure_consumables(request, pk):
+    """View and manage consumable items for a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    consumables = procedure.consumables.select_related(
+        'inventory_item'
+    ).order_by('inventory_item__name')
+
+    # Calculate total consumable cost
+    total_cost = sum(c.inventory_item.cost_price * c.quantity for c in consumables)
+
+    # Available inventory items to add
+    assigned_item_ids = consumables.values_list('inventory_item_id', flat=True)
+    available_items = InventoryItem.objects.filter(
+        item_type='consumable'
+    ).exclude(
+        pk__in=assigned_item_ids
+    ).order_by('name')[:50]
+
+    context = {
+        'procedure': procedure,
+        'consumables': consumables,
+        'total_cost': total_cost,
+        'available_items': available_items,
+    }
+    return render(request, 'practice/procedure_consumables.html', context)
+
+
+@staff_member_required
+def procedure_add_consumable(request, pk):
+    """Add a consumable item to a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+
+    if request.method == 'POST':
+        inventory_item_id = request.POST.get('inventory_item')
+        quantity = request.POST.get('quantity', '1.00')
+        is_required = request.POST.get('is_required') == 'on'
+        notes = request.POST.get('notes', '').strip()
+
+        if inventory_item_id:
+            inventory_item = get_object_or_404(InventoryItem, pk=inventory_item_id)
+
+            # Check if already exists
+            if not procedure.consumables.filter(inventory_item=inventory_item).exists():
+                ProcedureConsumable.objects.create(
+                    procedure=procedure,
+                    inventory_item=inventory_item,
+                    quantity=Decimal(quantity),
+                    is_required=is_required,
+                    notes=notes,
+                )
+                messages.success(request, f'{inventory_item.name} added to consumables.')
+            else:
+                messages.warning(request, f'{inventory_item.name} is already a consumable for this procedure.')
+
+    return staff_redirect(request, 'practice:procedure_consumables', pk=pk)
+
+
+@staff_member_required
+def procedure_update_consumable(request, pk, consumable_pk):
+    """Update a consumable item for a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+    consumable = get_object_or_404(ProcedureConsumable, pk=consumable_pk, procedure=procedure)
+
+    if request.method == 'POST':
+        quantity = request.POST.get('quantity', '1.00')
+        is_required = request.POST.get('is_required') == 'on'
+        notes = request.POST.get('notes', '').strip()
+
+        consumable.quantity = Decimal(quantity)
+        consumable.is_required = is_required
+        consumable.notes = notes
+        consumable.save()
+
+        messages.success(request, f'{consumable.inventory_item.name} updated.')
+
+    return staff_redirect(request, 'practice:procedure_consumables', pk=pk)
+
+
+@staff_member_required
+def procedure_remove_consumable(request, pk, consumable_pk):
+    """Remove a consumable item from a procedure."""
+    procedure = get_object_or_404(VetProcedure, pk=pk)
+    consumable = get_object_or_404(ProcedureConsumable, pk=consumable_pk, procedure=procedure)
+
+    if request.method == 'POST':
+        item_name = consumable.inventory_item.name
+        consumable.delete()
+        messages.success(request, f'{item_name} removed from consumables.')
+
+    return staff_redirect(request, 'practice:procedure_consumables', pk=pk)
