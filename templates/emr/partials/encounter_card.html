@@ -131,7 +131,7 @@
                 hx-vals='{"new_state": "in_exam"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
-                class="btn btn-xs bg-indigo-500 hover:bg-indigo-600 text-white border-none">
+                class="btn btn-xs bg-cyan-500 hover:bg-cyan-600 text-white border-none">
             {% trans "Start Exam" %}
         </button>
         {% elif encounter.pipeline_state == 'in_exam' %}
