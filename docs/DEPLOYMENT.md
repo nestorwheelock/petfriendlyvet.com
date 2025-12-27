@@ -92,6 +92,92 @@ The `docker-compose.override.yml` file provides development-friendly settings:
 
 **Important:** This override is auto-loaded when you run `docker-compose up` without specifying a file. For production deployments, always use the explicit `-f docker-compose.yml` flag to bypass the override.
 
+## Deploy Script (scripts/deploy.sh)
+
+The `deploy.sh` script provides a unified interface for deploying code, syncing databases, and managing media files.
+
+### Quick Reference
+
+```bash
+./scripts/deploy.sh help          # Show all commands
+./scripts/deploy.sh status        # Check if production is up
+./scripts/deploy.sh quick         # Fast deploy for testing (rsync only)
+./scripts/deploy.sh code          # Production deploy (rsync + rebuild)
+./scripts/deploy.sh push          # Full deploy (code + media)
+```
+
+### Commands
+
+| Command | Description | Use Case |
+|---------|-------------|----------|
+| `status` | Check production status and HTTP response | Verify site is up |
+| `quick` | Rsync code only, no rebuild | Testing with volume mounts |
+| `quick --restart` | Rsync + restart containers | Pick up Python changes |
+| `code` | Rsync + docker rebuild + migrate | Production deployments |
+| `code-legacy` | Tar + sftp upload (fallback) | If rsync fails |
+| `push` | Full deploy: tests + code + media | Complete release |
+| `db-pull` | Download production DB to local | Sync prod data locally |
+| `db-push` | Upload local DB to production | Initial setup only |
+| `media-pull` | Download production media | Sync images/files |
+| `media-push` | Upload local media | Push new assets |
+| `logs` | Tail production container logs | Debugging |
+| `rollback` | Revert to previous deployment | Emergency rollback |
+
+### Configuration
+
+Edit `scripts/deploy.conf` to configure:
+
+```bash
+# Server settings
+REMOTE_HOST="root@your-server-ip"
+REMOTE_PATH="/root/petfriendlyvet"
+REMOTE_PASSWORD="your-password"
+
+# Database
+DB_CONTAINER="petfriendlyvet-db-1"
+DB_NAME="petfriendlyvet"
+
+# Excludes (not synced)
+EXCLUDE_PATTERNS=(.git __pycache__ .env node_modules media)
+```
+
+### Testing vs Production Workflow
+
+**Testing Environment** (volume mounts enabled):
+```bash
+# Code changes are instant after rsync (no rebuild needed)
+./scripts/deploy.sh quick
+
+# If Python files changed, restart to reload
+./scripts/deploy.sh quick --restart
+```
+
+**Production Environment** (code baked into image):
+```bash
+# Must rebuild Docker image to pick up changes
+./scripts/deploy.sh code
+```
+
+### Database Sync
+
+```bash
+# Pull production database to local (for testing with real data)
+./scripts/deploy.sh db-pull
+
+# Push local database to production (DESTRUCTIVE - use carefully!)
+./scripts/deploy.sh db-push
+```
+
+### Media Sync
+
+```bash
+# Pull production media (images, uploads) to local
+./scripts/deploy.sh media-pull
+
+# Push local media to production
+./scripts/deploy.sh media-push
+```
+
 ## Docker Deployment
 
 ### Build and Run
