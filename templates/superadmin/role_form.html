@@ -98,6 +98,12 @@
                         {% include "components/icons/feather.html" with icon="save" class="w-4 h-4 mr-1" %}
                         {% if role %}{% trans "Update Role" %}{% else %}{% trans "Create Role" %}{% endif %}
                     </button>
+                    {% if role %}
+                    <a href="{% url 'superadmin:role_permissions' role.pk %}" class="btn btn-secondary">
+                        {% include "components/icons/feather.html" with icon="shield" class="w-4 h-4 mr-1" %}
+                        {% trans "Manage Permissions" %}
+                    </a>
+                    {% endif %}
                     <a href="{% url 'superadmin:role_list' %}" class="btn btn-ghost">
                         {% trans "Cancel" %}
                     </a>

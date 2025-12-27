@@ -294,6 +294,230 @@ class MultipleRolesTests(TestCase):
         self.assertTrue(user.has_module_permission('accounting', 'view'))
 
 
+class ModulePermissionCreationTests(TestCase):
+    """T-096a: Test that module permissions are created by migration."""
+
+    def test_module_permissions_exist(self):
+        """All module permissions are created."""
+        perm = DjangoPermission.objects.filter(codename='practice.view')
+        self.assertTrue(perm.exists(), "practice.view permission should exist")
+
+    def test_all_modules_have_permissions(self):
+        """Each module has view/create/edit/delete/manage permissions."""
+        modules = [
+            'practice', 'accounting', 'inventory', 'pharmacy',
+            'appointments', 'delivery', 'crm', 'reports',
+            'billing', 'superadmin', 'audit', 'email_marketing', 'core'
+        ]
+        actions = ['view', 'create', 'edit', 'delete', 'manage']
+
+        for module in modules:
+            for action in actions:
+                codename = f'{module}.{action}'
+                self.assertTrue(
+                    DjangoPermission.objects.filter(codename=codename).exists(),
+                    f"Missing permission: {codename}"
+                )
+
+    def test_permissions_have_correct_content_type(self):
+        """Module permissions use User content type."""
+        perm = DjangoPermission.objects.filter(codename='practice.view').first()
+        if perm:
+            content_type = ContentType.objects.get_for_model(User)
+            self.assertEqual(perm.content_type, content_type)
+
+
+class DefaultRolePermissionTests(TestCase):
+    """T-096a: Test that default roles have appropriate permissions assigned."""
+
+    def test_administrator_has_manage_permissions(self):
+        """Administrator role has manage permission for most modules."""
+        admin = Role.objects.get(slug='administrator')
+        self.assertTrue(
+            admin.group.permissions.filter(codename='practice.manage').exists(),
+            "Administrator should have practice.manage"
+        )
+        self.assertTrue(
+            admin.group.permissions.filter(codename='accounting.manage').exists(),
+            "Administrator should have accounting.manage"
+        )
+        self.assertTrue(
+            admin.group.permissions.filter(codename='inventory.manage').exists(),
+            "Administrator should have inventory.manage"
+        )
+
+    def test_receptionist_has_limited_permissions(self):
+        """Receptionist has view access but not accounting."""
+        receptionist = Role.objects.get(slug='receptionist')
+        self.assertTrue(
+            receptionist.group.permissions.filter(codename='appointments.view').exists(),
+            "Receptionist should have appointments.view"
+        )
+        self.assertTrue(
+            receptionist.group.permissions.filter(codename='practice.view').exists(),
+            "Receptionist should have practice.view"
+        )
+        self.assertFalse(
+            receptionist.group.permissions.filter(codename='accounting.view').exists(),
+            "Receptionist should NOT have accounting.view"
+        )
+
+    def test_finance_manager_has_accounting_not_practice_manage(self):
+        """Finance Manager has accounting but not practice manage."""
+        fm = Role.objects.get(slug='finance-manager')
+        self.assertTrue(
+            fm.group.permissions.filter(codename='accounting.manage').exists(),
+            "Finance Manager should have accounting.manage"
+        )
+        self.assertTrue(
+            fm.group.permissions.filter(codename='billing.manage').exists(),
+            "Finance Manager should have billing.manage"
+        )
+        self.assertFalse(
+            fm.group.permissions.filter(codename='practice.manage').exists(),
+            "Finance Manager should NOT have practice.manage"
+        )
+
+    def test_practice_manager_has_practice_not_accounting(self):
+        """Practice Manager has practice manage but not accounting manage."""
+        pm = Role.objects.get(slug='practice-manager')
+        self.assertTrue(
+            pm.group.permissions.filter(codename='practice.manage').exists(),
+            "Practice Manager should have practice.manage"
+        )
+        self.assertFalse(
+            pm.group.permissions.filter(codename='accounting.manage').exists(),
+            "Practice Manager should NOT have accounting.manage"
+        )
+
+    def test_veterinarian_has_pharmacy_manage(self):
+        """Veterinarian has pharmacy manage permission."""
+        vet = Role.objects.get(slug='veterinarian')
+        self.assertTrue(
+            vet.group.permissions.filter(codename='pharmacy.manage').exists(),
+            "Veterinarian should have pharmacy.manage"
+        )
+
+    def test_pet_owner_has_minimal_permissions(self):
+        """Pet Owner has only appointments and billing view."""
+        pet_owner = Role.objects.get(slug='pet-owner')
+        self.assertTrue(
+            pet_owner.group.permissions.filter(codename='appointments.view').exists(),
+            "Pet Owner should have appointments.view"
+        )
+        self.assertTrue(
+            pet_owner.group.permissions.filter(codename='billing.view').exists(),
+            "Pet Owner should have billing.view"
+        )
+        self.assertFalse(
+            pet_owner.group.permissions.filter(codename='practice.view').exists(),
+            "Pet Owner should NOT have practice.view"
+        )
+
+
+class PermissionMatrixUITests(TestCase):
+    """T-096b: Test permission matrix UI for role management."""
+
+    def setUp(self):
+        """Create superuser and test role for permission matrix tests."""
+        self.superuser = User.objects.create_superuser(
+            username='matrixadmin',
+            email='matrixadmin@test.com',
+            password='testpass123'
+        )
+        self.client = Client()
+        self.client.login(username='matrixadmin', password='testpass123')
+
+        # Get an existing role to test with
+        self.test_role = Role.objects.get(slug='receptionist')
+
+    def test_permission_matrix_loads(self):
+        """Permission matrix page loads for superuser."""
+        response = self.client.get(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'practice')
+        self.assertContains(response, 'accounting')
+
+    def test_permission_matrix_shows_role_name(self):
+        """Permission matrix shows the role being edited."""
+        response = self.client.get(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk})
+        )
+        self.assertContains(response, self.test_role.name)
+
+    def test_permission_matrix_shows_current_state(self):
+        """Matrix shows which permissions role currently has."""
+        # Receptionist should have practice.view
+        response = self.client.get(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk})
+        )
+        # Should contain checked checkbox for practice.view
+        self.assertContains(response, 'practice.view')
+
+    def test_permission_matrix_saves_new_permissions(self):
+        """Saving permission matrix updates role's group permissions."""
+        # Initially receptionist doesn't have accounting.view
+        self.assertFalse(
+            self.test_role.group.permissions.filter(codename='accounting.view').exists()
+        )
+
+        # POST to add accounting.view
+        current_perms = list(
+            self.test_role.group.permissions.values_list('codename', flat=True)
+        )
+        current_perms.append('accounting.view')
+
+        response = self.client.post(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk}),
+            {'permissions': current_perms}
+        )
+        self.assertEqual(response.status_code, 302)  # Redirect on success
+
+        # Refresh and verify
+        self.test_role.refresh_from_db()
+        self.assertTrue(
+            self.test_role.group.permissions.filter(codename='accounting.view').exists()
+        )
+
+    def test_permission_matrix_removes_permissions(self):
+        """Saving without a permission removes it from role."""
+        # Get current permissions, remove practice.view
+        current_perms = list(
+            self.test_role.group.permissions.values_list('codename', flat=True)
+        )
+        current_perms = [p for p in current_perms if p != 'practice.view']
+
+        response = self.client.post(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk}),
+            {'permissions': current_perms}
+        )
+        self.assertEqual(response.status_code, 302)
+
+        # Refresh and verify practice.view is removed
+        self.test_role.refresh_from_db()
+        self.assertFalse(
+            self.test_role.group.permissions.filter(codename='practice.view').exists()
+        )
+
+    def test_permission_matrix_requires_superuser(self):
+        """Non-superuser cannot access permission matrix."""
+        # Create non-superuser
+        regular_user = User.objects.create_user(
+            username='regularuser',
+            email='regular@test.com',
+            password='testpass123'
+        )
+        client = Client()
+        client.login(username='regularuser', password='testpass123')
+
+        response = client.get(
+            reverse('superadmin:role_permissions', kwargs={'pk': self.test_role.pk})
+        )
+        self.assertIn(response.status_code, [403, 302])
+
+
 class DefaultRolesIntegrationTests(TestCase):
     """Test default roles from migration work correctly."""
 

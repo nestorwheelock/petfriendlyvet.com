@@ -20,6 +20,7 @@ urlpatterns = [
     path('roles/', views.RoleListView.as_view(), name='role_list'),
     path('roles/add/', views.RoleCreateView.as_view(), name='role_create'),
     path('roles/<int:pk>/', views.RoleUpdateView.as_view(), name='role_update'),
+    path('roles/<int:pk>/permissions/', views.RolePermissionsView.as_view(), name='role_permissions'),
 
     # Module Management
     path('modules/', views.ModuleListView.as_view(), name='module_list'),

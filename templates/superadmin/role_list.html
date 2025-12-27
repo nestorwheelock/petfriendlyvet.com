@@ -57,9 +57,14 @@
                                 {{ role.description|default:"-" }}
                             </td>
                             <td>
-                                <a href="{% url 'superadmin:role_update' role.pk %}" class="btn btn-ghost btn-xs">
-                                    {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4" %}
-                                </a>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'superadmin:role_permissions' role.pk %}" class="btn btn-ghost btn-xs" title="{% trans 'Manage Permissions' %}">
+                                        {% include "components/icons/feather.html" with icon="shield" class="w-4 h-4" %}
+                                    </a>
+                                    <a href="{% url 'superadmin:role_update' role.pk %}" class="btn btn-ghost btn-xs" title="{% trans 'Edit Role' %}">
+                                        {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4" %}
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}

@@ -229,6 +229,95 @@ class RoleUpdateView(SuperuserRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
+class RolePermissionsView(SuperuserRequiredMixin, TemplateView):
+    """Manage permissions for a role using a permission matrix."""
+
+    template_name = 'superadmin/role_permissions.html'
+
+    # Define all modules and actions for the permission matrix
+    MODULES = [
+        ('practice', 'Practice Management'),
+        ('accounting', 'Accounting'),
+        ('inventory', 'Inventory'),
+        ('pharmacy', 'Pharmacy'),
+        ('appointments', 'Appointments'),
+        ('delivery', 'Delivery'),
+        ('crm', 'CRM'),
+        ('reports', 'Reports'),
+        ('billing', 'Billing'),
+        ('superadmin', 'System Admin'),
+        ('audit', 'Audit'),
+        ('email_marketing', 'Email Marketing'),
+        ('core', 'Core'),
+    ]
+
+    ACTIONS = [
+        ('view', 'View'),
+        ('create', 'Create'),
+        ('edit', 'Edit'),
+        ('delete', 'Delete'),
+        ('approve', 'Approve'),
+        ('manage', 'Manage'),
+    ]
+
+    def get_role(self):
+        from apps.accounts.models import Role
+        return get_object_or_404(Role, pk=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        role = self.get_role()
+
+        # Get current permissions for this role
+        current_perms = set(
+            role.group.permissions.values_list('codename', flat=True)
+        )
+
+        # Build permission matrix data
+        matrix = []
+        for module_code, module_name in self.MODULES:
+            row = {
+                'module_code': module_code,
+                'module_name': module_name,
+                'actions': []
+            }
+            for action_code, action_name in self.ACTIONS:
+                codename = f'{module_code}.{action_code}'
+                row['actions'].append({
+                    'action_code': action_code,
+                    'action_name': action_name,
+                    'codename': codename,
+                    'has_permission': codename in current_perms,
+                })
+            matrix.append(row)
+
+        context['role'] = role
+        context['matrix'] = matrix
+        context['actions'] = self.ACTIONS
+        return context
+
+    def post(self, request, *args, **kwargs):
+        from django.contrib.auth.models import Permission
+
+        role = self.get_role()
+
+        # Get selected permissions from form
+        selected_perms = request.POST.getlist('permissions')
+
+        # Get all module permissions (those with . in codename)
+        all_module_perms = Permission.objects.filter(codename__contains='.')
+
+        # Clear current module permissions and add selected ones
+        role.group.permissions.remove(*all_module_perms)
+
+        if selected_perms:
+            perms_to_add = Permission.objects.filter(codename__in=selected_perms)
+            role.group.permissions.add(*perms_to_add)
+
+        messages.success(request, _('Permissions updated successfully.'))
+        return HttpResponseRedirect(reverse_lazy('superadmin:role_list'))
+
+
 class SettingsView(SuperuserRequiredMixin, UpdateView):
     """Edit clinic settings."""
 

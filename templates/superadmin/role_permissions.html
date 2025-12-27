@@ -1,0 +1,144 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Role Permissions" %} - {{ role.name }}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-2xl font-bold text-base-content">
+                {% trans "Permissions for" %} {{ role.name }}
+            </h1>
+            <p class="text-base-content/60">
+                {% trans "Toggle permissions for each module. Changes are saved when you click Save." %}
+            </p>
+        </div>
+        <div class="badge badge-outline">
+            {% trans "Level" %}: {{ role.hierarchy_level }}
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body p-0">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th class="sticky left-0 bg-base-200 z-10">{% trans "Module" %}</th>
+                                {% for action_code, action_name in actions %}
+                                <th class="text-center min-w-20">{{ action_name }}</th>
+                                {% endfor %}
+                                <th class="text-center">{% trans "All" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in matrix %}
+                            <tr data-module="{{ row.module_code }}">
+                                <td class="sticky left-0 bg-base-100 z-10 font-medium">
+                                    {{ row.module_name }}
+                                </td>
+                                {% for action in row.actions %}
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           name="permissions"
+                                           value="{{ action.codename }}"
+                                           class="checkbox checkbox-sm checkbox-primary perm-checkbox"
+                                           data-module="{{ row.module_code }}"
+                                           {% if action.has_permission %}checked{% endif %}>
+                                </td>
+                                {% endfor %}
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-xs btn-ghost select-all-row"
+                                            data-module="{{ row.module_code }}"
+                                            title="{% trans 'Toggle all for this module' %}">
+                                        {% include "components/icons/feather.html" with icon="check-square" class="w-4 h-4" %}
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="p-4 bg-base-200 border-t border-base-300">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button type="button" class="btn btn-sm btn-outline" id="select-all-view">
+                            {% include "components/icons/feather.html" with icon="eye" class="w-4 h-4 mr-1" %}
+                            {% trans "All View" %}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline" id="select-all-manage">
+                            {% include "components/icons/feather.html" with icon="settings" class="w-4 h-4 mr-1" %}
+                            {% trans "All Manage" %}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline btn-error" id="clear-all">
+                            {% include "components/icons/feather.html" with icon="x" class="w-4 h-4 mr-1" %}
+                            {% trans "Clear All" %}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex gap-4 p-4 border-t border-base-300">
+                    <button type="submit" class="btn btn-primary">
+                        {% include "components/icons/feather.html" with icon="save" class="w-4 h-4 mr-1" %}
+                        {% trans "Save Permissions" %}
+                    </button>
+                    <a href="{% url 'superadmin:role_list' %}" class="btn btn-ghost">
+                        {% trans "Cancel" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body py-4">
+            <h3 class="font-medium mb-2">{% trans "Permission Legend" %}</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-sm text-base-content/70">
+                <div><strong>{% trans "View" %}:</strong> {% trans "Read-only access" %}</div>
+                <div><strong>{% trans "Create" %}:</strong> {% trans "Add new records" %}</div>
+                <div><strong>{% trans "Edit" %}:</strong> {% trans "Modify existing" %}</div>
+                <div><strong>{% trans "Delete" %}:</strong> {% trans "Remove records" %}</div>
+                <div><strong>{% trans "Approve" %}:</strong> {% trans "Authorize actions" %}</div>
+                <div><strong>{% trans "Manage" %}:</strong> {% trans "Full control" %}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all for a row
+    document.querySelectorAll('.select-all-row').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const module = this.dataset.module;
+            const checkboxes = document.querySelectorAll(`input[data-module="${module}"]`);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        });
+    });
+
+    // Select all View permissions
+    document.getElementById('select-all-view').addEventListener('click', function() {
+        document.querySelectorAll('input[value$=".view"]').forEach(cb => cb.checked = true);
+    });
+
+    // Select all Manage permissions
+    document.getElementById('select-all-manage').addEventListener('click', function() {
+        document.querySelectorAll('input[value$=".manage"]').forEach(cb => cb.checked = true);
+    });
+
+    // Clear all
+    document.getElementById('clear-all').addEventListener('click', function() {
+        document.querySelectorAll('.perm-checkbox').forEach(cb => cb.checked = false);
+    });
+});
+</script>
+{% endblock %}
