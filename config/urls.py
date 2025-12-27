@@ -52,6 +52,7 @@ urlpatterns += i18n_patterns(
     path('operations/practice/', include('apps.practice.urls')),
     path('operations/appointments/', include('apps.appointments.staff_urls')),
     path('operations/clinical/', include('apps.emr.urls')),
+    path('operations/locations/', include('apps.locations.urls')),
     path('operations/hr/', include('apps.hr.urls')),
     path('operations/inventory/', include('apps.inventory.urls')),
     path('operations/referrals/', include('apps.referrals.urls')),

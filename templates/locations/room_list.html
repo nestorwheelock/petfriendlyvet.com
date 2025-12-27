@@ -1,0 +1,117 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Exam Rooms" %} - {{ location.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <nav class="text-sm mb-2">
+                <a href="{% url 'locations:location_list' %}" class="text-primary-600 hover:underline">{% trans "Locations" %}</a>
+                <span class="text-gray-400 mx-2">/</span>
+                <span class="text-gray-600">{{ location.name }}</span>
+            </nav>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Exam Rooms" %}</h1>
+            <p class="text-gray-600 mt-1">{{ location.name }}</p>
+        </div>
+        <div class="flex gap-3">
+            {% if inactive_count > 0 %}
+            <a href="?show_inactive={% if show_inactive %}0{% else %}1{% endif %}" class="btn btn-outline btn-sm">
+                {% if show_inactive %}
+                {% trans "Hide Inactive" %}
+                {% else %}
+                {% trans "Show Inactive" %} ({{ inactive_count }})
+                {% endif %}
+            </a>
+            {% endif %}
+            <a href="{% url 'locations:room_create' location_id=location.id %}" class="btn btn-primary">
+                + {% trans "Add Room" %}
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Order" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Name" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Type" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for room in rooms %}
+                <tr class="hover:bg-gray-50 {% if not room.is_active %}opacity-50{% endif %}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ room.display_order }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-medium text-gray-900">{{ room.name }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded-full
+                            {% if room.room_type == 'exam' %}bg-blue-100 text-blue-800
+                            {% elif room.room_type == 'surgery' %}bg-purple-100 text-purple-800
+                            {% elif room.room_type == 'imaging' %}bg-cyan-100 text-cyan-800
+                            {% elif room.room_type == 'treatment' %}bg-green-100 text-green-800
+                            {% elif room.room_type == 'isolation' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ room.get_room_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if room.is_active %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'locations:room_edit' location_id=location.id room_id=room.id %}" class="text-primary-600 hover:text-primary-900 mr-3">
+                            {% trans "Edit" %}
+                        </a>
+                        {% if room.is_active %}
+                        <form method="post" action="{% url 'locations:room_deactivate' location_id=location.id room_id=room.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('{% trans "Deactivate this room?" %}')">
+                                {% trans "Deactivate" %}
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'locations:room_reactivate' location_id=location.id room_id=room.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-green-600 hover:text-green-900">
+                                {% trans "Reactivate" %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        {% trans "No exam rooms configured." %}
+                        <a href="{% url 'locations:room_create' location_id=location.id %}" class="text-primary-600 hover:underline">
+                            {% trans "Add one now" %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

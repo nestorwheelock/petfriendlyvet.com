@@ -1,0 +1,96 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_edit %}{% trans "Edit Room" %}{% else %}{% trans "Add Room" %}{% endif %} - {{ location.name }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <nav class="text-sm mb-2">
+            <a href="{% url 'locations:location_list' %}" class="text-primary-600 hover:underline">{% trans "Locations" %}</a>
+            <span class="text-gray-400 mx-2">/</span>
+            <a href="{% url 'locations:room_list' location_id=location.id %}" class="text-primary-600 hover:underline">{{ location.name }}</a>
+            <span class="text-gray-400 mx-2">/</span>
+            <span class="text-gray-600">{% if is_edit %}{{ room.name }}{% else %}{% trans "Add Room" %}{% endif %}</span>
+        </nav>
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% if is_edit %}{% trans "Edit Room" %}{% else %}{% trans "Add Room" %}{% endif %}
+        </h1>
+        <p class="text-gray-600 mt-1">{{ location.name }}</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6 space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-error">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Room Name" %} *
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+                <p class="text-xs text-gray-500 mt-1">{% trans "e.g., Room 1, Exam A, Surgery" %}</p>
+            </div>
+
+            <div>
+                <label for="id_room_type" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Room Type" %}
+                </label>
+                {{ form.room_type }}
+                {% if form.room_type.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.room_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_display_order" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Display Order" %}
+                </label>
+                {{ form.display_order }}
+                {% if form.display_order.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.display_order.errors.0 }}</p>
+                {% endif %}
+                <p class="text-xs text-gray-500 mt-1">{% trans "Lower numbers appear first" %}</p>
+            </div>
+
+            {% if is_edit %}
+            <div class="flex items-center">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    {{ form.is_active }}
+                    <span class="text-sm text-gray-700">{% trans "Active" %}</span>
+                </label>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="{% url 'locations:room_list' location_id=location.id %}" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if is_edit %}{% trans "Save Changes" %}{% else %}{% trans "Create Room" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
