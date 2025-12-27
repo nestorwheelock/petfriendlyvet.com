@@ -58,7 +58,7 @@
     <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
         {% if encounter.assigned_vet %}
         <span class="flex items-center" title="{% trans 'Veterinarian' %}">
-            {% include "components/icons/feather.html" with icon="user" class="w-3 h-3 mr-1" %}
+            {% include "components/icons/feather.html" with icon="plus" class="w-3 h-3 mr-1" %}
             {{ encounter.assigned_vet.get_short_name|default:encounter.assigned_vet.username }}
         </span>
         {% endif %}
