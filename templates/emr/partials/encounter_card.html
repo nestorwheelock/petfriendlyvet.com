@@ -8,7 +8,7 @@
     <!-- Patient Info -->
     <div class="flex items-start justify-between mb-2">
         <div>
-            <a href="/staff-{{ staff_token }}/operations/pets/{{ encounter.patient.pet.id }}/"
+            <a href="/staff-{{ staff_token }}/core/pets/{{ encounter.patient.pet.id }}/"
                target="_blank"
                class="font-semibold text-gray-900 hover:text-primary-600 inline-flex items-center gap-1"
                title="{% trans 'Open pet record in new tab' %}">
@@ -32,7 +32,7 @@
     {% if encounter.patient.pet.owner %}
     <div class="text-xs text-gray-500 mb-2">
         <span class="text-gray-400">{% trans "Owner" %}:</span>
-        <a href="/staff-{{ staff_token }}/operations/clients/{{ encounter.patient.pet.owner.id }}/"
+        <a href="/staff-{{ staff_token }}/customers/crm/customers/{{ encounter.patient.pet.owner.id }}/"
            target="_blank"
            class="text-gray-600 hover:text-primary-600 inline-flex items-center gap-1">
             {{ encounter.patient.pet.owner.get_full_name|default:encounter.patient.pet.owner.email }}
