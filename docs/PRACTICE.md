@@ -2,6 +2,8 @@
 
 The `apps.practice` module manages clinic operations including staff profiles, scheduling, time tracking, tasks, clinical notes, and clinic settings.
 
+> **Note:** Time tracking and shift scheduling are being consolidated into the [HR Module](HR.md). StaffProfile now optionally links to HR Employee for unified tracking. Tasks can be associated with HR TimeEntry for project-based time tracking.
+
 ## Table of Contents
 
 - [Overview](#overview)
