@@ -1,0 +1,116 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{{ employee.user.get_full_name }} - {% trans "HR" %}{% endblock %}
+
+{% block staff_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ employee.user.get_full_name }}</h1>
+            <p class="text-gray-600">{{ employee.employee_id }} &middot; {{ employee.position.title|default:"No position" }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'hr:employee_update' employee.pk %}" class="btn btn-secondary btn-sm">
+                {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4 mr-1" %}
+                {% trans "Edit" %}
+            </a>
+            <a href="{% url 'hr:employee_list' %}" class="btn btn-ghost btn-sm">{% trans "Back to List" %}</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Info -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Employment Details" %}</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Department" %}</dt>
+                        <dd class="font-medium">{{ employee.department.name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Position" %}</dt>
+                        <dd class="font-medium">{{ employee.position.title|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Manager" %}</dt>
+                        <dd class="font-medium">{{ employee.manager.user.get_full_name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Employment Type" %}</dt>
+                        <dd class="font-medium">{{ employee.get_employment_type_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Hire Date" %}</dt>
+                        <dd class="font-medium">{{ employee.hire_date|date:"M d, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Status" %}</dt>
+                        <dd>
+                            {% if employee.status == 'active' %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ employee.get_status_display }}</span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">{{ employee.get_status_display }}</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Contact Information" %}</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Work Email" %}</dt>
+                        <dd class="font-medium">{{ employee.work_email|default:employee.user.email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Work Phone" %}</dt>
+                        <dd class="font-medium">{{ employee.work_phone|default:"-" }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            {% if employee.notes %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Notes" %}</h2>
+                <p class="text-gray-600">{{ employee.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Emergency Contact" %}</h2>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Name" %}</dt>
+                        <dd class="font-medium">{{ employee.emergency_contact_name|default:"-" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">{% trans "Phone" %}</dt>
+                        <dd class="font-medium">{{ employee.emergency_contact_phone|default:"-" }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            {% if employee.direct_reports.count %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Direct Reports" %} ({{ employee.direct_reports.count }})</h2>
+                <ul class="space-y-2">
+                    {% for report in employee.direct_reports.all %}
+                    <li>
+                        <a href="{% url 'hr:employee_detail' report.pk %}" class="text-primary-600 hover:underline">
+                            {{ report.user.get_full_name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

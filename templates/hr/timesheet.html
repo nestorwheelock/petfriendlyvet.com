@@ -1,0 +1,136 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Timesheet" %} - {% trans "HR" %}{% endblock %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="ml-2 text-sm text-gray-500">{% trans "HR" %}</span>
+</li>
+<li class="flex items-center">
+    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Timesheet" %}</span>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Timesheet" %}</h1>
+            <p class="text-gray-600">{% trans "Track your work hours" %}</p>
+        </div>
+
+        <!-- Clock In/Out Button -->
+        <div>
+            {% if open_entry %}
+            <form method="post" action="{% url 'hr:clock_out' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error">
+                    {% include "components/icons/feather.html" with icon="log-out" class="w-4 h-4 mr-2" %}
+                    {% trans "Clock Out" %}
+                </button>
+            </form>
+            <p class="text-sm text-gray-500 mt-1">{% trans "Clocked in since" %} {{ open_entry.clock_in|time:"H:i" }}</p>
+            {% else %}
+            <form method="post" action="{% url 'hr:clock_in' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    {% include "components/icons/feather.html" with icon="log-in" class="w-4 h-4 mr-2" %}
+                    {% trans "Clock In" %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Current Status Card -->
+    {% if open_entry %}
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">
+                    {% trans "Currently clocked in" %}
+                </p>
+                <p class="text-sm text-green-600">
+                    {% trans "Started at" %} {{ open_entry.clock_in|date:"M d, Y H:i" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Time Entries Table -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Time Entries" %}</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Date" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Clock In" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Clock Out" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Break" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Hours" %}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Status" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ entry.date|date:"D, M d" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ entry.clock_in|time:"H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if entry.clock_out %}
+                                {{ entry.clock_out|time:"H:i" }}
+                            {% else %}
+                                <span class="text-green-600 font-medium">{% trans "Active" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ entry.break_minutes }} {% trans "min" %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if entry.clock_out %}
+                                {{ entry.hours_worked|floatformat:2 }}h
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if entry.is_approved %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{% trans "Approved" %}</span>
+                            {% elif entry.approval_status == 'rejected' %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{% trans "Rejected" %}</span>
+                            {% else %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">{% trans "Pending" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            {% trans "No time entries yet. Clock in to start tracking your hours." %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit Position" %}{% else %}{% trans "Add Position" %}{% endif %} - {% trans "HR" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if object %}{% trans "Edit Position" %}{% else %}{% trans "Add Position" %}{% endif %}
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="id_title" class="block text-sm font-medium text-gray-700">{% trans "Title" %}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div>
+                    <label for="id_code" class="block text-sm font-medium text-gray-700">{% trans "Code" %}</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}<p class="mt-1 text-sm text-red-600">{{ form.code.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-gray-700">{% trans "Description" %}</label>
+                {{ form.description }}
+            </div>
+
+            <div>
+                <label for="id_department" class="block text-sm font-medium text-gray-700">{% trans "Department" %}</label>
+                {{ form.department }}
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="id_min_salary" class="block text-sm font-medium text-gray-700">{% trans "Minimum Salary" %}</label>
+                    {{ form.min_salary }}
+                </div>
+
+                <div>
+                    <label for="id_max_salary" class="block text-sm font-medium text-gray-700">{% trans "Maximum Salary" %}</label>
+                    {{ form.max_salary }}
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex items-center">
+                    {{ form.is_exempt }}
+                    <label for="id_is_exempt" class="ml-2 text-sm text-gray-700">{% trans "Exempt from overtime" %}</label>
+                </div>
+                <div class="flex items-center">
+                    {{ form.is_active }}
+                    <label for="id_is_active" class="ml-2 text-sm text-gray-700">{% trans "Active" %}</label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <a href="{% url 'hr:position_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

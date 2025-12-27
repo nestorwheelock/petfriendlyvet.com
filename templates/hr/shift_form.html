@@ -1,0 +1,71 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit Shift" %}{% else %}{% trans "Add Shift" %}{% endif %} - {% trans "HR" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if object %}{% trans "Edit Shift" %}{% else %}{% trans "Add Shift" %}{% endif %}
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="id_employee" class="block text-sm font-medium text-gray-700">{% trans "Employee" %}</label>
+                {{ form.employee }}
+                {% if form.employee.errors %}<p class="mt-1 text-sm text-red-600">{{ form.employee.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                <div>
+                    <label for="id_date" class="block text-sm font-medium text-gray-700">{% trans "Date" %}</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}<p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="id_start_time" class="block text-sm font-medium text-gray-700">{% trans "Start Time" %}</label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}<p class="mt-1 text-sm text-red-600">{{ form.start_time.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="id_end_time" class="block text-sm font-medium text-gray-700">{% trans "End Time" %}</label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}<p class="mt-1 text-sm text-red-600">{{ form.end_time.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                <div>
+                    <label for="id_shift_type" class="block text-sm font-medium text-gray-700">{% trans "Shift Type" %}</label>
+                    {{ form.shift_type }}
+                </div>
+                <div>
+                    <label for="id_department" class="block text-sm font-medium text-gray-700">{% trans "Department" %}</label>
+                    {{ form.department }}
+                </div>
+                <div>
+                    <label for="id_status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
+                    {{ form.status }}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_notes" class="block text-sm font-medium text-gray-700">{% trans "Notes" %}</label>
+                {{ form.notes }}
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <a href="{% url 'hr:shift_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

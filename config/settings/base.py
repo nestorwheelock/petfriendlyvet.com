@@ -66,6 +66,7 @@ LOCAL_APPS = [
     'apps.communications',
     'apps.crm',
     'apps.practice',
+    'apps.hr',
     'apps.notifications',
     'apps.services',
     'apps.travel',

@@ -1,0 +1,22 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Department" %} - {% trans "HR" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h1 class="text-xl font-bold text-gray-900 mb-4">{% trans "Delete Department" %}</h1>
+        <p class="text-gray-600 mb-6">
+            {% blocktrans with name=object.name %}Are you sure you want to delete the department "{{ name }}"? This action cannot be undone.{% endblocktrans %}
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-end gap-3">
+                <a href="{% url 'hr:department_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                <button type="submit" class="btn btn-error">{% trans "Delete" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

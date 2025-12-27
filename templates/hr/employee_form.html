@@ -1,0 +1,111 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{% trans "Edit Employee" %}{% else %}{% trans "Add Employee" %}{% endif %} - {% trans "HR" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if object %}{% trans "Edit Employee" %}{% else %}{% trans "Add Employee" %}{% endif %}
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <fieldset>
+                <legend class="text-lg font-medium text-gray-900 mb-4">{% trans "Basic Information" %}</legend>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="id_employee_id" class="block text-sm font-medium text-gray-700">{% trans "Employee ID" %}</label>
+                        {{ form.employee_id }}
+                        {% if form.employee_id.errors %}<p class="mt-1 text-sm text-red-600">{{ form.employee_id.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="id_hire_date" class="block text-sm font-medium text-gray-700">{% trans "Hire Date" %}</label>
+                        {{ form.hire_date }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-lg font-medium text-gray-900 mb-4">{% trans "Position" %}</legend>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="id_department" class="block text-sm font-medium text-gray-700">{% trans "Department" %}</label>
+                        {{ form.department }}
+                    </div>
+                    <div>
+                        <label for="id_position" class="block text-sm font-medium text-gray-700">{% trans "Position" %}</label>
+                        {{ form.position }}
+                    </div>
+                    <div>
+                        <label for="id_manager" class="block text-sm font-medium text-gray-700">{% trans "Manager" %}</label>
+                        {{ form.manager }}
+                    </div>
+                    <div>
+                        <label for="id_employment_type" class="block text-sm font-medium text-gray-700">{% trans "Employment Type" %}</label>
+                        {{ form.employment_type }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-lg font-medium text-gray-900 mb-4">{% trans "Contact" %}</legend>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="id_work_email" class="block text-sm font-medium text-gray-700">{% trans "Work Email" %}</label>
+                        {{ form.work_email }}
+                    </div>
+                    <div>
+                        <label for="id_work_phone" class="block text-sm font-medium text-gray-700">{% trans "Work Phone" %}</label>
+                        {{ form.work_phone }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-lg font-medium text-gray-900 mb-4">{% trans "Emergency Contact" %}</legend>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="id_emergency_contact_name" class="block text-sm font-medium text-gray-700">{% trans "Name" %}</label>
+                        {{ form.emergency_contact_name }}
+                    </div>
+                    <div>
+                        <label for="id_emergency_contact_phone" class="block text-sm font-medium text-gray-700">{% trans "Phone" %}</label>
+                        {{ form.emergency_contact_phone }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-lg font-medium text-gray-900 mb-4">{% trans "Status" %}</legend>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="id_status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
+                        {{ form.status }}
+                    </div>
+                    <div>
+                        <label for="id_termination_date" class="block text-sm font-medium text-gray-700">{% trans "Termination Date" %}</label>
+                        {{ form.termination_date }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <div>
+                <label for="id_notes" class="block text-sm font-medium text-gray-700">{% trans "Notes" %}</label>
+                {{ form.notes }}
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <a href="{% url 'hr:employee_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
