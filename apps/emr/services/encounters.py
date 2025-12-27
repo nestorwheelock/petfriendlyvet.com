@@ -116,6 +116,71 @@ def create_encounter(
 
 
 @transaction.atomic
+def check_in_appointment(appointment, location, user) -> tuple[Encounter, bool]:
+    """Check in an appointment and create/return an Encounter.
+
+    This is idempotent - if an encounter already exists for the appointment,
+    returns the existing one.
+
+    Args:
+        appointment: The Appointment to check in.
+        location: The Location for this encounter.
+        user: The user performing the check-in.
+
+    Returns:
+        Tuple of (Encounter, created) where created is True if new encounter.
+
+    Raises:
+        ValueError: If appointment has no pet or is already cancelled.
+    """
+    # Import here to avoid circular imports
+    from apps.appointments.models import Appointment
+
+    # Validate appointment can be checked in
+    if appointment.status in ('cancelled', 'completed'):
+        raise ValueError(f"Cannot check in {appointment.status} appointment")
+
+    if not appointment.pet:
+        raise ValueError("Appointment requires a pet for check-in")
+
+    # Idempotency: check if encounter already exists
+    existing = Encounter.objects.filter(appointment=appointment).first()
+    if existing:
+        return (existing, False)
+
+    # Get or create patient record
+    patient, _ = PatientRecord.objects.get_or_create(
+        pet=appointment.pet,
+        defaults={'patient_number': f'P{appointment.pet.id:06d}'}
+    )
+
+    # Create encounter with checked_in state
+    now = timezone.now()
+    encounter = Encounter.objects.create(
+        patient=patient,
+        location=location,
+        created_by=user,
+        appointment=appointment,
+        encounter_type='routine',
+        chief_complaint=appointment.notes or appointment.service.name,
+        assigned_vet=appointment.veterinarian,
+        pipeline_state='checked_in',
+        scheduled_at=appointment.scheduled_start,
+        checked_in_at=now,
+    )
+
+    # Update appointment status
+    appointment.status = 'in_progress'
+    appointment.save(update_fields=['status', 'updated_at'])
+
+    # Log clinical events
+    events.log_encounter_created(encounter, user)
+    events.log_state_transition(encounter, 'scheduled', 'checked_in', user)
+
+    return (encounter, True)
+
+
+@transaction.atomic
 def transition_state(encounter: Encounter, new_state: str, user) -> Encounter:
     """Transition encounter to a new pipeline state.
 

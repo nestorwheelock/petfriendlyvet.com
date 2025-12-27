@@ -17,6 +17,7 @@ STAFF_NAV = [
     {'id': 'pets', 'icon': 'heart', 'label': _('Pets'), 'url': 'pets:pet_list', 'path': 'core/pets/', 'section': 'Core'},
     # Operations Section (operations/)
     {'id': 'practice', 'icon': 'stethoscope', 'label': _('Practice'), 'url': 'practice:dashboard', 'path': 'operations/practice/', 'section': 'Operations'},
+    {'id': 'appointments', 'icon': 'calendar', 'label': _('Appointments'), 'url': 'appointments:staff_list', 'path': 'operations/appointments/', 'section': 'Operations'},
     {'id': 'clinical', 'icon': 'activity', 'label': _('Clinical'), 'url': 'emr:whiteboard', 'path': 'operations/clinical/', 'section': 'Operations'},
     {'id': 'hr', 'icon': 'briefcase', 'label': _('HR'), 'url': 'hr:dashboard', 'path': 'operations/hr/', 'section': 'Operations'},
     {'id': 'inventory', 'icon': 'package', 'label': _('Inventory'), 'url': 'inventory:dashboard', 'path': 'operations/inventory/', 'section': 'Operations'},

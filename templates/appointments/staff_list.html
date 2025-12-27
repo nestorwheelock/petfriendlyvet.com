@@ -1,0 +1,175 @@
+{% extends "base_staff.html" %}
+{% load static i18n %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-500">{% trans "Operations" %}</span>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Appointments" %}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900">{% trans "Today's Appointments" %}</h1>
+        <div class="flex items-center gap-4">
+            <!-- Date Filter -->
+            <form method="get" class="flex items-center gap-2">
+                <input type="date" name="date" value="{{ date_filter }}"
+                       class="text-sm border-gray-300 rounded-md shadow-sm"
+                       onchange="this.form.submit()">
+                {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+            </form>
+            <!-- Status Filter -->
+            <select onchange="window.location.href='?date={{ date_filter }}&status='+this.value"
+                    class="text-sm border-gray-300 rounded-md shadow-sm">
+                <option value="">{% trans "All Status" %}</option>
+                <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>{% trans "Scheduled" %}</option>
+                <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>{% trans "Confirmed" %}</option>
+                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>{% trans "In Progress" %}</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Time" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Patient" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Owner" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Service" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Encounter" %}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in appointments_data %}
+                {% with apt=item.appointment enc=item.encounter %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ apt.scheduled_start|time:"H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                {% include "components/icons/feather.html" with icon="heart" class="w-4 h-4 text-primary-600" %}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ apt.pet.name|default:"No Pet" }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ apt.pet.species|default:"" }}{% if apt.pet.breed %} / {{ apt.pet.breed }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ apt.owner.get_full_name|default:apt.owner.email }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ apt.service.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if apt.status == 'scheduled' %}bg-blue-100 text-blue-700
+                            {% elif apt.status == 'confirmed' %}bg-green-100 text-green-700
+                            {% elif apt.status == 'in_progress' %}bg-yellow-100 text-yellow-700
+                            {% elif apt.status == 'completed' %}bg-gray-100 text-gray-700
+                            {% elif apt.status == 'cancelled' %}bg-red-100 text-red-700
+                            {% elif apt.status == 'no_show' %}bg-orange-100 text-orange-700
+                            {% endif %}">
+                            {{ apt.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if enc %}
+                        <!-- Encounter exists - show status/link -->
+                        <a href="/staff-{{ staff_token }}/operations/clinical/"
+                           class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary-100 text-primary-700 hover:bg-primary-200">
+                            {% include "components/icons/feather.html" with icon="activity" class="w-3 h-3 mr-1" %}
+                            {{ enc.get_pipeline_state_display }}
+                        </a>
+                        {% else %}
+                        <!-- No encounter yet -->
+                        <span class="text-xs text-gray-400">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        {% if enc %}
+                        <!-- Already checked in - link to board -->
+                        <a href="/staff-{{ staff_token }}/operations/clinical/"
+                           class="btn btn-sm btn-secondary">
+                            {% include "components/icons/feather.html" with icon="activity" class="w-4 h-4 mr-1" %}
+                            {% trans "View on Board" %}
+                        </a>
+                        {% elif apt.status in 'scheduled,confirmed' %}
+                        <!-- Check In Button -->
+                        <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ apt.pk }}/check-in/" class="inline">
+                            {% csrf_token %}
+                            {% if apt.location %}
+                            <!-- Location already on appointment -->
+                            {% elif locations.count == 1 %}
+                            <input type="hidden" name="location_id" value="{{ locations.first.id }}">
+                            {% else %}
+                            <select name="location_id" class="text-xs border-gray-300 rounded mr-2">
+                                {% for loc in locations %}
+                                <option value="{{ loc.id }}">{{ loc.name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                {% include "components/icons/feather.html" with icon="log-in" class="w-4 h-4 mr-1" %}
+                                {% trans "Check In" %}
+                            </button>
+                        </form>
+                        <form method="post" action="/staff-{{ staff_token }}/operations/appointments/{{ apt.pk }}/no-show/" class="inline ml-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-sm text-orange-600"
+                                    onclick="return confirm('{% trans "Mark as no-show?" %}')">
+                                {% trans "No Show" %}
+                            </button>
+                        </form>
+                        {% elif apt.status == 'no_show' %}
+                        <span class="text-xs text-orange-600">{% trans "No Show" %}</span>
+                        {% elif apt.status == 'completed' %}
+                        <span class="text-xs text-gray-500">{% trans "Completed" %}</span>
+                        {% elif apt.status == 'cancelled' %}
+                        <span class="text-xs text-red-500">{% trans "Cancelled" %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        {% include "components/icons/feather.html" with icon="calendar" class="w-12 h-12 mx-auto mb-4 text-gray-300" %}
+                        <p class="text-lg font-medium">{% trans "No appointments" %}</p>
+                        <p class="text-sm">{% trans "No appointments scheduled for this date." %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
