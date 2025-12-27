@@ -248,4 +248,5 @@ def edit_encounter(request, encounter_id):
         'encounter': encounter,
         'location': location,
         'locations': Location.objects.filter(is_active=True),
+        'hide_sidebar': True,  # Maintain full-page view like whiteboard
     })
