@@ -13,9 +13,6 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods, require_POST
 
-from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
-
 from apps.accounts.decorators import require_permission
 from apps.locations.models import Location
 from apps.practice.models import PatientRecord
@@ -238,7 +235,6 @@ def edit_encounter(request, encounter_id):
         form = EncounterEditForm(request.POST, instance=encounter)
         if form.is_valid():
             form.save()
-            messages.success(request, _('Encounter updated successfully.'))
             return staff_redirect(request, 'operations/clinical/')
     else:
         form = EncounterEditForm(instance=encounter)
