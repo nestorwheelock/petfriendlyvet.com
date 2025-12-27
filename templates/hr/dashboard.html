@@ -1,0 +1,240 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "HR Dashboard" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "HR Dashboard" %}</h1>
+            <p class="text-gray-600 mt-1">{% trans "Employee management, time tracking, and scheduling" %}</p>
+        </div>
+    </div>
+
+    <!-- Summary KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500 mb-1">{% trans "Active Employees" %}</p>
+            <p class="text-3xl font-bold text-gray-900">{{ total_employees }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500 mb-1">{% trans "Departments" %}</p>
+            <p class="text-3xl font-bold text-gray-900">{{ total_departments }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500 mb-1">{% trans "Positions" %}</p>
+            <p class="text-3xl font-bold text-gray-900">{{ total_positions }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-sm text-gray-500 mb-1">{% trans "Shifts Today" %}</p>
+            <p class="text-3xl font-bold text-gray-900">{{ shifts_today }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6 {% if pending_approvals > 0 %}border-l-4 border-yellow-500{% endif %}">
+            <p class="text-sm text-gray-500 mb-1">{% trans "Pending Approvals" %}</p>
+            <p class="text-3xl font-bold {% if pending_approvals > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">{{ pending_approvals }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <a href="/staff-{{ staff_token }}/operations/hr/employees/add/" class="bg-primary-600 text-white rounded-xl shadow p-4 text-center hover:bg-primary-700 transition">
+            <span class="text-2xl block mb-2">+</span>
+            <span class="text-sm font-medium">{% trans "Add Employee" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/schedule/add/" class="bg-blue-600 text-white rounded-xl shadow p-4 text-center hover:bg-blue-700 transition">
+            <span class="text-2xl block mb-2">+</span>
+            <span class="text-sm font-medium">{% trans "Schedule Shift" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/departments/add/" class="bg-green-600 text-white rounded-xl shadow p-4 text-center hover:bg-green-700 transition">
+            <span class="text-2xl block mb-2">+</span>
+            <span class="text-sm font-medium">{% trans "Add Department" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/positions/add/" class="bg-purple-600 text-white rounded-xl shadow p-4 text-center hover:bg-purple-700 transition">
+            <span class="text-2xl block mb-2">+</span>
+            <span class="text-sm font-medium">{% trans "Add Position" %}</span>
+        </a>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+        <a href="/staff-{{ staff_token }}/operations/hr/employees/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">👤</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Employees" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/departments/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">🏢</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Departments" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/positions/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">💼</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Positions" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/schedule/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">📅</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Schedule" %}</span>
+        </a>
+        <a href="/staff-{{ staff_token }}/operations/hr/time/" class="bg-white rounded-xl shadow p-4 text-center hover:shadow-lg transition">
+            <span class="text-2xl block mb-2">⏰</span>
+            <span class="text-sm font-medium text-gray-700">{% trans "Timesheet" %}</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Hires -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Recent Hires" %}</h2>
+                <a href="/staff-{{ staff_token }}/operations/hr/employees/" class="text-primary-600 text-sm hover:underline">{% trans "View all" %}</a>
+            </div>
+            {% if recent_hires %}
+            <ul class="divide-y divide-gray-200">
+                {% for emp in recent_hires %}
+                <li class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ emp.user.get_full_name|default:emp.user.email }}</p>
+                            <p class="text-sm text-gray-500">{{ emp.position.title|default:"-" }} - {{ emp.department.name|default:"-" }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">{{ emp.hire_date|date:"M d, Y" }}</p>
+                            <a href="/staff-{{ staff_token }}/operations/hr/employees/{{ emp.pk }}/" class="text-xs text-primary-600 hover:underline">{% trans "View" %}</a>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No recent hires" %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Today's Schedule -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">{% trans "Today's Schedule" %}</h2>
+                <a href="/staff-{{ staff_token }}/operations/hr/schedule/" class="text-primary-600 text-sm hover:underline">{% trans "View all" %}</a>
+            </div>
+            {% if todays_shifts %}
+            <ul class="divide-y divide-gray-200">
+                {% for shift in todays_shifts %}
+                <li class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ shift.employee.user.get_full_name }}</p>
+                            <p class="text-sm text-gray-500">{{ shift.department.name|default:"-" }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-900">{{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}</p>
+                            <span class="px-2 py-1 text-xs rounded-full
+                                {% if shift.status == 'confirmed' %}bg-green-100 text-green-800
+                                {% elif shift.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ shift.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                {% trans "No shifts scheduled for today" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- DEV: All HR Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All HR Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/" class="text-blue-600 hover:underline">Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Employees -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👤</span> Employees
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/employees/" class="text-blue-600 hover:underline">Employee List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/employees/add/" class="text-blue-600 hover:underline">+ Add Employee</a></li>
+                    <li class="text-gray-400 text-xs">employees/&lt;pk&gt;/ - Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">employees/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">employees/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Departments -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏢</span> Departments
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/departments/" class="text-blue-600 hover:underline">Department List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/departments/add/" class="text-blue-600 hover:underline">+ Add Department</a></li>
+                    <li class="text-gray-400 text-xs">departments/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">departments/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Positions -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>💼</span> Positions
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/positions/" class="text-blue-600 hover:underline">Position List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/positions/add/" class="text-blue-600 hover:underline">+ Add Position</a></li>
+                    <li class="text-gray-400 text-xs">positions/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">positions/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Schedule / Shifts -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📅</span> Schedule
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/schedule/" class="text-blue-600 hover:underline">Schedule List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/schedule/add/" class="text-blue-600 hover:underline">+ Add Shift</a></li>
+                    <li class="text-gray-400 text-xs">schedule/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">schedule/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Time Tracking -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>⏰</span> Time Tracking
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/time/" class="text-blue-600 hover:underline">My Timesheet</a></li>
+                    <li class="text-gray-400 text-xs">time/clock-in/ - Clock In (POST)</li>
+                    <li class="text-gray-400 text-xs">time/clock-out/ - Clock Out (POST)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
+        </div>
+    </div>
+</div>
+{% endblock %}

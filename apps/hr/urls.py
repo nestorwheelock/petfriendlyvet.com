@@ -6,6 +6,9 @@ from . import views
 app_name = 'hr'
 
 urlpatterns = [
+    # HR Dashboard / Root
+    path('', views.HRDashboardView.as_view(), name='dashboard'),
+
     # Departments
     path('departments/', views.DepartmentListView.as_view(), name='department_list'),
     path('departments/add/', views.DepartmentCreateView.as_view(), name='department_create'),

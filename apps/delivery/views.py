@@ -10,7 +10,7 @@ from .models import Delivery, DeliveryDriver
 
 
 class DriverRequiredMixin(LoginRequiredMixin):
-    """Mixin to ensure user is an active driver."""
+    """Mixin to ensure user is an active driver or superadmin."""
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -20,13 +20,20 @@ class DriverRequiredMixin(LoginRequiredMixin):
             self.driver = request.user.delivery_driver
             if not self.driver.is_active:
                 messages.error(request, _("Your driver account is inactive."))
-                return redirect('delivery_admin:dashboard')
+                return redirect('core:home')
         except DeliveryDriver.DoesNotExist:
-            # Non-drivers get redirected to admin dashboard if staff, home otherwise
-            if request.user.is_staff:
-                return redirect('delivery_admin:dashboard')
-            messages.error(request, _("You don't have access to the driver dashboard."))
-            return redirect('core:home')
+            # Superadmins get auto-created as driver managers
+            if request.user.is_superuser:
+                self.driver = DeliveryDriver.objects.create(
+                    user=request.user,
+                    is_active=True,
+                    is_available=True,
+                    is_manager=True
+                )
+            else:
+                # Non-drivers get redirected to home with message
+                messages.error(request, _("You don't have access to the driver dashboard. Register as a driver first."))
+                return redirect('core:home')
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -36,17 +43,35 @@ class DriverDashboardView(DriverRequiredMixin, View):
 
     def get(self, request):
         """Display driver's active deliveries."""
-        deliveries = Delivery.objects.filter(
-            driver=self.driver
-        ).exclude(
-            status__in=['delivered', 'returned']
-        ).select_related(
-            'order', 'zone', 'slot'
-        ).order_by('scheduled_date', 'scheduled_time_start')
+        # Check if user can view all deliveries (manager or superadmin)
+        can_view_all = self.driver.is_manager or request.user.is_superuser
+
+        # Allow managers/superadmins to toggle between views
+        view_mode = request.GET.get('view', 'all' if can_view_all else 'mine')
+
+        # Show all or just assigned deliveries based on view mode
+        if can_view_all and view_mode == 'all':
+            deliveries = Delivery.objects.exclude(
+                status__in=['delivered', 'returned']
+            ).select_related(
+                'order', 'zone', 'slot', 'driver'
+            ).order_by('scheduled_date', 'scheduled_time_start')
+            showing_all = True
+        else:
+            deliveries = Delivery.objects.filter(
+                driver=self.driver
+            ).exclude(
+                status__in=['delivered', 'returned']
+            ).select_related(
+                'order', 'zone', 'slot'
+            ).order_by('scheduled_date', 'scheduled_time_start')
+            showing_all = False
 
         context = {
             'driver': self.driver,
             'deliveries': deliveries,
+            'can_view_all': can_view_all,
+            'showing_all': showing_all,
         }
         return render(request, 'delivery/driver/dashboard.html', context)
 

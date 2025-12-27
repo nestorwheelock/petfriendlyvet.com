@@ -13,7 +13,7 @@ from .admin_views import (
 app_name = 'delivery_admin'
 
 urlpatterns = [
-    path('', RedirectView.as_view(pattern_name='delivery:delivery_admin:dashboard'), name='index'),
+    path('', RedirectView.as_view(pattern_name='delivery_admin:dashboard'), name='index'),
     path('dashboard/', AdminDashboardView.as_view(), name='dashboard'),
     path('reports/', ReportsView.as_view(), name='reports'),
     path('zones/', ZonesView.as_view(), name='zones'),

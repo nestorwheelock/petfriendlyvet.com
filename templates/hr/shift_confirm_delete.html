@@ -13,7 +13,7 @@
         <form method="post">
             {% csrf_token %}
             <div class="flex justify-end gap-3">
-                <a href="{% url 'hr:shift_list' %}" class="btn btn-ghost">{% trans "Cancel" %}</a>
+                <a href="/staff-{{ staff_token }}/operations/hr/schedule/" class="btn btn-ghost">{% trans "Cancel" %}</a>
                 <button type="submit" class="btn btn-error">{% trans "Delete" %}</button>
             </div>
         </form>

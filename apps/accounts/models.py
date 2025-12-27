@@ -125,12 +125,21 @@ class UserRole(models.Model):
 
 
 class User(AbstractUser):
-    """Custom user model for Pet-Friendly Vet."""
+    """Login account for Pet-Friendly Vet.
+
+    This is an authentication account, separate from Person (identity).
+    - One Person can have multiple User accounts (different auth methods)
+    - A User can exist without a Person (API/service accounts)
+    - A Person can exist without a User (contacts, leads)
+    """
 
     AUTH_METHOD_CHOICES = [
         ('email', 'Email'),
         ('phone', 'Phone'),
         ('google', 'Google'),
+        ('apple', 'Apple'),
+        ('facebook', 'Facebook'),
+        ('api_key', 'API Key'),
     ]
 
     ROLE_CHOICES = [
@@ -139,6 +148,18 @@ class User(AbstractUser):
         ('vet', 'Veterinarian'),
         ('admin', 'Administrator'),
     ]
+
+    # Link to Person (the real-world identity)
+    # Nullable: API/service accounts may not have a Person
+    person = models.ForeignKey(
+        'parties.Person',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='accounts',
+        verbose_name=_('person'),
+        help_text=_('The real-world person this account belongs to'),
+    )
 
     email = models.EmailField(_('email address'), unique=True, null=True, blank=True)
     phone_number = models.CharField(
@@ -309,3 +330,14 @@ class EmailChangeRequest(models.Model):
     @property
     def is_valid(self):
         return not self.is_expired and self.confirmed_at is None
+
+
+# =============================================================================
+# Party Pattern Models - MOVED TO apps/parties/models.py
+# =============================================================================
+# All Party models (Person, Organization, Group, PartyRelationship) are now
+# in the parties app. Import them from there:
+#
+# from apps.parties.models import Person, Organization, Group, PartyRelationship
+#
+# This keeps accounts app focused on authentication only.

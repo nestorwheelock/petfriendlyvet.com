@@ -9,12 +9,16 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Delivery, DeliveryDriver, DeliveryProof, PROOF_TYPES
+from .models import Delivery, DeliveryDriver, DriverCapability, DeliveryProof, PROOF_TYPES
 from .services import DeliveryNotificationService
 
 
 class DriverRequiredMixin(LoginRequiredMixin):
-    """Mixin to ensure user is a driver."""
+    """Mixin to ensure user has driver capability.
+
+    Checks for DriverCapability on the user (Person). Falls back to
+    deprecated DeliveryDriver for backwards compatibility during migration.
+    """
 
     raise_exception = True
 
@@ -22,14 +26,37 @@ class DriverRequiredMixin(LoginRequiredMixin):
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Authentication required'}, status=403)
 
+        # Try new DriverCapability first
         try:
-            self.driver = request.user.delivery_driver
+            self.driver = request.user.driver_capability
             if not self.driver.is_active:
                 return JsonResponse({'error': 'Driver account is inactive'}, status=403)
-        except DeliveryDriver.DoesNotExist:
-            return JsonResponse({'error': 'User is not a driver'}, status=403)
+            return super().dispatch(request, *args, **kwargs)
+        except DriverCapability.DoesNotExist:
+            pass
 
-        return super().dispatch(request, *args, **kwargs)
+        # Fall back to deprecated DeliveryDriver for backwards compat
+        try:
+            old_driver = request.user.delivery_driver
+            if not old_driver.is_active:
+                return JsonResponse({'error': 'Driver account is inactive'}, status=403)
+            # Create a DriverCapability wrapper for compatibility
+            self.driver = old_driver
+            return super().dispatch(request, *args, **kwargs)
+        except DeliveryDriver.DoesNotExist:
+            pass
+
+        # Superadmins get auto-created as driver managers
+        if request.user.is_superuser:
+            self.driver = DriverCapability.objects.create(
+                person=request.user,
+                is_active=True,
+                is_available=True,
+                is_manager=True
+            )
+            return super().dispatch(request, *args, **kwargs)
+
+        return JsonResponse({'error': 'User is not a driver'}, status=403)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

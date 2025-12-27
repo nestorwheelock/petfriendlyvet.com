@@ -198,11 +198,11 @@ class ShiftForm(forms.ModelForm):
     class Meta:
         model = Shift
         fields = [
-            'employee', 'date', 'start_time', 'end_time',
+            'person', 'date', 'start_time', 'end_time',
             'shift_type', 'department', 'status', 'notes'
         ]
         widgets = {
-            'employee': forms.Select(attrs={
+            'person': forms.Select(attrs={
                 'class': 'select select-bordered w-full',
             }),
             'date': forms.DateInput(attrs={

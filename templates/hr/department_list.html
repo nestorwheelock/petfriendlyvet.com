@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block header_actions %}
-<a href="{% url 'hr:department_create' %}" class="btn btn-primary btn-sm">
+<a href="/staff-{{ staff_token }}/operations/hr/departments/add/" class="btn btn-primary btn-sm">
     {% include "components/icons/feather.html" with icon="plus" class="w-4 h-4 mr-1" %}
     {% trans "Add Department" %}
 </a>
@@ -65,15 +65,15 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                            <a href="{% url 'hr:department_update' dept.pk %}" class="text-primary-600 hover:text-primary-900 mr-3">{% trans "Edit" %}</a>
-                            <a href="{% url 'hr:department_delete' dept.pk %}" class="text-red-600 hover:text-red-900">{% trans "Delete" %}</a>
+                            <a href="/staff-{{ staff_token }}/operations/hr/departments/{{ dept.pk }}/edit/" class="text-primary-600 hover:text-primary-900 mr-3">{% trans "Edit" %}</a>
+                            <a href="/staff-{{ staff_token }}/operations/hr/departments/{{ dept.pk }}/delete/" class="text-red-600 hover:text-red-900">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             {% trans "No departments found." %}
-                            <a href="{% url 'hr:department_create' %}" class="text-primary-600 hover:underline">{% trans "Create your first department." %}</a>
+                            <a href="/staff-{{ staff_token }}/operations/hr/departments/add/" class="text-primary-600 hover:underline">{% trans "Create your first department." %}</a>
                         </td>
                     </tr>
                     {% endfor %}

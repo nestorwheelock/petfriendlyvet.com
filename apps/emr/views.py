@@ -9,8 +9,8 @@ These are thin views that:
 All EMR writes go through apps/emr/services/ - no direct model .save() here.
 """
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.locations.models import Location
@@ -22,6 +22,20 @@ from .services import encounters, events
 
 # Session key for selected location (namespaced to avoid collisions)
 SESSION_LOCATION_KEY = 'emr_selected_location_id'
+
+
+def staff_redirect(request, path):
+    """Redirect to a staff portal path with the staff token.
+
+    Args:
+        request: The Django request object
+        path: The path after /staff-{token}/ (e.g., 'operations/clinical/')
+
+    Returns:
+        HttpResponseRedirect to the tokenized URL
+    """
+    staff_token = request.session.get('staff_token', '')
+    return HttpResponseRedirect(f'/staff-{staff_token}/{path}')
 
 
 def get_selected_location(request):
@@ -55,19 +69,26 @@ def staff_required(view_func):
 def whiteboard(request):
     """Encounter whiteboard - Kanban board by pipeline state.
 
-    If no location selected, shows location selector.
+    If no location selected:
+    - If only one location exists, auto-select it
+    - Otherwise shows location selector
     Otherwise shows encounters filtered by location, grouped by state.
     """
     location = get_selected_location(request)
     locations = Location.objects.filter(is_active=True)
 
     if not location:
-        # Show location selector
-        return render(request, 'emr/whiteboard.html', {
-            'location': None,
-            'locations': locations,
-            'needs_location': True,
-        })
+        # Auto-select if only one location
+        if locations.count() == 1:
+            location = locations.first()
+            request.session[SESSION_LOCATION_KEY] = location.id
+        else:
+            # Show location selector
+            return render(request, 'emr/whiteboard.html', {
+                'location': None,
+                'locations': locations,
+                'needs_location': True,
+            })
 
     # Get encounters grouped by pipeline state
     encounter_data = encounters.get_whiteboard_data(location)
@@ -98,11 +119,7 @@ def select_location(request):
 
     request.session[SESSION_LOCATION_KEY] = location.id
 
-    # Check if HTMX request
-    if request.headers.get('HX-Request'):
-        return redirect('emr:whiteboard')
-
-    return redirect('emr:whiteboard')
+    return staff_redirect(request, 'operations/clinical/')
 
 
 @login_required
@@ -191,6 +208,7 @@ def transition_encounter(request, encounter_id):
     if request.headers.get('HX-Request'):
         return render(request, 'emr/partials/encounter_card.html', {
             'encounter': encounter,
+            'staff_token': request.session.get('staff_token', ''),
         })
 
-    return redirect('emr:whiteboard')
+    return staff_redirect(request, 'operations/clinical/')

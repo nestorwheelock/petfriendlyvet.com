@@ -14,8 +14,9 @@ from django.views.generic import (
     TemplateView,
 )
 
-from .models import Pet, Vaccination, MedicalCondition
+from .models import Pet
 from .forms import PetForm
+from apps.practice.models import Vaccination, MedicalCondition
 
 
 class OwnerDashboardView(LoginRequiredMixin, TemplateView):
@@ -42,15 +43,23 @@ class OwnerDashboardView(LoginRequiredMixin, TemplateView):
 
 
 class PetListView(LoginRequiredMixin, ListView):
-    """List all pets belonging to the logged-in user."""
+    """List pets - all pets for staff, own pets for customers."""
 
     model = Pet
     template_name = 'pets/pet_list.html'
     context_object_name = 'pets'
+    paginate_by = 25
 
     def get_queryset(self):
         show_archived = self.request.GET.get('archived') == '1'
-        qs = Pet.objects.filter(owner=self.request.user)
+
+        # Staff/superusers see all pets
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            qs = Pet.objects.select_related('owner', 'owner_person')
+        else:
+            # Regular users see only their own pets
+            qs = Pet.objects.filter(owner=self.request.user)
+
         if not show_archived:
             qs = qs.filter(is_archived=False)
         return qs.order_by('is_archived', 'name')
@@ -58,9 +67,14 @@ class PetListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['show_archived'] = self.request.GET.get('archived') == '1'
-        context['archived_count'] = Pet.objects.filter(
-            owner=self.request.user, is_archived=True
-        ).count()
+        context['is_staff_view'] = getattr(self.request, 'is_staff_portal', False)
+
+        if context['is_staff_view']:
+            context['archived_count'] = Pet.objects.filter(is_archived=True).count()
+        else:
+            context['archived_count'] = Pet.objects.filter(
+                owner=self.request.user, is_archived=True
+            ).count()
         return context
 
 
@@ -72,12 +86,16 @@ class PetDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'pet'
 
     def get_queryset(self):
-        # Only allow access to user's own pets
+        # Staff/superusers can view any pet
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Pet.objects.all()
+        # Regular users can only view their own pets
         return Pet.objects.filter(owner=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pet = self.object
+        context['is_staff_view'] = getattr(self.request, 'is_staff_portal', False)
 
         # Get vaccinations
         context['vaccinations'] = Vaccination.objects.filter(
@@ -104,11 +122,22 @@ class PetCreateView(LoginRequiredMixin, CreateView):
     model = Pet
     form_class = PetForm
     template_name = 'pets/pet_form.html'
-    success_url = reverse_lazy('pets:pet_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_staff_view'] = getattr(self.request, 'is_staff_portal', False)
+        return context
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
+
+    def get_success_url(self):
+        if getattr(self.request, 'is_staff_portal', False):
+            from apps.core.middleware.dynamic_urls import get_staff_token
+            staff_token = get_staff_token(self.request)
+            return f"/staff-{staff_token}/core/pets/{self.object.pk}/"
+        return reverse_lazy('pets:pet_list')
 
 
 class PetUpdateView(LoginRequiredMixin, UpdateView):
@@ -119,10 +148,23 @@ class PetUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'pets/pet_form.html'
 
     def get_queryset(self):
-        # Only allow editing user's own pets
+        # Staff/superusers can edit any pet
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Pet.objects.all()
+        # Regular users can only edit their own pets
         return Pet.objects.filter(owner=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_staff_view'] = getattr(self.request, 'is_staff_portal', False)
+        return context
+
     def get_success_url(self):
+        if getattr(self.request, 'is_staff_portal', False):
+            # For staff portal, redirect back to staff pet detail
+            from apps.core.middleware.dynamic_urls import get_staff_token
+            staff_token = get_staff_token(self.request)
+            return f"/staff-{staff_token}/core/pets/{self.object.pk}/"
         return reverse_lazy('pets:pet_detail', kwargs={'pk': self.object.pk})
 
 
@@ -130,10 +172,16 @@ class PetArchiveView(LoginRequiredMixin, View):
     """Archive a pet (soft delete)."""
 
     def post(self, request, pk):
-        pet = get_object_or_404(Pet, pk=pk, owner=request.user)
+        if request.user.is_staff or request.user.is_superuser:
+            pet = get_object_or_404(Pet, pk=pk)
+        else:
+            pet = get_object_or_404(Pet, pk=pk, owner=request.user)
         pet.is_archived = True
         pet.save(update_fields=['is_archived', 'updated_at'])
         messages.success(request, _('%(name)s has been archived.') % {'name': pet.name})
+        if getattr(request, 'is_staff_portal', False):
+            from apps.core.middleware.dynamic_urls import get_staff_token
+            return redirect(f"/staff-{get_staff_token(request)}/core/pets/")
         return redirect('pets:pet_list')
 
 
@@ -141,10 +189,16 @@ class PetUnarchiveView(LoginRequiredMixin, View):
     """Restore an archived pet."""
 
     def post(self, request, pk):
-        pet = get_object_or_404(Pet, pk=pk, owner=request.user, is_archived=True)
+        if request.user.is_staff or request.user.is_superuser:
+            pet = get_object_or_404(Pet, pk=pk, is_archived=True)
+        else:
+            pet = get_object_or_404(Pet, pk=pk, owner=request.user, is_archived=True)
         pet.is_archived = False
         pet.save(update_fields=['is_archived', 'updated_at'])
         messages.success(request, _('%(name)s has been restored.') % {'name': pet.name})
+        if getattr(request, 'is_staff_portal', False):
+            from apps.core.middleware.dynamic_urls import get_staff_token
+            return redirect(f"/staff-{get_staff_token(request)}/core/pets/{pet.pk}/")
         return redirect('pets:pet_detail', pk=pet.pk)
 
 
@@ -153,7 +207,10 @@ class PetMarkDeceasedView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         from datetime import datetime
-        pet = get_object_or_404(Pet, pk=pk, owner=request.user)
+        if request.user.is_staff or request.user.is_superuser:
+            pet = get_object_or_404(Pet, pk=pk)
+        else:
+            pet = get_object_or_404(Pet, pk=pk, owner=request.user)
 
         # Parse date from form or use today
         date_str = request.POST.get('deceased_date')
@@ -169,4 +226,7 @@ class PetMarkDeceasedView(LoginRequiredMixin, View):
         pet.is_archived = True
         pet.save(update_fields=['deceased_date', 'is_archived', 'updated_at'])
         messages.info(request, _('We\'re sorry for your loss. %(name)s\'s profile has been preserved in your archived pets.') % {'name': pet.name})
+        if getattr(request, 'is_staff_portal', False):
+            from apps.core.middleware.dynamic_urls import get_staff_token
+            return redirect(f"/staff-{get_staff_token(request)}/core/pets/")
         return redirect('pets:pet_list')

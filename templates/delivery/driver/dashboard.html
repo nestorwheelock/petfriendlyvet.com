@@ -9,7 +9,7 @@
     <div class="bg-primary-600 text-white py-4 px-4 shadow-lg">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold">{% trans "My Deliveries" %}</h1>
+                <h1 class="text-xl font-bold">{% if showing_all %}{% trans "All Deliveries" %}{% else %}{% trans "My Deliveries" %}{% endif %}</h1>
                 <p class="text-sm text-primary-100">{{ driver.user.get_full_name|default:driver.user.username }}</p>
             </div>
             <div class="flex items-center space-x-3">
@@ -25,6 +25,17 @@
                 </button>
             </div>
         </div>
+        {% if can_view_all %}
+        <!-- Manager View Toggle -->
+        <div class="flex justify-center mt-3 space-x-2">
+            <a href="?view=all" class="px-4 py-1.5 rounded-full text-sm font-medium transition {% if showing_all %}bg-white text-primary-600{% else %}bg-primary-500 text-white hover:bg-primary-400{% endif %}">
+                {% trans "All Deliveries" %}
+            </a>
+            <a href="?view=mine" class="px-4 py-1.5 rounded-full text-sm font-medium transition {% if not showing_all %}bg-white text-primary-600{% else %}bg-primary-500 text-white hover:bg-primary-400{% endif %}">
+                {% trans "My Deliveries" %}
+            </a>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Deliveries List -->

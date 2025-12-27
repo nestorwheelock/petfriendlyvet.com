@@ -4,8 +4,6 @@ from .base import *
 DEBUG = True
 
 # Dynamic URL middleware for admin/staff security
-# Must run AFTER SessionMiddleware and AuthenticationMiddleware
-# Insert after AuthenticationMiddleware (finds its position dynamically)
 _auth_middleware_index = MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware')
 MIDDLEWARE.insert(_auth_middleware_index + 1, 'apps.core.middleware.dynamic_urls.DynamicURLMiddleware')
 
@@ -55,7 +53,7 @@ if os.getenv('USE_LOCMEM_CACHE', 'False').lower() == 'true':
 CORS_ALLOW_ALL_ORIGINS = True
 
 # WAF settings for development (more lenient)
-WAF_ENABLED = True  # Set to False to disable entirely during debugging
+WAF_ENABLED = False  # Disabled for development
 WAF_RATE_LIMIT_REQUESTS = 1000  # High limit for development
 WAF_RATE_LIMIT_WINDOW = 60
 WAF_MAX_STRIKES = 50  # Very lenient

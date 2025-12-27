@@ -28,14 +28,63 @@ GENDER_CHOICES = [
 
 
 class Pet(models.Model):
-    """Pet profile model."""
+    """Pet profile model.
 
+    A pet can be owned by:
+    - A Person - most common: individual pet owner
+    - A Group - household/family sharing a pet
+    - An Organization - zoo, school, rescue, clinic
+
+    At least one owner FK must be set.
+
+    For organizations (e.g., zoo), the responsible_person field
+    links to the individual legally responsible for the animal.
+    """
+
+    # Party ownership - exactly one should be set
+    owner_person = models.ForeignKey(
+        'parties.Person',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='owned_pets',
+        verbose_name=_('owner (person)'),
+        help_text=_('Individual person who owns this pet'),
+    )
+    owner_group = models.ForeignKey(
+        'parties.Group',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='owned_pets',
+        verbose_name=_('owner (group)'),
+        help_text=_('Household/family group that owns this pet'),
+    )
+    owner_organization = models.ForeignKey(
+        'parties.Organization',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='owned_pets',
+        verbose_name=_('owner (organization)'),
+        help_text=_('Organization that owns this pet (zoo, school, rescue, etc.)'),
+    )
+
+    # Multiple people can be responsible for a pet
+    # (e.g., zoo has head keeper + backup keepers)
+    # Use PetResponsibility M2M through table below
+
+    # DEPRECATED - kept for backwards compatibility during migration
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name='pets',
-        verbose_name=_('owner')
+        verbose_name=_('owner (deprecated)'),
+        help_text=_('DEPRECATED: Use owner_person instead'),
     )
+
     name = models.CharField(_('name'), max_length=100)
     species = models.CharField(
         _('species'),
@@ -92,6 +141,35 @@ class Pet(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_species_display()})"
+
+    @property
+    def party_owner(self):
+        """Returns whichever owner is set (Person, Group, or Organization)."""
+        return self.owner_person or self.owner_group or self.owner_organization or self.owner
+
+    @property
+    def owner_name(self):
+        """Returns display name for owner."""
+        owner = self.party_owner
+        if owner is None:
+            return None
+        # User has get_full_name(), Group and Organization have name
+        if hasattr(owner, 'get_full_name'):
+            return owner.get_full_name() or str(owner)
+        return owner.name if hasattr(owner, 'name') else str(owner)
+
+    @property
+    def owner_type(self):
+        """Returns the type of owner: 'person', 'group', 'organization', or None."""
+        if self.owner_person_id:
+            return 'person'
+        elif self.owner_group_id:
+            return 'group'
+        elif self.owner_organization_id:
+            return 'organization'
+        elif self.owner_id:  # deprecated field
+            return 'person'
+        return None
 
     @property
     def age_years(self):
@@ -440,3 +518,60 @@ class PetDocument(models.Model):
 
     def __str__(self):
         return f"{self.pet.name} - {self.title}"
+
+
+RESPONSIBILITY_TYPES = [
+    ('primary', _('Primary Responsible')),
+    ('secondary', _('Secondary/Backup')),
+    ('caretaker', _('Caretaker')),
+    ('emergency', _('Emergency Contact')),
+    ('veterinary', _('Veterinary Contact')),
+    ('other', _('Other')),
+]
+
+
+class PetResponsibility(models.Model):
+    """Links a Person to a Pet with a responsibility role.
+
+    Examples:
+    - Zoo elephant: Head keeper (primary), Assistant keepers (secondary)
+    - Family dog: Both parents (primary), Grandma (emergency)
+    - School horse: Teacher (primary), Stable hand (caretaker)
+    """
+
+    pet = models.ForeignKey(
+        Pet,
+        on_delete=models.CASCADE,
+        related_name='responsibilities',
+        verbose_name=_('pet'),
+    )
+    person = models.ForeignKey(
+        'parties.Person',
+        on_delete=models.CASCADE,
+        related_name='pet_responsibilities',
+        verbose_name=_('person'),
+    )
+    responsibility_type = models.CharField(
+        _('responsibility type'),
+        max_length=20,
+        choices=RESPONSIBILITY_TYPES,
+        default='primary',
+    )
+    is_active = models.BooleanField(_('active'), default=True)
+
+    # When they became/stopped being responsible
+    start_date = models.DateField(_('start date'), null=True, blank=True)
+    end_date = models.DateField(_('end date'), null=True, blank=True)
+
+    notes = models.TextField(_('notes'), blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('pet responsibility')
+        verbose_name_plural = _('pet responsibilities')
+        ordering = ['responsibility_type', 'person__last_name']
+        unique_together = ['pet', 'person', 'responsibility_type']
+
+    def __str__(self):
+        return f"{self.person} - {self.get_responsibility_type_display()} for {self.pet.name}"

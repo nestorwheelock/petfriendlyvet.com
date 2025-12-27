@@ -8,8 +8,8 @@ from .admin_views import AdminDashboardView, ZonesView
 app_name = 'delivery'
 
 urlpatterns = [
-    # Root redirect to admin dashboard (staff) or driver dashboard
-    path('', RedirectView.as_view(pattern_name='delivery:delivery_admin:dashboard'), name='index'),
+    # Root redirect to driver dashboard for direct /delivery/ access
+    path('', RedirectView.as_view(pattern_name='delivery:driver_dashboard'), name='index'),
 
     # Direct access shortcuts for common admin pages
     path('zones/', ZonesView.as_view(), name='zones'),

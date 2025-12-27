@@ -266,6 +266,9 @@ class DynamicURLMiddleware:
             if not hasattr(request, 'user') or not request.user.is_staff:
                 raise Http404("Page not found")
 
+            # Mark this as a staff portal request
+            request.is_staff_portal = True
+
             # Rewrite path to the actual module path
             # /staff-abc123/operations/appointments/ -> /operations/appointments/
             request.path = '/' + remainder

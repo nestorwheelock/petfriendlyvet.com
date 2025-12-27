@@ -1,0 +1,18 @@
+# Development overrides - mounts static files for instant CSS changes
+# This file is auto-loaded by docker-compose alongside docker-compose.yml
+#
+# For production deploys, use explicit file flag to skip this override:
+#   docker-compose -f docker-compose.yml build
+#   docker-compose -f docker-compose.yml up -d
+version: '3.8'
+
+services:
+  web:
+    volumes:
+      # Mount local static directory for instant CSS changes during development
+      # Changes to static/css/output.css are immediately visible without rebuild
+      - ./static:/app/static:ro
+    environment:
+      # Use development settings to disable WhiteNoise caching
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+      - DJANGO_DEBUG=True

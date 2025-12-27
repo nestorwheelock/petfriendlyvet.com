@@ -78,11 +78,6 @@ class DeliverySlot(models.Model):
         return self.is_active and self.available_capacity > 0
 
 
-DRIVER_TYPES = [
-    ('employee', 'Clinic Employee'),
-    ('contractor', 'Independent Contractor'),
-]
-
 VEHICLE_TYPES = [
     ('motorcycle', 'Motorcycle'),
     ('car', 'Car'),
@@ -91,8 +86,139 @@ VEHICLE_TYPES = [
 ]
 
 
+class DriverCapability(models.Model):
+    """Driver capability - a person's ability to do deliveries.
+
+    This is a CAPABILITY attached to a Person (User), not an employment record.
+    Employment details (employee/contractor, tax IDs, contracts) are managed
+    through PartyRelationship + EmploymentDetails in accounts/hr modules.
+
+    A person can have DriverCapability whether they're:
+    - A full-time employee who also does deliveries
+    - A part-time contractor driver
+    - A customer who also drives for us
+    """
+
+    person = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='driver_capability',
+        verbose_name='person',
+    )
+
+    # Vehicle info
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=VEHICLE_TYPES,
+        default='motorcycle',
+    )
+    license_plate = models.CharField(max_length=20, blank=True)
+    drivers_license_number = models.CharField(max_length=50, blank=True)
+    drivers_license_expiry = models.DateField(null=True, blank=True)
+
+    # Zones this driver covers
+    zones = models.ManyToManyField(
+        DeliveryZone,
+        blank=True,
+        related_name='capable_drivers',
+    )
+
+    # Payment rates (for contractor drivers - supplements EmploymentDetails)
+    rate_per_delivery = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Rate paid per delivery (for contractors)',
+    )
+    rate_per_km = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Rate paid per kilometer (for contractors)',
+    )
+
+    # Operational status
+    is_active = models.BooleanField(default=True)
+    is_available = models.BooleanField(
+        default=False,
+        help_text='Currently available for deliveries',
+    )
+    is_manager = models.BooleanField(
+        default=False,
+        help_text='Managers can view all deliveries, not just their own',
+    )
+
+    # Capacity limits
+    max_deliveries_per_day = models.PositiveIntegerField(
+        default=10,
+        help_text='Maximum deliveries this driver can handle per day',
+    )
+
+    # Current location (real-time tracking)
+    current_latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    current_longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    location_updated_at = models.DateTimeField(null=True, blank=True)
+
+    # Performance metrics (denormalized for quick access)
+    total_deliveries = models.PositiveIntegerField(default=0)
+    successful_deliveries = models.PositiveIntegerField(default=0)
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal('5.00'),
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'driver capability'
+        verbose_name_plural = 'driver capabilities'
+        ordering = ['-is_available', 'person__first_name']
+
+    def __str__(self):
+        name = self.person.get_full_name() or self.person.username
+        status = 'Available' if self.is_available else 'Unavailable'
+        return f'{name} ({status})'
+
+    @property
+    def success_rate(self):
+        """Calculate delivery success rate."""
+        if self.total_deliveries == 0:
+            return Decimal('100.00')
+        return Decimal(self.successful_deliveries / self.total_deliveries * 100).quantize(
+            Decimal('0.01')
+        )
+
+
+# =============================================================================
+# Backwards Compatibility - DEPRECATED
+# =============================================================================
+
+DRIVER_TYPES = [
+    ('employee', 'Clinic Employee'),
+    ('contractor', 'Independent Contractor'),
+]
+
+
 class DeliveryDriver(models.Model):
-    """Driver profile for deliveries (employee or contractor)."""
+    """DEPRECATED: Use DriverCapability + PartyRelationship instead.
+
+    This model is kept temporarily for backwards compatibility during migration.
+    Will be removed in a future version.
+    """
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -106,29 +232,11 @@ class DeliveryDriver(models.Model):
     )
     phone = models.CharField(max_length=20, blank=True)
 
-    # Employee fields - link to staff profile (optional)
-    # staff_profile = models.ForeignKey(
-    #     'practice.StaffProfile',
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     related_name='delivery_driver'
-    # )
-
-    # Contractor fields (A/P integration) - link to vendor (optional)
-    # vendor = models.ForeignKey(
-    #     'accounting.Vendor',
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     related_name='delivery_drivers'
-    # )
-
-    # Mexican tax IDs (required for contractors)
+    # Mexican tax IDs (now in EmploymentDetails)
     rfc = models.CharField(max_length=13, blank=True, help_text="RFC (Tax ID)")
     curp = models.CharField(max_length=18, blank=True, help_text="CURP (Personal ID)")
 
-    # Payment rates for contractors
+    # Payment rates (now in DriverCapability)
     rate_per_delivery = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -142,7 +250,7 @@ class DeliveryDriver(models.Model):
         blank=True
     )
 
-    # Contractor onboarding
+    # Contractor onboarding (now in EmploymentDetails)
     contract_signed = models.BooleanField(default=False)
     contract_document = models.FileField(
         upload_to=delivery_contract_path,
@@ -168,7 +276,7 @@ class DeliveryDriver(models.Model):
     )
     onboarding_notes = models.TextField(blank=True, help_text="Admin notes about onboarding")
 
-    # Vehicle info
+    # Vehicle info (now in DriverCapability)
     vehicle_type = models.CharField(
         max_length=20,
         choices=VEHICLE_TYPES,
@@ -176,18 +284,22 @@ class DeliveryDriver(models.Model):
     )
     license_plate = models.CharField(max_length=20, blank=True)
 
-    # Zones this driver covers
+    # Zones (now in DriverCapability)
     zones = models.ManyToManyField(
         DeliveryZone,
         blank=True,
         related_name='drivers'
     )
 
-    # Status
+    # Status (now in DriverCapability)
     is_active = models.BooleanField(default=True)
     is_available = models.BooleanField(default=False)
+    is_manager = models.BooleanField(
+        default=False,
+        help_text="Managers can view all deliveries, not just their own"
+    )
 
-    # Current location (real-time tracking)
+    # Location (now in DriverCapability)
     current_latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
@@ -202,13 +314,13 @@ class DeliveryDriver(models.Model):
     )
     location_updated_at = models.DateTimeField(null=True, blank=True)
 
-    # Capacity limits
+    # Capacity (now in DriverCapability)
     max_deliveries_per_day = models.PositiveIntegerField(
         default=10,
         help_text="Maximum deliveries this driver can handle per day"
     )
 
-    # Performance metrics
+    # Metrics (now in DriverCapability)
     total_deliveries = models.PositiveIntegerField(default=0)
     successful_deliveries = models.PositiveIntegerField(default=0)
     average_rating = models.DecimalField(
@@ -221,6 +333,8 @@ class DeliveryDriver(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = 'delivery driver (deprecated)'
+        verbose_name_plural = 'delivery drivers (deprecated)'
         ordering = ['-is_available', 'user__first_name']
 
     def __str__(self):

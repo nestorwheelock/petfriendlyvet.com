@@ -32,19 +32,19 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(TimeEntry)
 class TimeEntryAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'date', 'clock_in', 'clock_out', 'hours_worked', 'is_approved']
+    list_display = ['person', 'date', 'clock_in', 'clock_out', 'hours_worked', 'is_approved']
     list_filter = ['is_approved', 'approval_status', 'date']
-    search_fields = ['employee__employee_id', 'employee__user__email']
+    search_fields = ['person__email', 'person__first_name', 'person__last_name']
     date_hierarchy = 'date'
     ordering = ['-date', '-clock_in']
-    raw_id_fields = ['employee', 'approved_by']
+    raw_id_fields = ['person', 'approved_by']
 
 
 @admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'date', 'start_time', 'end_time', 'shift_type', 'status']
+    list_display = ['person', 'date', 'start_time', 'end_time', 'shift_type', 'status']
     list_filter = ['status', 'shift_type', 'department', 'date']
-    search_fields = ['employee__employee_id', 'employee__user__email']
+    search_fields = ['person__email', 'person__first_name', 'person__last_name']
     date_hierarchy = 'date'
     ordering = ['date', 'start_time']
-    raw_id_fields = ['employee']
+    raw_id_fields = ['person']

@@ -181,6 +181,116 @@
             </table>
         </div>
     </div>
+
+    <!-- DEV: All Delivery Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Delivery Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dashboard & Reports -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard & Reports
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/delivery/" class="text-blue-600 hover:underline">Dashboard</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/delivery/reports/" class="text-blue-600 hover:underline">Reports</a></li>
+                </ul>
+            </div>
+
+            <!-- Zones -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🗺️</span> Delivery Zones
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/delivery/zones/" class="text-blue-600 hover:underline">Zone List (CRUD)</a></li>
+                    <li class="text-gray-500 text-xs italic">Create/Edit via modal on Zones page</li>
+                </ul>
+            </div>
+
+            <!-- Slots -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>⏰</span> Delivery Slots
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/delivery/slots/" class="text-blue-600 hover:underline">Slot List (CRUD)</a></li>
+                    <li class="text-gray-500 text-xs italic">Create slots for delivery time windows</li>
+                </ul>
+            </div>
+
+            <!-- Drivers (via HR) -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👷</span> Drivers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/hr/employees/" class="text-blue-600 hover:underline">Add via HR (Employee)</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/delivery/contractors/" class="text-blue-600 hover:underline">Driver Assignments</a></li>
+                    <li class="text-gray-500 text-xs italic">Drivers added in HR as employee/contractor</li>
+                </ul>
+            </div>
+
+            <!-- Customer Tracking -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📍</span> Customer Tracking
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">/delivery/track/&lt;delivery_number&gt;/</li>
+                    <li class="text-gray-500 text-xs italic">Customer tracking page (needs delivery #)</li>
+                </ul>
+            </div>
+
+            <!-- Driver Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🚗</span> Driver Portal
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/delivery/driver/dashboard/" class="text-blue-600 hover:underline">Driver Dashboard</a></li>
+                    <li class="text-gray-500 text-xs italic">Separate portal (no staff token needed)</li>
+                </ul>
+            </div>
+
+            <!-- APIs -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🔌</span> Admin APIs
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/deliveries/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/drivers/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/zones/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/slots/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/contractors/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/admin/reports/</li>
+                </ul>
+            </div>
+
+            <!-- Customer APIs -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📱</span> Customer APIs
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">/api/delivery/zones/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/slots/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/track/&lt;number&gt;/</li>
+                    <li class="text-gray-400 text-xs">/api/delivery/&lt;id&gt;/rate/</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray are API endpoints or require an object ID.
+        </div>
+    </div>
 </div>
 
 <!-- Assign Driver Modal -->

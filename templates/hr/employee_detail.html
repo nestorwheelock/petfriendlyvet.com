@@ -11,11 +11,11 @@
             <p class="text-gray-600">{{ employee.employee_id }} &middot; {{ employee.position.title|default:"No position" }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'hr:employee_update' employee.pk %}" class="btn btn-secondary btn-sm">
+            <a href="/staff-{{ staff_token }}/operations/hr/employees/{{ employee.pk }}/edit/" class="btn btn-secondary btn-sm">
                 {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4 mr-1" %}
                 {% trans "Edit" %}
             </a>
-            <a href="{% url 'hr:employee_list' %}" class="btn btn-ghost btn-sm">{% trans "Back to List" %}</a>
+            <a href="/staff-{{ staff_token }}/operations/hr/employees/" class="btn btn-ghost btn-sm">{% trans "Back to List" %}</a>
         </div>
     </div>
 
@@ -102,7 +102,7 @@
                 <ul class="space-y-2">
                     {% for report in employee.direct_reports.all %}
                     <li>
-                        <a href="{% url 'hr:employee_detail' report.pk %}" class="text-primary-600 hover:underline">
+                        <a href="/staff-{{ staff_token }}/operations/hr/employees/{{ report.pk }}/" class="text-primary-600 hover:underline">
                             {{ report.user.get_full_name }}
                         </a>
                     </li>

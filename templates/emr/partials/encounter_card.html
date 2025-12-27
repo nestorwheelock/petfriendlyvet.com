@@ -7,7 +7,7 @@
     <!-- Patient Info -->
     <div class="flex items-start justify-between mb-2">
         <div>
-            <a href="{% url 'emr:patient_summary' patient_id=encounter.patient.id %}"
+            <a href="/staff-{{ staff_token }}/operations/clinical/patients/{{ encounter.patient.id }}/"
                class="font-semibold text-gray-900 hover:text-primary-600">
                 {{ encounter.patient.pet.name }}
             </a>
@@ -61,7 +61,7 @@
     <!-- State Transition Buttons -->
     <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1">
         {% if encounter.pipeline_state == 'scheduled' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "checked_in"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
@@ -69,7 +69,7 @@
             {% trans "Check In" %}
         </button>
         {% elif encounter.pipeline_state == 'checked_in' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "roomed"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
@@ -77,7 +77,7 @@
             {% trans "Room" %}
         </button>
         {% elif encounter.pipeline_state == 'roomed' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "in_exam"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
@@ -85,7 +85,7 @@
             {% trans "Start Exam" %}
         </button>
         {% elif encounter.pipeline_state == 'in_exam' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "checkout"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
@@ -93,7 +93,7 @@
             {% trans "Checkout" %}
         </button>
         {% elif encounter.pipeline_state == 'checkout' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "completed"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"
@@ -104,7 +104,7 @@
 
         <!-- Cancel option (always available for active states) -->
         {% if encounter.pipeline_state not in 'completed,cancelled,no_show' %}
-        <button hx-post="{% url 'emr:transition_encounter' encounter_id=encounter.id %}"
+        <button hx-post="/staff-{{ staff_token }}/operations/clinical/encounters/{{ encounter.id }}/transition/"
                 hx-vals='{"new_state": "cancelled"}'
                 hx-target="#encounter-{{ encounter.id }}"
                 hx-swap="outerHTML"

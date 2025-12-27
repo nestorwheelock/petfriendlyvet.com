@@ -1,16 +1,20 @@
-{% extends "base_portal.html" %}
+{% extends is_staff_view|yesno:"base_staff.html,base_portal.html" %}
 {% load i18n %}
 
 {% block title %}{{ pet.name }} - {% trans "Pet Profile" %}{% endblock %}
 
-{% block portal_content %}
+{% block staff_content %}{% block portal_content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb -->
     <nav class="mb-6">
         <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            {% if is_staff_view %}
+            <li><a href="/staff-{{ staff_token }}/core/pets/" class="hover:text-primary-600">{% trans "All Pets" %}</a></li>
+            {% else %}
             <li><a href="{% url 'pets:dashboard' %}" class="hover:text-primary-600">{% trans "Dashboard" %}</a></li>
             <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
             <li><a href="{% url 'pets:pet_list' %}" class="hover:text-primary-600">{% trans "My Pets" %}</a></li>
+            {% endif %}
             <li><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></li>
             <li class="text-gray-900 font-medium">{{ pet.name }}</li>
         </ol>
@@ -33,6 +37,18 @@
                     <div class="ml-6">
                         <h1 class="text-3xl font-bold text-gray-900">{{ pet.name }}</h1>
                         <p class="text-lg text-gray-500">{{ pet.get_species_display }}{% if pet.breed %} &middot; {{ pet.breed }}{% endif %}</p>
+                        {% if is_staff_view %}
+                        <p class="text-sm text-gray-400 mt-1">
+                            {% trans "Owner:" %}
+                            {% if pet.owner_person %}
+                            <a href="/staff-{{ staff_token }}/core/parties/people/{{ pet.owner_person.pk }}/" class="text-primary-600 hover:underline">{{ pet.owner_person.get_full_name }}</a>
+                            {% elif pet.owner %}
+                            {{ pet.owner.get_full_name|default:pet.owner.email }}
+                            {% else %}
+                            <span class="text-amber-500">{% trans "No owner assigned" %}</span>
+                            {% endif %}
+                        </p>
+                        {% endif %}
                         <div class="mt-2 flex flex-wrap gap-2">
                             {% if pet.gender %}
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -52,13 +68,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 sm:mt-0">
+                <div class="mt-4 sm:mt-0 flex gap-2">
+                    {% if is_staff_view %}
+                    <a href="/staff-{{ staff_token }}/core/pets/{{ pet.pk }}/edit/" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% else %}
                     <a href="{% url 'pets:pet_edit' pk=pet.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% endif %}
                         <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                         {% trans "Edit Pet" %}
                     </a>
+                    {% if is_staff_view and pet.owner_person %}
+                    <a href="/staff-{{ staff_token }}/core/parties/people/{{ pet.owner_person.pk }}/" class="inline-flex items-center px-4 py-2 border border-primary-300 shadow-sm text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        {% trans "View Owner" %}
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -224,18 +252,30 @@
                     <h2 class="text-xl font-semibold text-gray-900">{% trans "Quick Actions" %}</h2>
                 </div>
                 <div class="px-6 py-4 space-y-3">
+                    {% if is_staff_view %}
+                    <a href="/staff-{{ staff_token }}/core/pets/{{ pet.pk }}/edit/" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% else %}
                     <a href="{% url 'pets:pet_edit' pk=pet.pk %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    {% endif %}
                         <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                         {% trans "Edit Profile" %}
                     </a>
-                    {% if not pet.is_archived %}
+                    {% if not pet.is_archived and not is_staff_view %}
                     <a href="{% url 'pets:dashboard' %}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                         </svg>
                         {% trans "Book Appointment" %}
+                    </a>
+                    {% endif %}
+                    {% if is_staff_view and pet.owner_person %}
+                    <a href="/staff-{{ staff_token }}/core/parties/people/{{ pet.owner_person.pk }}/" class="w-full inline-flex items-center justify-center px-4 py-2 border border-primary-300 shadow-sm text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        {% trans "View Owner" %}
                     </a>
                     {% endif %}
                 </div>
@@ -318,4 +358,4 @@
         </div>
     </div>
 </div>
-{% endblock portal_content %}
+{% endblock portal_content %}{% endblock staff_content %}
