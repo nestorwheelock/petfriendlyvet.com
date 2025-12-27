@@ -1,0 +1,46 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Task" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Delete Task" %}</h1>
+
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-red-800">
+                {% blocktrans with title=task.title %}
+                Are you sure you want to delete the task "{{ title }}"? This action cannot be undone.
+                {% endblocktrans %}
+            </p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-medium text-gray-900 mb-2">{% trans "Task Details" %}</h3>
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-500">{% trans "Title" %}:</dt>
+                <dd class="text-gray-900">{{ task.title }}</dd>
+                <dt class="text-gray-500">{% trans "Priority" %}:</dt>
+                <dd class="text-gray-900">{{ task.get_priority_display }}</dd>
+                <dt class="text-gray-500">{% trans "Status" %}:</dt>
+                <dd class="text-gray-900">{{ task.get_status_display }}</dd>
+                {% if task.assigned_to %}
+                <dt class="text-gray-500">{% trans "Assigned To" %}:</dt>
+                <dd class="text-gray-900">{{ task.assigned_to.user.get_full_name }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+
+        <form method="post" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-error">
+                {% trans "Delete Task" %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Shift Details" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "Shift Details" %}</h1>
+            <p class="text-gray-600 mt-1">{{ shift.date|date:"l, F d, Y" }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/staff-{{ staff_token }}/operations/practice/shifts/{{ shift.pk }}/edit/" class="btn btn-primary btn-sm">
+                {% trans "Edit" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/practice/shifts/{{ shift.pk }}/delete/" class="btn btn-error btn-sm">
+                {% trans "Delete" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{% trans "Shift Information" %}</h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Staff Member" %}</dt>
+                <dd class="text-gray-900 font-medium">
+                    <a href="/staff-{{ staff_token }}/operations/practice/staff/{{ shift.staff.pk }}/" class="text-primary-600 hover:underline">
+                        {{ shift.staff.user.get_full_name }}
+                    </a>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Role" %}</dt>
+                <dd class="text-gray-900">{{ shift.staff.get_role_display }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Date" %}</dt>
+                <dd class="text-gray-900">{{ shift.date|date:"D, M d, Y" }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Time" %}</dt>
+                <dd class="text-gray-900">{{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm text-gray-500">{% trans "Status" %}</dt>
+                <dd>
+                    {% if shift.is_confirmed %}
+                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{% trans "Confirmed" %}</span>
+                    {% else %}
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">{% trans "Pending" %}</span>
+                    {% endif %}
+                </dd>
+            </div>
+            {% if shift.notes %}
+            <div class="md:col-span-2">
+                <dt class="text-sm text-gray-500">{% trans "Notes" %}</dt>
+                <dd class="text-gray-900">{{ shift.notes }}</dd>
+            </div>
+            {% endif %}
+        </dl>
+    </div>
+
+    {% if time_entries %}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b">
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Time Entries" %}</h2>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Clock In" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Clock Out" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Break" %}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for entry in time_entries %}
+                <tr>
+                    <td class="px-6 py-4 text-gray-900">{{ entry.clock_in|date:"H:i" }}</td>
+                    <td class="px-6 py-4 text-gray-900">{% if entry.clock_out %}{{ entry.clock_out|date:"H:i" }}{% else %}-{% endif %}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ entry.break_minutes }} min</td>
+                    <td class="px-6 py-4">
+                        {% if entry.is_approved %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{% trans "Approved" %}</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">{% trans "Pending" %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="mt-6">
+        <a href="/staff-{{ staff_token }}/operations/practice/shifts/" class="text-primary-600 hover:underline">
+            ← {% trans "Back to Shifts" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

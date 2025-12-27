@@ -10,7 +10,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from apps.billing.models import SATProductCode, SATUnitCode
 from apps.core.utils import staff_redirect
 from apps.inventory.models import InventoryItem
-from .forms import StaffCreateForm, StaffEditForm
+from django.utils import timezone
+
+from .forms import StaffCreateForm, StaffEditForm, ShiftForm, TaskForm, TimeEntryForm
 from .models import (
     StaffProfile, Shift, TimeEntry, Task, ClinicSettings,
     ProcedureCategory, VetProcedure, ProcedureConsumable
@@ -234,6 +236,88 @@ def shift_list(request):
 
 
 @staff_member_required
+def shift_detail(request, pk):
+    """View shift details."""
+    shift = get_object_or_404(
+        Shift.objects.select_related('staff', 'staff__user'),
+        pk=pk
+    )
+    time_entries = TimeEntry.objects.filter(shift=shift).select_related('staff', 'staff__user').order_by('clock_in')
+
+    context = {
+        'shift': shift,
+        'time_entries': time_entries,
+    }
+    return render(request, 'practice/shift_detail.html', context)
+
+
+@staff_member_required
+def shift_create(request):
+    """Create a new shift."""
+    if request.method == 'POST':
+        form = ShiftForm(request.POST)
+        if form.is_valid():
+            shift = form.save()
+            messages.success(request, f'Shift for {shift.staff.user.get_full_name()} created successfully.')
+            return staff_redirect(request, 'practice:shift_list')
+    else:
+        form = ShiftForm()
+
+    staff_profiles = StaffProfile.objects.filter(is_active=True).select_related('user').order_by('user__first_name')
+
+    context = {
+        'form': form,
+        'staff_profiles': staff_profiles,
+        'title': 'Add Shift',
+    }
+    return render(request, 'practice/shift_form.html', context)
+
+
+@staff_member_required
+def shift_edit(request, pk):
+    """Edit an existing shift."""
+    shift = get_object_or_404(Shift.objects.select_related('staff', 'staff__user'), pk=pk)
+
+    if request.method == 'POST':
+        form = ShiftForm(request.POST, instance=shift)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Shift for {shift.staff.user.get_full_name()} updated successfully.')
+            return staff_redirect(request, 'practice:shift_list')
+    else:
+        form = ShiftForm(instance=shift)
+
+    staff_profiles = StaffProfile.objects.filter(is_active=True).select_related('user').order_by('user__first_name')
+
+    context = {
+        'form': form,
+        'shift': shift,
+        'staff_profiles': staff_profiles,
+        'title': f'Edit Shift - {shift.date}',
+        'editing': True,
+    }
+    return render(request, 'practice/shift_form.html', context)
+
+
+@staff_member_required
+def shift_delete(request, pk):
+    """Delete a shift."""
+    shift = get_object_or_404(Shift.objects.select_related('staff', 'staff__user'), pk=pk)
+
+    if request.method == 'POST':
+        staff_name = shift.staff.user.get_full_name()
+        shift_date = shift.date
+        shift.delete()
+        messages.success(request, f'Shift for {staff_name} on {shift_date} deleted successfully.')
+        return staff_redirect(request, 'practice:shift_list')
+
+    context = {
+        'shift': shift,
+    }
+    return render(request, 'practice/shift_confirm_delete.html', context)
+
+
+@staff_member_required
 def time_tracking(request):
     """View time entries."""
     period = request.GET.get('period', 'today')
@@ -257,6 +341,99 @@ def time_tracking(request):
         'current_period': period,
     }
     return render(request, 'practice/time_tracking.html', context)
+
+
+@staff_member_required
+def clock_in(request):
+    """Clock in for current user."""
+    if request.method == 'POST':
+        # Get or create staff profile for current user
+        try:
+            staff = request.user.staff_profile
+        except StaffProfile.DoesNotExist:
+            messages.error(request, 'You do not have a staff profile.')
+            return staff_redirect(request, 'practice:time_tracking')
+
+        # Check if already clocked in
+        open_entry = TimeEntry.objects.filter(staff=staff, clock_out__isnull=True).first()
+        if open_entry:
+            messages.warning(request, 'You are already clocked in.')
+            return staff_redirect(request, 'practice:time_tracking')
+
+        # Create new time entry
+        TimeEntry.objects.create(
+            staff=staff,
+            clock_in=timezone.now(),
+        )
+        messages.success(request, 'Clocked in successfully.')
+        return staff_redirect(request, 'practice:time_tracking')
+
+    return render(request, 'practice/clock_in.html')
+
+
+@staff_member_required
+def clock_out(request):
+    """Clock out for current user."""
+    if request.method == 'POST':
+        try:
+            staff = request.user.staff_profile
+        except StaffProfile.DoesNotExist:
+            messages.error(request, 'You do not have a staff profile.')
+            return staff_redirect(request, 'practice:time_tracking')
+
+        # Find open time entry
+        open_entry = TimeEntry.objects.filter(staff=staff, clock_out__isnull=True).first()
+        if not open_entry:
+            messages.warning(request, 'You are not clocked in.')
+            return staff_redirect(request, 'practice:time_tracking')
+
+        # Clock out
+        open_entry.clock_out = timezone.now()
+        open_entry.save()
+        messages.success(request, 'Clocked out successfully.')
+        return staff_redirect(request, 'practice:time_tracking')
+
+    return render(request, 'practice/clock_out.html')
+
+
+@staff_member_required
+def time_entry_edit(request, pk):
+    """Edit a time entry."""
+    entry = get_object_or_404(TimeEntry.objects.select_related('staff', 'staff__user'), pk=pk)
+
+    if request.method == 'POST':
+        form = TimeEntryForm(request.POST, instance=entry)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Time entry updated successfully.')
+            return staff_redirect(request, 'practice:time_tracking')
+    else:
+        form = TimeEntryForm(instance=entry)
+
+    context = {
+        'form': form,
+        'entry': entry,
+        'title': 'Edit Time Entry',
+    }
+    return render(request, 'practice/time_entry_form.html', context)
+
+
+@staff_member_required
+def time_entry_approve(request, pk):
+    """Approve a time entry."""
+    entry = get_object_or_404(TimeEntry.objects.select_related('staff'), pk=pk)
+
+    if request.method == 'POST':
+        entry.is_approved = True
+        entry.approved_by = request.user
+        entry.save()
+        messages.success(request, f'Time entry for {entry.staff.user.get_full_name()} approved.')
+        return staff_redirect(request, 'practice:time_tracking')
+
+    context = {
+        'entry': entry,
+    }
+    return render(request, 'practice/time_entry_confirm_approve.html', context)
 
 
 @staff_member_required
@@ -300,6 +477,73 @@ def task_detail(request, pk):
         'task': task,
     }
     return render(request, 'practice/task_detail.html', context)
+
+
+@staff_member_required
+def task_create(request):
+    """Create a new task."""
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.created_by = request.user
+            task.save()
+            messages.success(request, f'Task "{task.title}" created successfully.')
+            return staff_redirect(request, 'practice:task_list')
+    else:
+        form = TaskForm()
+
+    staff_profiles = StaffProfile.objects.filter(is_active=True).select_related('user').order_by('user__first_name')
+
+    context = {
+        'form': form,
+        'staff_profiles': staff_profiles,
+        'title': 'Add Task',
+    }
+    return render(request, 'practice/task_form.html', context)
+
+
+@staff_member_required
+def task_edit(request, pk):
+    """Edit an existing task."""
+    task = get_object_or_404(Task.objects.select_related('assigned_to', 'created_by'), pk=pk)
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Task "{task.title}" updated successfully.')
+            return staff_redirect(request, 'practice:task_list')
+    else:
+        form = TaskForm(instance=task)
+
+    staff_profiles = StaffProfile.objects.filter(is_active=True).select_related('user').order_by('user__first_name')
+
+    context = {
+        'form': form,
+        'task': task,
+        'staff_profiles': staff_profiles,
+        'title': f'Edit Task',
+        'editing': True,
+    }
+    return render(request, 'practice/task_form.html', context)
+
+
+@staff_member_required
+def task_delete(request, pk):
+    """Delete a task."""
+    task = get_object_or_404(Task, pk=pk)
+
+    if request.method == 'POST':
+        title = task.title
+        task.delete()
+        messages.success(request, f'Task "{title}" deleted successfully.')
+        return staff_redirect(request, 'practice:task_list')
+
+    context = {
+        'task': task,
+    }
+    return render(request, 'practice/task_confirm_delete.html', context)
 
 
 @staff_member_required

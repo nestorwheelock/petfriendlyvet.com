@@ -10,9 +10,14 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Tasks" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Staff task management" %}</p>
         </div>
-        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
-            ← {% trans "Dashboard" %}
-        </a>
+        <div class="flex gap-4 items-center">
+            <a href="/staff-{{ staff_token }}/operations/practice/tasks/add/" class="btn btn-primary">
+                + {% trans "Add Task" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -42,23 +47,23 @@
         <ul class="divide-y divide-gray-200">
             {% for task in tasks %}
             <li class="p-4 hover:bg-gray-50">
-                <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/" class="block">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-900">{{ task.title }}</p>
-                            {% if task.description %}
-                            <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ task.description }}</p>
+                <div class="flex items-start justify-between">
+                    <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/" class="flex-1">
+                        <p class="font-semibold text-gray-900">{{ task.title }}</p>
+                        {% if task.description %}
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ task.description }}</p>
+                        {% endif %}
+                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                            {% if task.assigned_to %}
+                            <span>{% trans "Assigned to" %}: {{ task.assigned_to.user.get_short_name }}</span>
                             {% endif %}
-                            <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                {% if task.assigned_to %}
-                                <span>{% trans "Assigned to" %}: {{ task.assigned_to.user.get_short_name }}</span>
-                                {% endif %}
-                                {% if task.due_date %}
-                                <span>{% trans "Due" %}: {{ task.due_date|date:"M d" }}</span>
-                                {% endif %}
-                            </div>
+                            {% if task.due_date %}
+                            <span>{% trans "Due" %}: {{ task.due_date|date:"M d" }}</span>
+                            {% endif %}
                         </div>
-                        <div class="flex gap-2 ml-4">
+                    </a>
+                    <div class="flex flex-col gap-2 ml-4 items-end">
+                        <div class="flex gap-2">
                             <span class="px-2 py-1 text-xs font-medium rounded-full
                                 {% if task.priority == 'urgent' %}bg-red-100 text-red-800
                                 {% elif task.priority == 'high' %}bg-orange-100 text-orange-800
@@ -74,8 +79,12 @@
                                 {{ task.get_status_display }}
                             </span>
                         </div>
+                        <div class="flex gap-2">
+                            <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/edit/" class="text-primary-600 hover:underline text-sm">{% trans "Edit" %}</a>
+                            <a href="/staff-{{ staff_token }}/operations/practice/tasks/{{ task.pk }}/delete/" class="text-red-600 hover:underline text-sm">{% trans "Delete" %}</a>
+                        </div>
                     </div>
-                </a>
+                </div>
             </li>
             {% endfor %}
         </ul>

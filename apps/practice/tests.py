@@ -1,8 +1,10 @@
-"""Tests for practice app staff CRUD operations."""
+"""Tests for practice app CRUD operations."""
+from datetime import date, time, timedelta
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.utils import timezone
 from apps.accounts.models import User
-from apps.practice.models import StaffProfile
+from apps.practice.models import StaffProfile, Shift, Task, TimeEntry
 
 
 class StaffCRUDTests(TestCase):
@@ -248,3 +250,377 @@ class StaffEditFormTests(TestCase):
             'dea_number': 'AB1234567',
         })
         self.assertTrue(form.is_valid())
+
+
+# =============================================================================
+# T-086: Shift Management CRUD Tests
+# =============================================================================
+
+class ShiftCRUDTests(TestCase):
+    """Test shift CRUD operations."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.client = Client()
+        self.staff_user = User.objects.create_user(
+            username='staffuser',
+            email='staff@test.com',
+            password='testpass123',
+            is_staff=True,
+            role='staff'
+        )
+        self.staff_profile = StaffProfile.objects.create(
+            user=self.staff_user,
+            role='manager',
+        )
+        self.client.login(username='staffuser', password='testpass123')
+        self.base_url = '/operations/practice/shifts'
+        # Create a test shift
+        self.shift = Shift.objects.create(
+            staff=self.staff_profile,
+            date=date.today(),
+            start_time=time(9, 0),
+            end_time=time(17, 0),
+        )
+
+    def test_shift_list_page_loads(self):
+        """Shift list page is accessible."""
+        response = self.client.get(f'{self.base_url}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_shift_create_page_loads(self):
+        """Shift create page is accessible."""
+        response = self.client.get(f'{self.base_url}/add/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+
+    def test_shift_create_valid_form(self):
+        """Valid form creates Shift."""
+        tomorrow = date.today() + timedelta(days=1)
+        data = {
+            'staff': self.staff_profile.pk,
+            'date': tomorrow.isoformat(),
+            'start_time': '08:00',
+            'end_time': '16:00',
+            'notes': 'Morning shift',
+        }
+        response = self.client.post(f'{self.base_url}/add/', data=data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Shift.objects.filter(date=tomorrow).exists())
+
+    def test_shift_create_end_before_start(self):
+        """End time before start time shows error."""
+        tomorrow = date.today() + timedelta(days=1)
+        data = {
+            'staff': self.staff_profile.pk,
+            'date': tomorrow.isoformat(),
+            'start_time': '17:00',
+            'end_time': '09:00',  # Before start
+        }
+        response = self.client.post(f'{self.base_url}/add/', data=data)
+        self.assertEqual(response.status_code, 200)  # Stays on form
+
+    def test_shift_detail_page_loads(self):
+        """Shift detail page loads."""
+        response = self.client.get(f'{self.base_url}/{self.shift.pk}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_shift_edit_page_loads(self):
+        """Shift edit page loads with existing data."""
+        response = self.client.get(f'{self.base_url}/{self.shift.pk}/edit/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+
+    def test_shift_edit_valid_form(self):
+        """Valid edit updates Shift."""
+        data = {
+            'staff': self.staff_profile.pk,
+            'date': self.shift.date.isoformat(),
+            'start_time': '10:00',
+            'end_time': '18:00',
+            'notes': 'Updated shift',
+        }
+        response = self.client.post(
+            f'{self.base_url}/{self.shift.pk}/edit/',
+            data=data
+        )
+        self.assertEqual(response.status_code, 302)
+        self.shift.refresh_from_db()
+        self.assertEqual(self.shift.start_time, time(10, 0))
+        self.assertEqual(self.shift.notes, 'Updated shift')
+
+    def test_shift_delete_confirmation(self):
+        """Shift delete confirmation page loads."""
+        response = self.client.get(f'{self.base_url}/{self.shift.pk}/delete/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Delete')
+
+    def test_shift_delete_removes_shift(self):
+        """POST to delete removes shift."""
+        shift_pk = self.shift.pk
+        response = self.client.post(f'{self.base_url}/{shift_pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Shift.objects.filter(pk=shift_pk).exists())
+
+
+class ShiftFormTests(TestCase):
+    """Test ShiftForm validation."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@test.com',
+            password='testpass123',
+            is_staff=True
+        )
+        self.staff_profile = StaffProfile.objects.create(
+            user=self.user,
+            role='receptionist'
+        )
+
+    def test_form_valid_with_required_fields(self):
+        """Form is valid with required fields."""
+        from apps.practice.forms import ShiftForm
+        form = ShiftForm(data={
+            'staff': self.staff_profile.pk,
+            'date': date.today().isoformat(),
+            'start_time': '09:00',
+            'end_time': '17:00',
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_form_end_before_start_invalid(self):
+        """End time before start time is invalid."""
+        from apps.practice.forms import ShiftForm
+        form = ShiftForm(data={
+            'staff': self.staff_profile.pk,
+            'date': date.today().isoformat(),
+            'start_time': '17:00',
+            'end_time': '09:00',
+        })
+        self.assertFalse(form.is_valid())
+
+
+# =============================================================================
+# T-087: Task Management CRUD Tests
+# =============================================================================
+
+class TaskCRUDTests(TestCase):
+    """Test task CRUD operations."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.client = Client()
+        self.staff_user = User.objects.create_user(
+            username='staffuser',
+            email='staff@test.com',
+            password='testpass123',
+            is_staff=True,
+            role='staff'
+        )
+        self.staff_profile = StaffProfile.objects.create(
+            user=self.staff_user,
+            role='manager',
+        )
+        self.client.login(username='staffuser', password='testpass123')
+        self.base_url = '/operations/practice/tasks'
+        # Create a test task
+        self.task = Task.objects.create(
+            title='Test Task',
+            description='Test description',
+            priority='medium',
+            status='pending',
+            created_by=self.staff_user,
+        )
+
+    def test_task_list_page_loads(self):
+        """Task list page is accessible."""
+        response = self.client.get(f'{self.base_url}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_task_create_page_loads(self):
+        """Task create page is accessible."""
+        response = self.client.get(f'{self.base_url}/add/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+
+    def test_task_create_valid_form(self):
+        """Valid form creates Task."""
+        data = {
+            'title': 'New Task',
+            'description': 'Task description',
+            'priority': 'high',
+            'status': 'pending',
+        }
+        response = self.client.post(f'{self.base_url}/add/', data=data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Task.objects.filter(title='New Task').exists())
+
+    def test_task_create_sets_created_by(self):
+        """created_by is set to current user."""
+        data = {
+            'title': 'Auto Created By',
+            'priority': 'low',
+            'status': 'pending',
+        }
+        self.client.post(f'{self.base_url}/add/', data=data)
+        task = Task.objects.get(title='Auto Created By')
+        self.assertEqual(task.created_by, self.staff_user)
+
+    def test_task_detail_page_loads(self):
+        """Task detail page loads."""
+        response = self.client.get(f'{self.base_url}/{self.task.pk}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_task_edit_page_loads(self):
+        """Task edit page loads."""
+        response = self.client.get(f'{self.base_url}/{self.task.pk}/edit/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+
+    def test_task_edit_valid_form(self):
+        """Valid edit updates Task."""
+        data = {
+            'title': 'Updated Task',
+            'priority': 'high',
+            'status': 'in_progress',
+        }
+        response = self.client.post(
+            f'{self.base_url}/{self.task.pk}/edit/',
+            data=data
+        )
+        self.assertEqual(response.status_code, 302)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.title, 'Updated Task')
+        self.assertEqual(self.task.status, 'in_progress')
+
+    def test_task_delete_confirmation(self):
+        """Task delete confirmation page loads."""
+        response = self.client.get(f'{self.base_url}/{self.task.pk}/delete/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Delete')
+
+    def test_task_delete_removes_task(self):
+        """POST to delete removes task."""
+        task_pk = self.task.pk
+        response = self.client.post(f'{self.base_url}/{task_pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Task.objects.filter(pk=task_pk).exists())
+
+
+class TaskFormTests(TestCase):
+    """Test TaskForm validation."""
+
+    def test_form_valid_with_required_fields(self):
+        """Form is valid with required fields."""
+        from apps.practice.forms import TaskForm
+        form = TaskForm(data={
+            'title': 'Test Task',
+            'priority': 'medium',
+            'status': 'pending',
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_title(self):
+        """Title is required."""
+        from apps.practice.forms import TaskForm
+        form = TaskForm(data={
+            'priority': 'medium',
+            'status': 'pending',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('title', form.errors)
+
+
+# =============================================================================
+# T-088: Time Entry Clock In/Out Tests
+# =============================================================================
+
+class TimeEntryCRUDTests(TestCase):
+    """Test time entry operations."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.client = Client()
+        self.staff_user = User.objects.create_user(
+            username='staffuser',
+            email='staff@test.com',
+            password='testpass123',
+            is_staff=True,
+            role='staff'
+        )
+        self.staff_profile = StaffProfile.objects.create(
+            user=self.staff_user,
+            role='receptionist',
+        )
+        self.client.login(username='staffuser', password='testpass123')
+        self.base_url = '/operations/practice/time'
+
+    def test_clock_in_creates_entry(self):
+        """Clock in creates a new TimeEntry."""
+        response = self.client.post(f'{self.base_url}/clock-in/')
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            TimeEntry.objects.filter(
+                staff=self.staff_profile,
+                clock_out__isnull=True
+            ).exists()
+        )
+
+    def test_clock_in_when_already_clocked_in(self):
+        """Cannot clock in twice."""
+        # First clock in
+        TimeEntry.objects.create(
+            staff=self.staff_profile,
+            clock_in=timezone.now()
+        )
+        # Try to clock in again
+        response = self.client.post(f'{self.base_url}/clock-in/')
+        self.assertEqual(response.status_code, 302)
+        # Should still only have one open entry
+        open_entries = TimeEntry.objects.filter(
+            staff=self.staff_profile,
+            clock_out__isnull=True
+        )
+        self.assertEqual(open_entries.count(), 1)
+
+    def test_clock_out_closes_entry(self):
+        """Clock out sets clock_out on current entry."""
+        entry = TimeEntry.objects.create(
+            staff=self.staff_profile,
+            clock_in=timezone.now() - timedelta(hours=4)
+        )
+        response = self.client.post(f'{self.base_url}/clock-out/')
+        self.assertEqual(response.status_code, 302)
+        entry.refresh_from_db()
+        self.assertIsNotNone(entry.clock_out)
+
+    def test_clock_out_when_not_clocked_in(self):
+        """Cannot clock out without being clocked in."""
+        response = self.client.post(f'{self.base_url}/clock-out/')
+        self.assertEqual(response.status_code, 302)
+        # Should show error message (redirects back)
+
+    def test_time_entry_edit_page_loads(self):
+        """Time entry edit page loads."""
+        entry = TimeEntry.objects.create(
+            staff=self.staff_profile,
+            clock_in=timezone.now() - timedelta(hours=4),
+            clock_out=timezone.now()
+        )
+        response = self.client.get(f'{self.base_url}/{entry.pk}/edit/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_time_entry_approve(self):
+        """Manager can approve time entry."""
+        entry = TimeEntry.objects.create(
+            staff=self.staff_profile,
+            clock_in=timezone.now() - timedelta(hours=4),
+            clock_out=timezone.now(),
+            is_approved=False
+        )
+        response = self.client.post(f'{self.base_url}/{entry.pk}/approve/')
+        self.assertEqual(response.status_code, 302)
+        entry.refresh_from_db()
+        self.assertTrue(entry.is_approved)

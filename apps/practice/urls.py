@@ -19,13 +19,24 @@ urlpatterns = [
     # Schedule
     path('schedule/', views.schedule, name='schedule'),
     path('shifts/', views.shift_list, name='shift_list'),
+    path('shifts/add/', views.shift_create, name='shift_create'),
+    path('shifts/<int:pk>/', views.shift_detail, name='shift_detail'),
+    path('shifts/<int:pk>/edit/', views.shift_edit, name='shift_edit'),
+    path('shifts/<int:pk>/delete/', views.shift_delete, name='shift_delete'),
 
     # Time Tracking
     path('time/', views.time_tracking, name='time_tracking'),
+    path('time/clock-in/', views.clock_in, name='clock_in'),
+    path('time/clock-out/', views.clock_out, name='clock_out'),
+    path('time/<int:pk>/edit/', views.time_entry_edit, name='time_entry_edit'),
+    path('time/<int:pk>/approve/', views.time_entry_approve, name='time_entry_approve'),
 
     # Tasks
     path('tasks/', views.task_list, name='task_list'),
+    path('tasks/add/', views.task_create, name='task_create'),
     path('tasks/<int:pk>/', views.task_detail, name='task_detail'),
+    path('tasks/<int:pk>/edit/', views.task_edit, name='task_edit'),
+    path('tasks/<int:pk>/delete/', views.task_delete, name='task_delete'),
 
     # Procedure Categories
     path('categories/', views.category_list, name='category_list'),

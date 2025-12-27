@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from .models import StaffProfile
+from .models import StaffProfile, Shift, Task, TimeEntry
 
 User = get_user_model()
 
@@ -151,5 +151,95 @@ class StaffEditForm(forms.ModelForm):
             'dea_expiration': forms.DateInput(attrs={
                 'type': 'date',
                 'class': 'input input-bordered w-full'
+            }),
+        }
+
+
+class ShiftForm(forms.ModelForm):
+    """Form for creating/editing shifts."""
+
+    class Meta:
+        model = Shift
+        fields = ['staff', 'date', 'start_time', 'end_time', 'notes']
+        widgets = {
+            'staff': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'input input-bordered w-full'
+            }),
+            'start_time': forms.TimeInput(attrs={
+                'type': 'time',
+                'class': 'input input-bordered w-full'
+            }),
+            'end_time': forms.TimeInput(attrs={
+                'type': 'time',
+                'class': 'input input-bordered w-full'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
+
+        if start_time and end_time and end_time <= start_time:
+            raise ValidationError('End time must be after start time.')
+
+        return cleaned_data
+
+
+class TaskForm(forms.ModelForm):
+    """Form for creating/editing tasks."""
+
+    class Meta:
+        model = Task
+        fields = [
+            'title', 'description', 'priority', 'status',
+            'due_date', 'assigned_to', 'pet', 'appointment'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'input input-bordered w-full'}),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 4
+            }),
+            'priority': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'status': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'due_date': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'input input-bordered w-full'
+            }),
+            'assigned_to': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'pet': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+            'appointment': forms.Select(attrs={'class': 'select select-bordered w-full'}),
+        }
+
+
+class TimeEntryForm(forms.ModelForm):
+    """Form for editing time entries."""
+
+    class Meta:
+        model = TimeEntry
+        fields = ['clock_in', 'clock_out', 'break_minutes', 'notes']
+        widgets = {
+            'clock_in': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'input input-bordered w-full'
+            }),
+            'clock_out': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'input input-bordered w-full'
+            }),
+            'break_minutes': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 0
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3
             }),
         }

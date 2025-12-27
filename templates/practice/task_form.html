@@ -1,0 +1,121 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+        <p class="text-gray-600 mt-1">
+            {% if editing %}{% trans "Update task details" %}{% else %}{% trans "Create a new task" %}{% endif %}
+        </p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        {% for error in form.non_field_errors %}
+        <p class="text-red-800">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl shadow p-6 space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label for="id_title" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Title" %} *
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div class="md:col-span-2">
+                <label for="id_description" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Description" %}
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_priority" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Priority" %} *
+                </label>
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.priority.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_status" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Status" %} *
+                </label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.status.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_due_date" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Due Date" %}
+                </label>
+                {{ form.due_date }}
+                {% if form.due_date.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.due_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_assigned_to" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Assigned To" %}
+                </label>
+                {{ form.assigned_to }}
+                {% if form.assigned_to.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.assigned_to.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_pet" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Related Pet" %}
+                </label>
+                {{ form.pet }}
+                {% if form.pet.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.pet.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_appointment" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Related Appointment" %}
+                </label>
+                {{ form.appointment }}
+                {% if form.appointment.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.appointment.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Task" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

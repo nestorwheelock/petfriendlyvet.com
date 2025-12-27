@@ -1,0 +1,44 @@
+{% extends "base_staff.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Approve Time Entry" %}{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{% trans "Approve Time Entry" %}</h1>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p class="text-blue-800">
+                {% blocktrans with name=entry.staff.user.get_full_name %}
+                Are you sure you want to approve the time entry for "{{ name }}"?
+                {% endblocktrans %}
+            </p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 class="font-medium text-gray-900 mb-2">{% trans "Time Entry Details" %}</h3>
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-500">{% trans "Staff" %}:</dt>
+                <dd class="text-gray-900">{{ entry.staff.user.get_full_name }}</dd>
+                <dt class="text-gray-500">{% trans "Clock In" %}:</dt>
+                <dd class="text-gray-900">{{ entry.clock_in|date:"D, M d H:i" }}</dd>
+                <dt class="text-gray-500">{% trans "Clock Out" %}:</dt>
+                <dd class="text-gray-900">{% if entry.clock_out %}{{ entry.clock_out|date:"D, M d H:i" }}{% else %}-{% endif %}</dd>
+                <dt class="text-gray-500">{% trans "Break" %}:</dt>
+                <dd class="text-gray-900">{{ entry.break_minutes }} {% trans "minutes" %}</dd>
+            </dl>
+        </div>
+
+        <form method="post" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <a href="/staff-{{ staff_token }}/operations/practice/time/" class="btn btn-ghost">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% trans "Approve" %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

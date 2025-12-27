@@ -10,9 +10,17 @@
             <h1 class="text-3xl font-bold text-gray-900">{% trans "Time Tracking" %}</h1>
             <p class="text-gray-600 mt-1">{% trans "Staff time entries" %}</p>
         </div>
-        <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
-            ← {% trans "Dashboard" %}
-        </a>
+        <div class="flex gap-4 items-center">
+            <a href="/staff-{{ staff_token }}/operations/practice/time/clock-in/" class="btn btn-success">
+                {% trans "Clock In" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/practice/time/clock-out/" class="btn btn-warning">
+                {% trans "Clock Out" %}
+            </a>
+            <a href="/staff-{{ staff_token }}/operations/practice/" class="text-primary-600 hover:text-primary-700 font-medium">
+                ← {% trans "Dashboard" %}
+            </a>
+        </div>
     </div>
 
     <!-- Period Filter -->
@@ -42,6 +50,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Clock Out" %}</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Hours" %}</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -71,6 +80,14 @@
                             {% else %}
                             <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">{% trans "Pending" %}</span>
                             {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex gap-2 justify-end">
+                                <a href="/staff-{{ staff_token }}/operations/practice/time/{{ entry.pk }}/edit/" class="text-primary-600 hover:underline text-sm">{% trans "Edit" %}</a>
+                                {% if not entry.is_approved %}
+                                <a href="/staff-{{ staff_token }}/operations/practice/time/{{ entry.pk }}/approve/" class="text-green-600 hover:underline text-sm">{% trans "Approve" %}</a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
