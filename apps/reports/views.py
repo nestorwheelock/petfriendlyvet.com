@@ -1,16 +1,16 @@
 """Views for the reports app."""
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+from apps.accounts.mixins import ModulePermissionMixin
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin requiring staff access."""
+class ReportsPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring reports module permission."""
+    required_module = 'reports'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class ReportsDashboardView(StaffRequiredMixin, TemplateView):
+class ReportsDashboardView(ReportsPermissionMixin, TemplateView):
     """Main reports dashboard."""
 
     template_name = 'reports/dashboard.html'
@@ -50,25 +50,25 @@ class ReportsDashboardView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class SalesReportView(StaffRequiredMixin, TemplateView):
+class SalesReportView(ReportsPermissionMixin, TemplateView):
     """Sales and revenue report."""
 
     template_name = 'reports/sales.html'
 
 
-class AppointmentsReportView(StaffRequiredMixin, TemplateView):
+class AppointmentsReportView(ReportsPermissionMixin, TemplateView):
     """Appointments statistics report."""
 
     template_name = 'reports/appointments.html'
 
 
-class InventoryReportView(StaffRequiredMixin, TemplateView):
+class InventoryReportView(ReportsPermissionMixin, TemplateView):
     """Inventory levels report."""
 
     template_name = 'reports/inventory.html'
 
 
-class CustomersReportView(StaffRequiredMixin, TemplateView):
+class CustomersReportView(ReportsPermissionMixin, TemplateView):
     """Customer analytics report."""
 
     template_name = 'reports/customers.html'

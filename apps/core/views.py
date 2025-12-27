@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -12,19 +12,19 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import TemplateView
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import ContactSubmission
 
 logger = logging.getLogger(__name__)
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin that requires user to be staff."""
+class CorePermissionMixin(ModulePermissionMixin):
+    """Mixin requiring core module permission (staff hub access)."""
+    required_module = 'core'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class StaffHubView(StaffRequiredMixin, TemplateView):
+class StaffHubView(CorePermissionMixin, TemplateView):
     """Staff hub dashboard - central access point for all staff modules."""
 
     template_name = 'staff/hub.html'

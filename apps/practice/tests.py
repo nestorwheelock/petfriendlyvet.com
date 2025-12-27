@@ -3,8 +3,39 @@ from datetime import date, time, timedelta
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
-from apps.accounts.models import User
+from django.contrib.auth.models import Group, Permission as DjangoPermission
+from django.contrib.contenttypes.models import ContentType
+from apps.accounts.models import User, Role, UserRole
 from apps.practice.models import StaffProfile, Shift, Task, TimeEntry
+
+
+def grant_practice_permission(user):
+    """Grant practice.view permission to a user via the RBAC system."""
+    # Create or get a practice role with permission
+    group, _ = Group.objects.get_or_create(name='Practice Test Staff')
+
+    role, created = Role.objects.get_or_create(
+        slug='practice-test-staff',
+        defaults={
+            'name': 'Practice Test Staff',
+            'hierarchy_level': 30,
+            'group': group
+        }
+    )
+    if not created:
+        role.group = group
+        role.save()
+
+    # Create Django permission for practice.view
+    content_type = ContentType.objects.get_for_model(User)
+    practice_view_perm, _ = DjangoPermission.objects.get_or_create(
+        codename='practice.view',
+        defaults={'name': 'Can view practice', 'content_type': content_type}
+    )
+    group.permissions.add(practice_view_perm)
+
+    # Assign role to user
+    UserRole.objects.get_or_create(user=user, role=role, defaults={'is_primary': True})
 
 
 class StaffCRUDTests(TestCase):
@@ -25,6 +56,8 @@ class StaffCRUDTests(TestCase):
             is_staff=True,
             role='staff'
         )
+        # Grant practice permission
+        grant_practice_permission(self.staff_user)
         # Create a staff profile for the user
         self.staff_profile = StaffProfile.objects.create(
             user=self.staff_user,
@@ -347,6 +380,7 @@ class ShiftCRUDTests(TestCase):
             is_staff=True,
             role='staff'
         )
+        grant_practice_permission(self.staff_user)
         self.staff_profile = StaffProfile.objects.create(
             user=self.staff_user,
             role='manager',
@@ -497,6 +531,7 @@ class TaskCRUDTests(TestCase):
             is_staff=True,
             role='staff'
         )
+        grant_practice_permission(self.staff_user)
         self.staff_profile = StaffProfile.objects.create(
             user=self.staff_user,
             role='manager',
@@ -628,6 +663,7 @@ class TimeEntryCRUDTests(TestCase):
             is_staff=True,
             role='staff'
         )
+        grant_practice_permission(self.staff_user)
         self.staff_profile = StaffProfile.objects.create(
             user=self.staff_user,
             role='receptionist',
@@ -713,6 +749,7 @@ class TimeEntryCRUDTests(TestCase):
             is_staff=True,
             role='staff'
         )
+        grant_practice_permission(user_no_profile)
         self.client.logout()
         self.client.login(username='noprofile', password='testpass123')
 

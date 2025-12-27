@@ -1,22 +1,21 @@
 """Views for email marketing functionality."""
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Sum
 from django.views.generic import TemplateView, ListView, DetailView
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import (
     EmailCampaign, EmailTemplate, EmailSegment,
     NewsletterSubscription, AutomatedSequence
 )
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin requiring user to be staff."""
+class MarketingPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring email_marketing module permission."""
+    required_module = 'email_marketing'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class MarketingDashboardView(StaffRequiredMixin, TemplateView):
+class MarketingDashboardView(MarketingPermissionMixin, TemplateView):
     """Marketing dashboard with overview statistics."""
 
     template_name = 'email_marketing/dashboard.html'
@@ -59,7 +58,7 @@ class MarketingDashboardView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class CampaignListView(StaffRequiredMixin, ListView):
+class CampaignListView(MarketingPermissionMixin, ListView):
     """List of email campaigns."""
 
     model = EmailCampaign
@@ -78,7 +77,7 @@ class CampaignListView(StaffRequiredMixin, ListView):
         return queryset.order_by('-created_at')
 
 
-class CampaignDetailView(StaffRequiredMixin, DetailView):
+class CampaignDetailView(MarketingPermissionMixin, DetailView):
     """Campaign detail with analytics."""
 
     model = EmailCampaign
@@ -96,7 +95,7 @@ class CampaignDetailView(StaffRequiredMixin, DetailView):
         return context
 
 
-class SubscriberListView(StaffRequiredMixin, ListView):
+class SubscriberListView(MarketingPermissionMixin, ListView):
     """List of newsletter subscribers."""
 
     model = NewsletterSubscription
@@ -115,7 +114,7 @@ class SubscriberListView(StaffRequiredMixin, ListView):
         return queryset.order_by('-created_at')
 
 
-class TemplateListView(StaffRequiredMixin, ListView):
+class TemplateListView(MarketingPermissionMixin, ListView):
     """List of email templates."""
 
     model = EmailTemplate
@@ -127,7 +126,7 @@ class TemplateListView(StaffRequiredMixin, ListView):
         return EmailTemplate.objects.filter(is_active=True).order_by('name')
 
 
-class SegmentListView(StaffRequiredMixin, ListView):
+class SegmentListView(MarketingPermissionMixin, ListView):
     """List of email segments."""
 
     model = EmailSegment
@@ -139,7 +138,7 @@ class SegmentListView(StaffRequiredMixin, ListView):
         return EmailSegment.objects.filter(is_active=True).order_by('name')
 
 
-class SequenceListView(StaffRequiredMixin, ListView):
+class SequenceListView(MarketingPermissionMixin, ListView):
     """List of automated sequences."""
 
     model = AutomatedSequence

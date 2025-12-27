@@ -537,3 +537,139 @@ class UserRoleMigrationTests(TestCase):
             UserRole.objects.create(user=user, role=receptionist_role, is_primary=True)
 
         self.assertTrue(user.user_roles.filter(role=receptionist_role).exists())
+
+
+class T094ViewPermissionTests(TestCase):
+    """T-094: Test views use centralized permission system."""
+
+    def setUp(self):
+        """Create test users with different permission levels."""
+        from apps.accounts.models import Role, UserRole
+        from django.contrib.auth.models import Group, Permission as DjangoPermission
+        from django.contrib.contenttypes.models import ContentType
+
+        # Create a user with practice.view permission
+        self.practice_group = Group.objects.create(name='Practice Staff Test')
+        self.practice_role = Role.objects.create(
+            name='Practice Staff Test',
+            slug='practice-staff-test',
+            hierarchy_level=20,
+            group=self.practice_group
+        )
+
+        # Create Django permission for practice.view
+        content_type = ContentType.objects.get_for_model(User)
+        self.practice_view_perm, _ = DjangoPermission.objects.get_or_create(
+            codename='practice.view',
+            defaults={'name': 'Can view practice', 'content_type': content_type}
+        )
+        self.practice_group.permissions.add(self.practice_view_perm)
+
+        # Create user with practice permission
+        self.practice_user = User.objects.create_user(
+            username='practiceuser', email='practice@test.com', password='pass123'
+        )
+        self.practice_user.is_staff = True
+        self.practice_user.save()
+        UserRole.objects.create(user=self.practice_user, role=self.practice_role, is_primary=True)
+
+        # Create user without practice permission
+        self.no_perm_user = User.objects.create_user(
+            username='nopermuser', email='noperm@test.com', password='pass123'
+        )
+        self.no_perm_user.is_staff = True
+        self.no_perm_user.save()
+
+        # Create accounting group and role
+        self.accounting_group = Group.objects.create(name='Accounting Staff Test')
+        self.accounting_role = Role.objects.create(
+            name='Accounting Staff Test',
+            slug='accounting-staff-test',
+            hierarchy_level=30,
+            group=self.accounting_group
+        )
+
+        # Create Django permission for accounting.view
+        self.accounting_view_perm, _ = DjangoPermission.objects.get_or_create(
+            codename='accounting.view',
+            defaults={'name': 'Can view accounting', 'content_type': content_type}
+        )
+        self.accounting_group.permissions.add(self.accounting_view_perm)
+
+        # User with accounting permission
+        self.accounting_user = User.objects.create_user(
+            username='accountinguser', email='accounting@test.com', password='pass123'
+        )
+        self.accounting_user.is_staff = True
+        self.accounting_user.save()
+        UserRole.objects.create(user=self.accounting_user, role=self.accounting_role, is_primary=True)
+
+    def test_practice_dashboard_requires_permission(self):
+        """Practice dashboard requires practice.view permission."""
+        from django.urls import reverse
+
+        # User with permission should access
+        self.client.login(username='practiceuser', password='pass123')
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # User without permission should be denied
+        self.client.login(username='nopermuser', password='pass123')
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertIn(response.status_code, [403, 302])  # 403 Forbidden or redirect to login
+
+    def test_accounting_requires_accounting_permission(self):
+        """Accounting views require accounting module permission."""
+        from django.urls import reverse
+
+        # User with accounting permission should access
+        self.client.login(username='accountinguser', password='pass123')
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # User without accounting permission should be denied
+        self.client.login(username='practiceuser', password='pass123')
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertIn(response.status_code, [403, 302])  # Denied
+
+    def test_staff_create_checks_hierarchy(self):
+        """Cannot create staff at higher hierarchy level."""
+        from apps.accounts.models import Role, UserRole
+        from django.contrib.auth.models import Group, Permission as DjangoPermission
+        from django.contrib.contenttypes.models import ContentType
+
+        # Create a manager role (level 60)
+        manager_group = Group.objects.create(name='Hierarchy Manager Test')
+        manager_role = Role.objects.create(
+            name='Hierarchy Manager Test',
+            slug='hierarchy-manager-test',
+            hierarchy_level=60,
+            group=manager_group
+        )
+
+        # Create practice.manage permission for creating staff
+        content_type = ContentType.objects.get_for_model(User)
+        practice_manage_perm, _ = DjangoPermission.objects.get_or_create(
+            codename='practice.manage',
+            defaults={'name': 'Can manage practice', 'content_type': content_type}
+        )
+        manager_group.permissions.add(practice_manage_perm)
+        manager_group.permissions.add(self.practice_view_perm)
+
+        # Create manager user
+        manager_user = User.objects.create_user(
+            username='managertest', email='manager@test.com', password='pass123'
+        )
+        manager_user.is_staff = True
+        manager_user.save()
+        UserRole.objects.create(user=manager_user, role=manager_role, is_primary=True)
+
+        self.client.login(username='managertest', password='pass123')
+
+        # Manager can only see roles with hierarchy < 60
+        manageable_roles = manager_user.get_manageable_roles()
+        role_levels = [r.hierarchy_level for r in manageable_roles]
+
+        # All manageable roles should be below manager's level
+        for level in role_levels:
+            self.assertLess(level, 60)

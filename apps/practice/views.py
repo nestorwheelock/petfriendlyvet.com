@@ -3,10 +3,11 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 
+from apps.accounts.decorators import require_permission
 from apps.billing.models import SATProductCode, SATUnitCode
 from apps.core.utils import staff_redirect
 from apps.inventory.models import InventoryItem
@@ -19,7 +20,8 @@ from .models import (
 )
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def dashboard(request):
     """Practice management dashboard."""
     today = date.today()
@@ -58,7 +60,8 @@ def dashboard(request):
     return render(request, 'practice/dashboard.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def staff_list(request):
     """List all staff members."""
     role = request.GET.get('role', '')
@@ -78,7 +81,8 @@ def staff_list(request):
     return render(request, 'practice/staff_list.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def staff_detail(request, pk):
     """View staff member details."""
     staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
@@ -105,7 +109,8 @@ def staff_detail(request, pk):
     return render(request, 'practice/staff_detail.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def staff_create(request):
     """Create a new staff member (User + StaffProfile)."""
     if request.method == 'POST':
@@ -127,7 +132,8 @@ def staff_create(request):
     return render(request, 'practice/staff_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def staff_edit(request, pk):
     """Edit an existing staff member's profile."""
     staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
@@ -153,7 +159,8 @@ def staff_edit(request, pk):
     return render(request, 'practice/staff_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def staff_deactivate(request, pk):
     """Deactivate a staff member (soft delete)."""
     staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
@@ -175,7 +182,8 @@ def staff_deactivate(request, pk):
     return render(request, 'practice/staff_confirm_deactivate.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def schedule(request):
     """Weekly schedule view."""
     today = date.today()
@@ -209,7 +217,8 @@ def schedule(request):
     return render(request, 'practice/schedule.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def shift_list(request):
     """List shifts with filtering."""
     today = date.today()
@@ -235,7 +244,8 @@ def shift_list(request):
     return render(request, 'practice/shift_list.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def shift_detail(request, pk):
     """View shift details."""
     shift = get_object_or_404(
@@ -251,7 +261,8 @@ def shift_detail(request, pk):
     return render(request, 'practice/shift_detail.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def shift_create(request):
     """Create a new shift."""
     if request.method == 'POST':
@@ -273,7 +284,8 @@ def shift_create(request):
     return render(request, 'practice/shift_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def shift_edit(request, pk):
     """Edit an existing shift."""
     shift = get_object_or_404(Shift.objects.select_related('staff', 'staff__user'), pk=pk)
@@ -299,7 +311,8 @@ def shift_edit(request, pk):
     return render(request, 'practice/shift_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def shift_delete(request, pk):
     """Delete a shift."""
     shift = get_object_or_404(Shift.objects.select_related('staff', 'staff__user'), pk=pk)
@@ -317,7 +330,8 @@ def shift_delete(request, pk):
     return render(request, 'practice/shift_confirm_delete.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def time_tracking(request):
     """View time entries."""
     period = request.GET.get('period', 'today')
@@ -343,7 +357,8 @@ def time_tracking(request):
     return render(request, 'practice/time_tracking.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def clock_in(request):
     """Clock in for current user."""
     if request.method == 'POST':
@@ -371,7 +386,8 @@ def clock_in(request):
     return render(request, 'practice/clock_in.html')
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def clock_out(request):
     """Clock out for current user."""
     if request.method == 'POST':
@@ -396,7 +412,8 @@ def clock_out(request):
     return render(request, 'practice/clock_out.html')
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def time_entry_edit(request, pk):
     """Edit a time entry."""
     entry = get_object_or_404(TimeEntry.objects.select_related('staff', 'staff__user'), pk=pk)
@@ -418,7 +435,8 @@ def time_entry_edit(request, pk):
     return render(request, 'practice/time_entry_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def time_entry_approve(request, pk):
     """Approve a time entry."""
     entry = get_object_or_404(TimeEntry.objects.select_related('staff'), pk=pk)
@@ -436,7 +454,8 @@ def time_entry_approve(request, pk):
     return render(request, 'practice/time_entry_confirm_approve.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def task_list(request):
     """List all tasks."""
     status = request.GET.get('status', '')
@@ -463,7 +482,8 @@ def task_list(request):
     return render(request, 'practice/task_list.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def task_detail(request, pk):
     """View task details."""
     task = get_object_or_404(
@@ -479,7 +499,8 @@ def task_detail(request, pk):
     return render(request, 'practice/task_detail.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def task_create(request):
     """Create a new task."""
     if request.method == 'POST':
@@ -503,7 +524,8 @@ def task_create(request):
     return render(request, 'practice/task_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def task_edit(request, pk):
     """Edit an existing task."""
     task = get_object_or_404(Task.objects.select_related('assigned_to', 'created_by'), pk=pk)
@@ -529,7 +551,8 @@ def task_edit(request, pk):
     return render(request, 'practice/task_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def task_delete(request, pk):
     """Delete a task."""
     task = get_object_or_404(Task, pk=pk)
@@ -546,7 +569,8 @@ def task_delete(request, pk):
     return render(request, 'practice/task_confirm_delete.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def clinic_settings(request):
     """View clinic settings."""
     settings = ClinicSettings.objects.first()
@@ -561,7 +585,8 @@ def clinic_settings(request):
 # Procedure Category Views
 # ============================================
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def category_list(request):
     """List all procedure categories."""
     categories = ProcedureCategory.objects.annotate(
@@ -574,7 +599,8 @@ def category_list(request):
     return render(request, 'practice/category_list.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def category_create(request):
     """Create a new procedure category."""
     if request.method == 'POST':
@@ -610,7 +636,8 @@ def category_create(request):
     return render(request, 'practice/category_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def category_edit(request, pk):
     """Edit a procedure category."""
     category = get_object_or_404(ProcedureCategory, pk=pk)
@@ -639,7 +666,8 @@ def category_edit(request, pk):
     return render(request, 'practice/category_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def category_delete(request, pk):
     """Delete a procedure category."""
     category = get_object_or_404(ProcedureCategory, pk=pk)
@@ -667,7 +695,8 @@ def category_delete(request, pk):
 # VetProcedure Views
 # ============================================
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_list(request):
     """List all veterinary procedures."""
     category_id = request.GET.get('category', '')
@@ -689,7 +718,8 @@ def procedure_list(request):
     return render(request, 'practice/procedure_list.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_create(request):
     """Create a new veterinary procedure."""
     if request.method == 'POST':
@@ -753,7 +783,8 @@ def procedure_create(request):
     return render(request, 'practice/procedure_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_edit(request, pk):
     """Edit a veterinary procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -805,7 +836,8 @@ def procedure_edit(request, pk):
     return render(request, 'practice/procedure_form.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_delete(request, pk):
     """Delete a veterinary procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -826,7 +858,8 @@ def procedure_delete(request, pk):
 # Qualified Providers Views
 # ============================================
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_providers(request, pk):
     """View and manage qualified providers for a procedure."""
     procedure = get_object_or_404(VetProcedure.objects.prefetch_related('qualified_providers'), pk=pk)
@@ -846,7 +879,8 @@ def procedure_providers(request, pk):
     return render(request, 'practice/procedure_providers.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_add_provider(request, pk):
     """Add a qualified provider to a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -861,7 +895,8 @@ def procedure_add_provider(request, pk):
     return staff_redirect(request, 'practice:procedure_providers', pk=pk)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_remove_provider(request, pk):
     """Remove a qualified provider from a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -880,7 +915,8 @@ def procedure_remove_provider(request, pk):
 # Procedure Consumables Views
 # ============================================
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_consumables(request, pk):
     """View and manage consumable items for a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -909,7 +945,8 @@ def procedure_consumables(request, pk):
     return render(request, 'practice/procedure_consumables.html', context)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_add_consumable(request, pk):
     """Add a consumable item to a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -939,7 +976,8 @@ def procedure_add_consumable(request, pk):
     return staff_redirect(request, 'practice:procedure_consumables', pk=pk)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_update_consumable(request, pk, consumable_pk):
     """Update a consumable item for a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -960,7 +998,8 @@ def procedure_update_consumable(request, pk, consumable_pk):
     return staff_redirect(request, 'practice:procedure_consumables', pk=pk)
 
 
-@staff_member_required
+@login_required
+@require_permission('practice', 'view')
 def procedure_remove_consumable(request, pk, consumable_pk):
     """Remove a consumable item from a procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)

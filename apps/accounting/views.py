@@ -3,7 +3,6 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -11,20 +10,20 @@ from django.views.generic import (
     TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import (
     Account, JournalEntry, JournalLine, Vendor, Bill,
     Budget, BankReconciliation
 )
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin requiring user to be staff."""
+class AccountingPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring accounting module permission."""
+    required_module = 'accounting'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class AccountingDashboardView(StaffRequiredMixin, TemplateView):
+class AccountingDashboardView(AccountingPermissionMixin, TemplateView):
     """Accounting dashboard with financial overview."""
 
     template_name = 'accounting/dashboard.html'
@@ -62,7 +61,7 @@ class AccountingDashboardView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class AccountListView(StaffRequiredMixin, ListView):
+class AccountListView(AccountingPermissionMixin, ListView):
     """Chart of accounts listing."""
 
     model = Account
@@ -94,7 +93,7 @@ class AccountListView(StaffRequiredMixin, ListView):
         return context
 
 
-class AccountDetailView(StaffRequiredMixin, DetailView):
+class AccountDetailView(AccountingPermissionMixin, DetailView):
     """Account detail with transaction history."""
 
     model = Account
@@ -159,7 +158,7 @@ class AccountForm(forms.ModelForm):
         self.fields['parent'].empty_label = _('-- No parent (top level) --')
 
 
-class AccountCreateView(StaffRequiredMixin, CreateView):
+class AccountCreateView(AccountingPermissionMixin, CreateView):
     """Create a new account in the chart of accounts."""
 
     model = Account
@@ -172,7 +171,7 @@ class AccountCreateView(StaffRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class AccountUpdateView(StaffRequiredMixin, UpdateView):
+class AccountUpdateView(AccountingPermissionMixin, UpdateView):
     """Update an existing account."""
 
     model = Account
@@ -187,7 +186,7 @@ class AccountUpdateView(StaffRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class AccountDeleteView(StaffRequiredMixin, DeleteView):
+class AccountDeleteView(AccountingPermissionMixin, DeleteView):
     """Delete an account (soft delete by deactivating)."""
 
     model = Account
@@ -204,7 +203,7 @@ class AccountDeleteView(StaffRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class JournalListView(StaffRequiredMixin, ListView):
+class JournalListView(AccountingPermissionMixin, ListView):
     """List of journal entries."""
 
     model = JournalEntry
@@ -227,7 +226,7 @@ class JournalListView(StaffRequiredMixin, ListView):
         return queryset.order_by('-date', '-created_at')
 
 
-class JournalDetailView(StaffRequiredMixin, DetailView):
+class JournalDetailView(AccountingPermissionMixin, DetailView):
     """Journal entry detail with lines."""
 
     model = JournalEntry
@@ -243,7 +242,7 @@ class JournalDetailView(StaffRequiredMixin, DetailView):
         return context
 
 
-class VendorListView(StaffRequiredMixin, ListView):
+class VendorListView(AccountingPermissionMixin, ListView):
     """List of vendors."""
 
     model = Vendor
@@ -255,7 +254,7 @@ class VendorListView(StaffRequiredMixin, ListView):
         return Vendor.objects.filter(is_active=True).order_by('name')
 
 
-class VendorDetailView(StaffRequiredMixin, DetailView):
+class VendorDetailView(AccountingPermissionMixin, DetailView):
     """Vendor detail with bills."""
 
     model = Vendor
@@ -271,7 +270,7 @@ class VendorDetailView(StaffRequiredMixin, DetailView):
         return context
 
 
-class BillListView(StaffRequiredMixin, ListView):
+class BillListView(AccountingPermissionMixin, ListView):
     """List of bills."""
 
     model = Bill
@@ -290,7 +289,7 @@ class BillListView(StaffRequiredMixin, ListView):
         return queryset.order_by('-bill_date')
 
 
-class BillDetailView(StaffRequiredMixin, DetailView):
+class BillDetailView(AccountingPermissionMixin, DetailView):
     """Bill detail with line items and payments."""
 
     model = Bill
@@ -309,7 +308,7 @@ class BillDetailView(StaffRequiredMixin, DetailView):
         return context
 
 
-class BudgetListView(StaffRequiredMixin, ListView):
+class BudgetListView(AccountingPermissionMixin, ListView):
     """List of budgets."""
 
     model = Budget
@@ -328,7 +327,7 @@ class BudgetListView(StaffRequiredMixin, ListView):
         return queryset.order_by('-year', 'account__code')
 
 
-class ReconciliationListView(StaffRequiredMixin, ListView):
+class ReconciliationListView(AccountingPermissionMixin, ListView):
     """List of bank reconciliations."""
 
     model = BankReconciliation
@@ -342,7 +341,7 @@ class ReconciliationListView(StaffRequiredMixin, ListView):
         ).order_by('-statement_date')
 
 
-class ReconciliationDetailView(StaffRequiredMixin, DetailView):
+class ReconciliationDetailView(AccountingPermissionMixin, DetailView):
     """Bank reconciliation detail."""
 
     model = BankReconciliation

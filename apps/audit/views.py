@@ -1,22 +1,21 @@
 """Views for audit log functionality."""
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.views.generic import TemplateView, ListView, DetailView
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import AuditLog
 
 User = get_user_model()
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin requiring user to be staff."""
+class AuditPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring audit module permission."""
+    required_module = 'audit'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class AuditDashboardView(StaffRequiredMixin, TemplateView):
+class AuditDashboardView(AuditPermissionMixin, TemplateView):
     """Audit dashboard with overview statistics."""
 
     template_name = 'audit/dashboard.html'
@@ -50,7 +49,7 @@ class AuditDashboardView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class AuditLogListView(StaffRequiredMixin, ListView):
+class AuditLogListView(AuditPermissionMixin, ListView):
     """List of audit log entries."""
 
     model = AuditLog
@@ -99,7 +98,7 @@ class AuditLogListView(StaffRequiredMixin, ListView):
         return context
 
 
-class AuditLogDetailView(StaffRequiredMixin, DetailView):
+class AuditLogDetailView(AuditPermissionMixin, DetailView):
     """Audit log entry detail."""
 
     model = AuditLog
@@ -107,7 +106,7 @@ class AuditLogDetailView(StaffRequiredMixin, DetailView):
     context_object_name = 'log'
 
 
-class UserActivityReportView(StaffRequiredMixin, TemplateView):
+class UserActivityReportView(AuditPermissionMixin, TemplateView):
     """User activity report showing activity summary by user."""
 
     template_name = 'audit/user_activity.html'

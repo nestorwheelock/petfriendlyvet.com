@@ -4,29 +4,22 @@ from decimal import Decimal
 
 from django.shortcuts import render
 from django.views import View
-from django.http import JsonResponse, HttpResponseForbidden
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.db.models import Count, Q, Avg
 from django.utils import timezone
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import Delivery, DeliveryDriver, DeliveryZone, DeliverySlot, DeliveryRating
 from .services import DeliveryPaymentService
 
 
-class StaffRequiredMixin(LoginRequiredMixin):
-    """Mixin to ensure user is staff."""
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
-
-        if not request.user.is_staff:
-            return HttpResponseForbidden("Staff access required")
-
-        return super().dispatch(request, *args, **kwargs)
+class DeliveryPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring delivery module permission."""
+    required_module = 'delivery'
+    required_action = 'view'
 
 
-class AdminDashboardView(StaffRequiredMixin, View):
+class AdminDashboardView(DeliveryPermissionMixin, View):
     """Admin dashboard for delivery operations."""
 
     def get(self, request):
@@ -70,7 +63,7 @@ class AdminDashboardView(StaffRequiredMixin, View):
         return render(request, 'delivery/admin/dashboard.html', context)
 
 
-class AdminDeliveriesAPIView(StaffRequiredMixin, View):
+class AdminDeliveriesAPIView(DeliveryPermissionMixin, View):
     """API to get deliveries for map display."""
 
     def get(self, request):
@@ -123,7 +116,7 @@ class AdminDeliveriesAPIView(StaffRequiredMixin, View):
         return JsonResponse({'deliveries': deliveries_data})
 
 
-class AdminDriversAPIView(StaffRequiredMixin, View):
+class AdminDriversAPIView(DeliveryPermissionMixin, View):
     """API to get driver locations for map display."""
 
     def get(self, request):
@@ -156,7 +149,7 @@ class AdminDriversAPIView(StaffRequiredMixin, View):
         return JsonResponse({'drivers': drivers_data})
 
 
-class AdminAssignDriverView(StaffRequiredMixin, View):
+class AdminAssignDriverView(DeliveryPermissionMixin, View):
     """API to assign a driver to a delivery."""
 
     def post(self, request, delivery_id):
@@ -201,7 +194,7 @@ class AdminAssignDriverView(StaffRequiredMixin, View):
         })
 
 
-class ReportsView(StaffRequiredMixin, View):
+class ReportsView(DeliveryPermissionMixin, View):
     """Delivery reports page."""
 
     def get(self, request):
@@ -222,7 +215,7 @@ class ReportsView(StaffRequiredMixin, View):
         return render(request, 'delivery/admin/reports.html', context)
 
 
-class AdminReportsAPIView(StaffRequiredMixin, View):
+class AdminReportsAPIView(DeliveryPermissionMixin, View):
     """API for delivery reports and analytics."""
 
     def get(self, request):
@@ -361,7 +354,7 @@ class AdminReportsAPIView(StaffRequiredMixin, View):
         })
 
 
-class AdminDriverReportAPIView(StaffRequiredMixin, View):
+class AdminDriverReportAPIView(DeliveryPermissionMixin, View):
     """API for individual driver reports."""
 
     def get(self, request, driver_id):
@@ -455,7 +448,7 @@ class AdminDriverReportAPIView(StaffRequiredMixin, View):
         })
 
 
-class ZonesView(StaffRequiredMixin, View):
+class ZonesView(DeliveryPermissionMixin, View):
     """Zone management page."""
 
     def get(self, request):
@@ -467,7 +460,7 @@ class ZonesView(StaffRequiredMixin, View):
         return render(request, 'delivery/admin/zones.html', context)
 
 
-class SlotsView(StaffRequiredMixin, View):
+class SlotsView(DeliveryPermissionMixin, View):
     """Slot management page."""
 
     def get(self, request):
@@ -486,7 +479,7 @@ class SlotsView(StaffRequiredMixin, View):
         return render(request, 'delivery/admin/slots.html', context)
 
 
-class AdminZonesAPIView(StaffRequiredMixin, View):
+class AdminZonesAPIView(DeliveryPermissionMixin, View):
     """API for zone CRUD operations."""
 
     def get(self, request):
@@ -553,7 +546,7 @@ class AdminZonesAPIView(StaffRequiredMixin, View):
         }, status=201)
 
 
-class AdminZoneDetailAPIView(StaffRequiredMixin, View):
+class AdminZoneDetailAPIView(DeliveryPermissionMixin, View):
     """API for single zone operations."""
 
     def get(self, request, zone_id):
@@ -642,7 +635,7 @@ class AdminZoneDetailAPIView(StaffRequiredMixin, View):
         return JsonResponse({'success': True, 'message': 'Zone deleted'})
 
 
-class AdminSlotsAPIView(StaffRequiredMixin, View):
+class AdminSlotsAPIView(DeliveryPermissionMixin, View):
     """API for slot CRUD operations."""
 
     def get(self, request):
@@ -742,7 +735,7 @@ class AdminSlotsAPIView(StaffRequiredMixin, View):
         }, status=201)
 
 
-class AdminSlotDetailAPIView(StaffRequiredMixin, View):
+class AdminSlotDetailAPIView(DeliveryPermissionMixin, View):
     """API for single slot operations."""
 
     def get(self, request, slot_id):
@@ -832,7 +825,7 @@ class AdminSlotDetailAPIView(StaffRequiredMixin, View):
         return JsonResponse({'success': True, 'message': 'Slot deactivated'})
 
 
-class AdminSlotsBulkCreateAPIView(StaffRequiredMixin, View):
+class AdminSlotsBulkCreateAPIView(DeliveryPermissionMixin, View):
     """API for bulk creating slots."""
 
     def post(self, request):
@@ -904,7 +897,7 @@ class AdminSlotsBulkCreateAPIView(StaffRequiredMixin, View):
         }, status=201)
 
 
-class ContractorsView(StaffRequiredMixin, View):
+class ContractorsView(DeliveryPermissionMixin, View):
     """Contractor management page."""
 
     def get(self, request):
@@ -922,7 +915,7 @@ class ContractorsView(StaffRequiredMixin, View):
         return render(request, 'delivery/admin/contractors.html', context)
 
 
-class AdminContractorsAPIView(StaffRequiredMixin, View):
+class AdminContractorsAPIView(DeliveryPermissionMixin, View):
     """API for contractor CRUD operations."""
 
     def get(self, request):
@@ -1015,7 +1008,7 @@ class AdminContractorsAPIView(StaffRequiredMixin, View):
         }, status=201)
 
 
-class AdminContractorDetailAPIView(StaffRequiredMixin, View):
+class AdminContractorDetailAPIView(DeliveryPermissionMixin, View):
     """API for single contractor operations."""
 
     def get(self, request, contractor_id):
@@ -1109,7 +1102,7 @@ class AdminContractorDetailAPIView(StaffRequiredMixin, View):
         })
 
 
-class ValidateRFCAPIView(StaffRequiredMixin, View):
+class ValidateRFCAPIView(DeliveryPermissionMixin, View):
     """API to validate Mexican RFC format."""
 
     def post(self, request):
@@ -1144,7 +1137,7 @@ class ValidateRFCAPIView(StaffRequiredMixin, View):
         })
 
 
-class ValidateCURPAPIView(StaffRequiredMixin, View):
+class ValidateCURPAPIView(DeliveryPermissionMixin, View):
     """API to validate Mexican CURP format."""
 
     def post(self, request):
@@ -1177,7 +1170,7 @@ class ValidateCURPAPIView(StaffRequiredMixin, View):
         })
 
 
-class ContractorPaymentsAPIView(StaffRequiredMixin, View):
+class ContractorPaymentsAPIView(DeliveryPermissionMixin, View):
     """API for contractor payment summary."""
 
     def get(self, request):
@@ -1244,7 +1237,7 @@ class ContractorPaymentsAPIView(StaffRequiredMixin, View):
         })
 
 
-class ContractorPaymentDetailAPIView(StaffRequiredMixin, View):
+class ContractorPaymentDetailAPIView(DeliveryPermissionMixin, View):
     """API for individual contractor payment details."""
 
     def get(self, request, contractor_id):

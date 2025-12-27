@@ -1,22 +1,21 @@
 """Views for CRM functionality."""
 from datetime import timedelta
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count
 from django.utils import timezone
 from django.views.generic import TemplateView, ListView, DetailView
 
+from apps.accounts.mixins import ModulePermissionMixin
 from .models import OwnerProfile, CustomerTag, Interaction
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin requiring user to be staff."""
+class CRMPermissionMixin(ModulePermissionMixin):
+    """Mixin requiring CRM module permission."""
+    required_module = 'crm'
+    required_action = 'view'
 
-    def test_func(self):
-        return self.request.user.is_staff
 
-
-class CRMDashboardView(StaffRequiredMixin, TemplateView):
+class CRMDashboardView(CRMPermissionMixin, TemplateView):
     """CRM dashboard for customer management."""
 
     template_name = 'crm/dashboard.html'
@@ -54,7 +53,7 @@ class CRMDashboardView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class CustomerListView(StaffRequiredMixin, ListView):
+class CustomerListView(CRMPermissionMixin, ListView):
     """List all customers."""
 
     model = OwnerProfile
@@ -66,7 +65,7 @@ class CustomerListView(StaffRequiredMixin, ListView):
         return OwnerProfile.objects.select_related('user').order_by('-created_at')
 
 
-class CustomerDetailView(StaffRequiredMixin, DetailView):
+class CustomerDetailView(CRMPermissionMixin, DetailView):
     """View customer details."""
 
     model = OwnerProfile
