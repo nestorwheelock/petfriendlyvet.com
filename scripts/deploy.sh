@@ -45,6 +45,12 @@ log_error() {
 }
 
 ssh_cmd() {
+    # Use sshpass + native ssh for better compatibility
+    sshpass -p "$REMOTE_PASSWORD" ssh -o StrictHostKeyChecking=no root@108.61.224.251 "$1"
+}
+
+ssh_cmd_paramiko() {
+    # Legacy paramiko method (fallback)
     python3 -c "
 import paramiko
 client = paramiko.SSHClient()
@@ -89,6 +95,33 @@ sftp.close()
 client.close()
 print('Downloaded: $src -> $dst')
 "
+}
+
+rsync_code() {
+    # Build rsync exclude args from EXCLUDE_PATTERNS
+    local exclude_args=""
+    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+        exclude_args="$exclude_args --exclude=$pattern"
+    done
+
+    # Additional excludes for rsync
+    exclude_args="$exclude_args --exclude=.venv"
+    exclude_args="$exclude_args --exclude=*.log"
+    exclude_args="$exclude_args --exclude=.DS_Store"
+    exclude_args="$exclude_args --exclude=backups/"
+
+    log_info "Syncing code with rsync..."
+    cd "$PROJECT_DIR"
+
+    # Use sshpass with rsync for password auth
+    # --delete removes files on remote that don't exist locally
+    # --checksum uses checksums instead of mod-time for comparison
+    sshpass -p "$REMOTE_PASSWORD" rsync -avz --delete --checksum \
+        $exclude_args \
+        -e "ssh -o StrictHostKeyChecking=no" \
+        ./ root@108.61.224.251:$REMOTE_PATH/
+
+    log_success "Code synced to server"
 }
 
 # =============================================================================
@@ -231,7 +264,51 @@ cmd_optimize() {
 }
 
 cmd_code() {
-    log_info "Pushing code to production..."
+    log_info "Pushing code to production (with rebuild)..."
+
+    # Backup current deployment
+    log_info "Creating backup..."
+    ssh_cmd "cd $REMOTE_PATH && rm -rf /tmp/deploy_backup && cp -r . /tmp/deploy_backup"
+
+    # Sync code with rsync (fast, incremental)
+    rsync_code
+
+    # Rebuild container (production uses baked-in code)
+    log_info "Rebuilding container..."
+    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d --build"
+
+    # Run migrations
+    log_info "Running migrations..."
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py migrate"
+
+    # Collect static
+    log_info "Collecting static files..."
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py collectstatic --noinput"
+
+    # Verify
+    sleep 3
+    cmd_status
+}
+
+cmd_quick() {
+    log_info "Quick deploy (rsync only, no rebuild)..."
+    log_info "Use this for testing environments with volume mounts"
+
+    # Sync code with rsync
+    rsync_code
+
+    # Restart containers to pick up Python changes (optional)
+    if [ "${1:-}" = "--restart" ]; then
+        log_info "Restarting containers..."
+        ssh_cmd "cd $REMOTE_PATH && docker compose restart web celery"
+    fi
+
+    # Verify
+    cmd_status
+}
+
+cmd_code_legacy() {
+    log_info "Pushing code to production (legacy tar method)..."
 
     # Build exclude args
     local exclude_args=""
@@ -257,15 +334,15 @@ cmd_code() {
 
     # Rebuild container
     log_info "Rebuilding container..."
-    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d --build" 300
+    ssh_cmd "cd $REMOTE_PATH && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d --build"
 
     # Run migrations
     log_info "Running migrations..."
-    ssh_cmd "docker exec $WEB_CONTAINER python manage.py migrate" 120
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py migrate"
 
     # Collect static
     log_info "Collecting static files..."
-    ssh_cmd "docker exec $WEB_CONTAINER python manage.py collectstatic --noinput" 60
+    ssh_cmd "docker exec $WEB_CONTAINER python manage.py collectstatic --noinput"
 
     # Cleanup
     rm "$code_tar"
@@ -316,7 +393,10 @@ cmd_help() {
     echo ""
     echo "Commands:"
     echo "  push          Full deployment (code + media + restart)"
-    echo "  code          Push code only, rebuild container"
+    echo "  code          Push code with rsync, rebuild container (production)"
+    echo "  quick         Quick rsync only, no rebuild (for testing with volume mounts)"
+    echo "  quick --restart  Quick rsync + restart containers"
+    echo "  code-legacy   Push code using tar method (fallback)"
     echo "  media-push    Push local media to production"
     echo "  media-pull    Pull production media to local"
     echo "  db-push       Push local database to production"
@@ -328,10 +408,12 @@ cmd_help() {
     echo "  help          Show this help"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/deploy.sh status"
-    echo "  ./scripts/deploy.sh db-pull"
-    echo "  ./scripts/deploy.sh optimize --all"
-    echo "  ./scripts/deploy.sh push"
+    echo "  ./scripts/deploy.sh status         # Check if site is up"
+    echo "  ./scripts/deploy.sh quick          # Fast deploy for testing (rsync only)"
+    echo "  ./scripts/deploy.sh quick --restart # Rsync + restart containers"
+    echo "  ./scripts/deploy.sh code           # Production deploy (rsync + rebuild)"
+    echo "  ./scripts/deploy.sh db-pull        # Sync production DB to local"
+    echo "  ./scripts/deploy.sh push           # Full deploy (code + media)"
 }
 
 # =============================================================================
@@ -344,6 +426,13 @@ case "${1:-help}" in
         ;;
     code)
         cmd_code
+        ;;
+    quick)
+        shift
+        cmd_quick "$@"
+        ;;
+    code-legacy)
+        cmd_code_legacy
         ;;
     media-push|media)
         cmd_media_push

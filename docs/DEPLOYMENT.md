@@ -4,7 +4,7 @@
 
 ### System Packages
 
-The following packages must be installed on the production server:
+The following packages must be installed on the **production server**:
 
 ```bash
 # Docker (required for containerized deployment)
@@ -15,6 +15,19 @@ sudo apt-get install imagemagick
 
 # Nginx (reverse proxy)
 sudo apt-get install nginx
+```
+
+The following packages must be installed on your **local development machine** for deployment:
+
+```bash
+# rsync (for incremental code sync)
+sudo apt-get install rsync
+
+# sshpass (for password-based SSH/rsync)
+sudo apt-get install sshpass
+
+# Python paramiko (fallback for SFTP operations)
+pip install paramiko
 ```
 
 ### Python Dependencies
