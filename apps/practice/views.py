@@ -110,7 +110,7 @@ def staff_detail(request, pk):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'manage')
 def staff_create(request):
     """Create a new staff member (User + StaffProfile)."""
     if request.method == 'POST':
@@ -133,7 +133,7 @@ def staff_create(request):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'manage')
 def staff_edit(request, pk):
     """Edit an existing staff member's profile."""
     staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
@@ -160,7 +160,7 @@ def staff_edit(request, pk):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'manage')
 def staff_deactivate(request, pk):
     """Deactivate a staff member (soft delete)."""
     staff = get_object_or_404(StaffProfile.objects.select_related('user'), pk=pk)
@@ -630,7 +630,7 @@ def category_list(request):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def category_create(request):
     """Create a new procedure category."""
     if request.method == 'POST':
@@ -667,7 +667,7 @@ def category_create(request):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def category_edit(request, pk):
     """Edit a procedure category."""
     category = get_object_or_404(ProcedureCategory, pk=pk)
@@ -697,7 +697,7 @@ def category_edit(request, pk):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def category_delete(request, pk):
     """Delete a procedure category."""
     category = get_object_or_404(ProcedureCategory, pk=pk)
@@ -749,7 +749,7 @@ def procedure_list(request):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def procedure_create(request):
     """Create a new veterinary procedure."""
     if request.method == 'POST':
@@ -814,7 +814,7 @@ def procedure_create(request):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def procedure_edit(request, pk):
     """Edit a veterinary procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)
@@ -867,7 +867,7 @@ def procedure_edit(request, pk):
 
 
 @login_required
-@require_permission('practice', 'view')
+@require_permission('practice', 'edit')
 def procedure_delete(request, pk):
     """Delete a veterinary procedure."""
     procedure = get_object_or_404(VetProcedure, pk=pk)

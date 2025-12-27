@@ -1,6 +1,7 @@
 """Views for pets management."""
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
@@ -17,6 +18,31 @@ from django.views.generic import (
 from .models import Pet
 from .forms import PetForm
 from apps.practice.models import Vaccination, MedicalCondition
+
+
+class StaffPetsPermissionMixin(UserPassesTestMixin):
+    """Mixin to check pets module permissions when accessed from staff portal.
+
+    Only enforces permissions for staff portal access. Regular customers
+    can access their own pets without special permissions.
+    """
+
+    required_module = 'pets'
+    required_action = 'view'
+
+    def test_func(self):
+        """Check if user has permission when in staff portal."""
+        is_staff_portal = getattr(self.request, 'is_staff_portal', False)
+
+        if not is_staff_portal:
+            # Customer portal - let regular view logic handle access
+            return True
+
+        # Staff portal - require module permission
+        return self.request.user.has_module_permission(
+            self.required_module,
+            self.required_action
+        )
 
 
 class OwnerDashboardView(LoginRequiredMixin, TemplateView):
@@ -42,9 +68,10 @@ class OwnerDashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class PetListView(LoginRequiredMixin, ListView):
+class PetListView(StaffPetsPermissionMixin, LoginRequiredMixin, ListView):
     """List pets - all pets for staff, own pets for customers."""
 
+    required_action = 'view'
     model = Pet
     template_name = 'pets/pet_list.html'
     context_object_name = 'pets'
@@ -53,8 +80,9 @@ class PetListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         show_archived = self.request.GET.get('archived') == '1'
 
-        # Staff/superusers see all pets
-        if self.request.user.is_staff or self.request.user.is_superuser:
+        # Staff portal or staff/superuser users see all pets
+        is_staff_portal = getattr(self.request, 'is_staff_portal', False)
+        if is_staff_portal or self.request.user.is_staff or self.request.user.is_superuser:
             qs = Pet.objects.select_related('owner', 'owner_person')
         else:
             # Regular users see only their own pets
@@ -78,16 +106,18 @@ class PetListView(LoginRequiredMixin, ListView):
         return context
 
 
-class PetDetailView(LoginRequiredMixin, DetailView):
+class PetDetailView(StaffPetsPermissionMixin, LoginRequiredMixin, DetailView):
     """View details of a specific pet."""
 
+    required_action = 'view'
     model = Pet
     template_name = 'pets/pet_detail.html'
     context_object_name = 'pet'
 
     def get_queryset(self):
-        # Staff/superusers can view any pet
-        if self.request.user.is_staff or self.request.user.is_superuser:
+        # Staff portal or staff/superusers can view any pet
+        is_staff_portal = getattr(self.request, 'is_staff_portal', False)
+        if is_staff_portal or self.request.user.is_staff or self.request.user.is_superuser:
             return Pet.objects.all()
         # Regular users can only view their own pets
         return Pet.objects.filter(owner=self.request.user)
@@ -116,9 +146,10 @@ class PetDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class PetCreateView(LoginRequiredMixin, CreateView):
+class PetCreateView(StaffPetsPermissionMixin, LoginRequiredMixin, CreateView):
     """Create a new pet."""
 
+    required_action = 'create'
     model = Pet
     form_class = PetForm
     template_name = 'pets/pet_form.html'
@@ -140,16 +171,18 @@ class PetCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy('pets:pet_list')
 
 
-class PetUpdateView(LoginRequiredMixin, UpdateView):
+class PetUpdateView(StaffPetsPermissionMixin, LoginRequiredMixin, UpdateView):
     """Edit an existing pet."""
 
+    required_action = 'edit'
     model = Pet
     form_class = PetForm
     template_name = 'pets/pet_form.html'
 
     def get_queryset(self):
-        # Staff/superusers can edit any pet
-        if self.request.user.is_staff or self.request.user.is_superuser:
+        # Staff portal or staff/superusers can edit any pet
+        is_staff_portal = getattr(self.request, 'is_staff_portal', False)
+        if is_staff_portal or self.request.user.is_staff or self.request.user.is_superuser:
             return Pet.objects.all()
         # Regular users can only edit their own pets
         return Pet.objects.filter(owner=self.request.user)
@@ -171,8 +204,16 @@ class PetUpdateView(LoginRequiredMixin, UpdateView):
 class PetArchiveView(LoginRequiredMixin, View):
     """Archive a pet (soft delete)."""
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check permission if staff portal
+        if getattr(request, 'is_staff_portal', False):
+            if not request.user.has_module_permission('pets', 'edit'):
+                raise PermissionDenied("You don't have permission to archive pets.")
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
-        if request.user.is_staff or request.user.is_superuser:
+        is_staff_portal = getattr(request, 'is_staff_portal', False)
+        if is_staff_portal or request.user.is_staff or request.user.is_superuser:
             pet = get_object_or_404(Pet, pk=pk)
         else:
             pet = get_object_or_404(Pet, pk=pk, owner=request.user)
@@ -188,8 +229,16 @@ class PetArchiveView(LoginRequiredMixin, View):
 class PetUnarchiveView(LoginRequiredMixin, View):
     """Restore an archived pet."""
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check permission if staff portal
+        if getattr(request, 'is_staff_portal', False):
+            if not request.user.has_module_permission('pets', 'edit'):
+                raise PermissionDenied("You don't have permission to restore pets.")
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
-        if request.user.is_staff or request.user.is_superuser:
+        is_staff_portal = getattr(request, 'is_staff_portal', False)
+        if is_staff_portal or request.user.is_staff or request.user.is_superuser:
             pet = get_object_or_404(Pet, pk=pk, is_archived=True)
         else:
             pet = get_object_or_404(Pet, pk=pk, owner=request.user, is_archived=True)
@@ -205,9 +254,17 @@ class PetUnarchiveView(LoginRequiredMixin, View):
 class PetMarkDeceasedView(LoginRequiredMixin, View):
     """Mark a pet as deceased with date."""
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check permission if staff portal
+        if getattr(request, 'is_staff_portal', False):
+            if not request.user.has_module_permission('pets', 'edit'):
+                raise PermissionDenied("You don't have permission to update pet records.")
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         from datetime import datetime
-        if request.user.is_staff or request.user.is_superuser:
+        is_staff_portal = getattr(request, 'is_staff_portal', False)
+        if is_staff_portal or request.user.is_staff or request.user.is_superuser:
             pet = get_object_or_404(Pet, pk=pk)
         else:
             pet = get_object_or_404(Pet, pk=pk, owner=request.user)
