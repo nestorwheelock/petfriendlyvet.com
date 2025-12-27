@@ -518,6 +518,190 @@ class PermissionMatrixUITests(TestCase):
         self.assertIn(response.status_code, [403, 302])
 
 
+class AccessControlIntegrationTests(TestCase):
+    """T-096c: Test that access control actually works end-to-end."""
+
+    def setUp(self):
+        """Create users with different roles for testing access control."""
+        self.client = Client()
+
+        # Receptionist - has practice.view but not accounting.view
+        self.receptionist = User.objects.create_user(
+            username='testreceptionist',
+            email='testreceptionist@test.com',
+            password='testpass123'
+        )
+        receptionist_role = Role.objects.get(slug='receptionist')
+        UserRole.objects.create(user=self.receptionist, role=receptionist_role, is_primary=True)
+
+        # Finance Manager - has accounting.view but not practice.manage
+        self.finance_manager = User.objects.create_user(
+            username='testfinance',
+            email='testfinance@test.com',
+            password='testpass123'
+        )
+        finance_role = Role.objects.get(slug='finance-manager')
+        UserRole.objects.create(user=self.finance_manager, role=finance_role, is_primary=True)
+
+        # User without any role
+        self.no_role_user = User.objects.create_user(
+            username='testnorole',
+            email='testnorole@test.com',
+            password='testpass123'
+        )
+
+    def test_receptionist_can_access_practice_dashboard(self):
+        """Receptionist with practice.view can access practice dashboard."""
+        self.client.login(username='testreceptionist', password='testpass123')
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_receptionist_cannot_access_accounting(self):
+        """Receptionist without accounting.view cannot access accounting."""
+        self.client.login(username='testreceptionist', password='testpass123')
+        response = self.client.get(reverse('accounting:dashboard'))
+        # Should be forbidden or redirect to login/403
+        self.assertIn(response.status_code, [403, 302])
+
+    def test_finance_manager_can_access_accounting(self):
+        """Finance Manager with accounting.view can access accounting."""
+        self.client.login(username='testfinance', password='testpass123')
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_finance_manager_cannot_access_practice(self):
+        """Finance Manager without practice.view cannot access practice."""
+        self.client.login(username='testfinance', password='testpass123')
+        response = self.client.get(reverse('practice:dashboard'))
+        # Should be forbidden or redirect
+        self.assertIn(response.status_code, [403, 302])
+
+    def test_user_without_role_denied_everywhere(self):
+        """User without any role cannot access protected modules."""
+        self.client.login(username='testnorole', password='testpass123')
+
+        # Should be denied practice
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertIn(response.status_code, [403, 302])
+
+        # Should be denied accounting
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertIn(response.status_code, [403, 302])
+
+    def test_permission_change_takes_effect_immediately(self):
+        """Adding permission to role grants access immediately."""
+        # Verify receptionist initially cannot access accounting
+        self.client.login(username='testreceptionist', password='testpass123')
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertIn(response.status_code, [403, 302])
+
+        # Add accounting.view to receptionist role
+        receptionist_role = Role.objects.get(slug='receptionist')
+        accounting_view = DjangoPermission.objects.get(codename='accounting.view')
+        receptionist_role.group.permissions.add(accounting_view)
+
+        # Now should be allowed
+        response = self.client.get(reverse('accounting:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # Clean up - remove permission for other tests
+        receptionist_role.group.permissions.remove(accounting_view)
+
+    def test_permission_removal_takes_effect(self):
+        """Removing permission from role revokes access immediately."""
+        # Verify receptionist can access practice
+        self.client.login(username='testreceptionist', password='testpass123')
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # Remove practice.view from receptionist role
+        receptionist_role = Role.objects.get(slug='receptionist')
+        practice_view = DjangoPermission.objects.get(codename='practice.view')
+        receptionist_role.group.permissions.remove(practice_view)
+
+        # Now should be denied
+        response = self.client.get(reverse('practice:dashboard'))
+        self.assertIn(response.status_code, [403, 302])
+
+        # Clean up - re-add permission
+        receptionist_role.group.permissions.add(practice_view)
+
+    def test_has_module_permission_method_works(self):
+        """User.has_module_permission method returns correct values."""
+        # Receptionist has practice.view
+        self.assertTrue(self.receptionist.has_module_permission('practice', 'view'))
+        # Receptionist doesn't have accounting.view
+        self.assertFalse(self.receptionist.has_module_permission('accounting', 'view'))
+
+        # Finance manager has accounting.view
+        self.assertTrue(self.finance_manager.has_module_permission('accounting', 'view'))
+        # Finance manager doesn't have practice.view (based on default permissions)
+        self.assertFalse(self.finance_manager.has_module_permission('practice', 'view'))
+
+        # User without role has no permissions
+        self.assertFalse(self.no_role_user.has_module_permission('practice', 'view'))
+        self.assertFalse(self.no_role_user.has_module_permission('accounting', 'view'))
+
+
+class SyncPermissionsCommandTests(TestCase):
+    """T-096d: Test sync_permissions management command."""
+
+    def test_command_exists(self):
+        """sync_permissions management command exists and runs."""
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        # Should not raise an exception
+        call_command('sync_permissions', stdout=out)
+        output = out.getvalue()
+        self.assertIn('Scanning', output)
+
+    def test_command_finds_existing_permissions(self):
+        """Command reports number of existing permissions."""
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('sync_permissions', stdout=out)
+        output = out.getvalue()
+        # Should report permissions found
+        self.assertIn('permission', output.lower())
+
+    def test_command_creates_missing_permissions(self):
+        """Command creates permissions for new module.action patterns found in code."""
+        from django.core.management import call_command
+        from io import StringIO
+
+        # Delete a permission to simulate new code being added
+        DjangoPermission.objects.filter(codename='practice.view').delete()
+        self.assertFalse(DjangoPermission.objects.filter(codename='practice.view').exists())
+
+        out = StringIO()
+        call_command('sync_permissions', stdout=out)
+
+        # Should recreate the missing permission
+        self.assertTrue(DjangoPermission.objects.filter(codename='practice.view').exists())
+
+    def test_command_scans_decorators(self):
+        """Command scans for @require_permission decorators."""
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('sync_permissions', '--verbose', stdout=out)
+        output = out.getvalue()
+        # Should find patterns in code
+        self.assertIn('practice', output.lower())
+
+    def test_command_scans_mixins(self):
+        """Command scans for ModulePermissionMixin usage."""
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('sync_permissions', '--verbose', stdout=out)
+        output = out.getvalue()
+        # Should find accounting module from mixin usage
+        self.assertIn('accounting', output.lower())
+
+
 class DefaultRolesIntegrationTests(TestCase):
     """Test default roles from migration work correctly."""
 
