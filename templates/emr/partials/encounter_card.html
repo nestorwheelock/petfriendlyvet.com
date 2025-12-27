@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n emr_tags %}
 {# Encounter card for whiteboard Kanban column #}
 {# Used as HTMX partial for real-time updates #}
 
@@ -101,27 +101,27 @@
     <!-- Wait Time & Time in State -->
     <div class="text-xs text-gray-400 mb-2 space-y-0.5">
         {% if encounter.checked_in_at %}
-            <div>{% trans "Wait" %}: {{ encounter.checked_in_at|timesince }}</div>
+            <div>{% trans "Wait" %}: {{ encounter.checked_in_at|duration_clock }}</div>
         {% endif %}
         {# Time in current state #}
         {% if encounter.pipeline_state == 'scheduled' %}
-            <div class="text-gray-500">{% trans "Scheduled" %}: {{ encounter.scheduled_at|default:encounter.created_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "Scheduled" %}: {{ encounter.scheduled_at|default:encounter.created_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'checked_in' and encounter.checked_in_at %}
-            <div class="text-gray-500">{% trans "In queue" %}: {{ encounter.checked_in_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "In queue" %}: {{ encounter.checked_in_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'roomed' and encounter.roomed_at %}
-            <div class="text-gray-500">{% trans "In room" %}: {{ encounter.roomed_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "In room" %}: {{ encounter.roomed_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'in_exam' and encounter.exam_started_at %}
-            <div class="text-gray-500">{% trans "In exam" %}: {{ encounter.exam_started_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "In exam" %}: {{ encounter.exam_started_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'pending_orders' and encounter.exam_ended_at %}
-            <div class="text-gray-500">{% trans "Pending orders" %}: {{ encounter.exam_ended_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "Pending orders" %}: {{ encounter.exam_ended_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'awaiting_results' and encounter.exam_ended_at %}
-            <div class="text-gray-500">{% trans "Awaiting results" %}: {{ encounter.exam_ended_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "Awaiting results" %}: {{ encounter.exam_ended_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'treatment' and encounter.exam_ended_at %}
-            <div class="text-gray-500">{% trans "In treatment" %}: {{ encounter.exam_ended_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "In treatment" %}: {{ encounter.exam_ended_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'checkout' and encounter.exam_ended_at %}
-            <div class="text-gray-500">{% trans "At checkout" %}: {{ encounter.exam_ended_at|timesince }}</div>
+            <div class="text-gray-500">{% trans "At checkout" %}: {{ encounter.exam_ended_at|duration_clock }}</div>
         {% elif encounter.pipeline_state == 'completed' and encounter.discharged_at %}
-            <div class="text-gray-500">{% trans "Completed" %}: {{ encounter.discharged_at|timesince }} {% trans "ago" %}</div>
+            <div class="text-gray-500">{% trans "Completed" %}: {{ encounter.discharged_at|duration_clock }}</div>
         {% endif %}
     </div>
 
