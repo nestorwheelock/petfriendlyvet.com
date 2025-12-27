@@ -3,7 +3,8 @@
 {# Used as HTMX partial for real-time updates #}
 
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-shadow"
-     id="encounter-{{ encounter.id }}">
+     id="encounter-{{ encounter.id }}"
+     data-state="{{ encounter.pipeline_state }}">
     <!-- Patient Info -->
     <div class="flex items-start justify-between mb-2">
         <div>

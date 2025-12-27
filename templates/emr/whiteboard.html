@@ -242,6 +242,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial count update
     updateColumnCounts();
+
+    // Move cards to correct column after HTMX swap (for button transitions)
+    document.body.addEventListener('htmx:afterSettle', function(evt) {
+        // The elt is the triggering element, for outerHTML swap we need to find the new card
+        const elt = evt.detail.elt;
+        let card = null;
+
+        // If elt is the card itself (outerHTML replaced it)
+        if (elt && elt.id && elt.id.startsWith('encounter-')) {
+            card = elt;
+        }
+        // If the target was specified via hx-target, find the card by ID
+        else if (evt.detail.target && evt.detail.target.id && evt.detail.target.id.startsWith('encounter-')) {
+            card = document.getElementById(evt.detail.target.id);
+        }
+
+        if (card) {
+            const newState = card.dataset.state;
+            const correctColumn = document.getElementById('column-' + newState);
+            const currentColumn = card.closest('.kanban-column');
+
+            // Move to correct column if not already there
+            if (correctColumn && currentColumn && correctColumn !== currentColumn) {
+                correctColumn.appendChild(card);
+                updateColumnCounts();
+            }
+        }
+    });
 });
 </script>
 {% endblock %}
