@@ -135,5 +135,127 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- DEV: All Practice Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Practice Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/" class="text-blue-600 hover:underline">Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Staff -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👥</span> Staff
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/staff/" class="text-blue-600 hover:underline">Staff List</a></li>
+                    <li class="text-gray-400 text-xs">staff/&lt;pk&gt;/ - Staff Detail (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Schedule & Time -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📅</span> Schedule & Time
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/schedule/" class="text-blue-600 hover:underline">Schedule</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/shifts/" class="text-blue-600 hover:underline">Shift List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/time/" class="text-blue-600 hover:underline">Time Tracking</a></li>
+                </ul>
+            </div>
+
+            <!-- Tasks -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>✅</span> Tasks
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/tasks/" class="text-blue-600 hover:underline">Task List</a></li>
+                    <li class="text-gray-400 text-xs">tasks/&lt;pk&gt;/ - Task Detail (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Procedure Categories -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📁</span> Procedure Categories
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/categories/" class="text-blue-600 hover:underline">Category List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/categories/add/" class="text-blue-600 hover:underline">+ Add Category</a></li>
+                    <li class="text-gray-400 text-xs">categories/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">categories/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Procedures -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏥</span> Procedures
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/procedures/" class="text-blue-600 hover:underline">Procedure List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/procedures/add/" class="text-blue-600 hover:underline">+ Add Procedure</a></li>
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/delete/ - Delete (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Procedure Providers -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👨‍⚕️</span> Procedure Providers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/providers/ - View/Manage</li>
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/providers/add/ - Add (POST)</li>
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/providers/remove/ - Remove (POST)</li>
+                    <li class="text-gray-500 text-xs italic mt-1">Access via Procedure List → Providers link</li>
+                </ul>
+            </div>
+
+            <!-- Procedure Consumables -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>💊</span> Procedure Consumables
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/consumables/ - View/Manage</li>
+                    <li class="text-gray-400 text-xs">procedures/&lt;pk&gt;/consumables/add/ - Add (POST)</li>
+                    <li class="text-gray-400 text-xs">procedures/.../update/ - Update (POST)</li>
+                    <li class="text-gray-400 text-xs">procedures/.../remove/ - Remove (POST)</li>
+                    <li class="text-gray-500 text-xs italic mt-1">Access via Procedure List → Consumables link</li>
+                </ul>
+            </div>
+
+            <!-- Settings -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>⚙️</span> Settings
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/practice/settings/" class="text-blue-600 hover:underline">Clinic Settings</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
+        </div>
+    </div>
 </div>
 {% endblock %}

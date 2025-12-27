@@ -40,11 +40,11 @@
         <div class="bg-white rounded-xl shadow">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Journal Entries" %}</h2>
-                <a href="{% url 'accounting:journal_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+                <a href="/staff-{{ staff_token }}/operations/accounting/journals/" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
             </div>
             <div class="divide-y divide-gray-200">
                 {% for entry in recent_journals %}
-                <a href="{% url 'accounting:journal_detail' pk=entry.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <a href="/staff-{{ staff_token }}/operations/accounting/journals/{{ entry.pk }}/" class="block px-6 py-4 hover:bg-gray-50">
                     <div class="flex justify-between">
                         <span class="font-medium">{{ entry.reference }}</span>
                         <span class="text-sm text-gray-500">{{ entry.date|date:"M d, Y" }}</span>
@@ -61,11 +61,11 @@
         <div class="bg-white rounded-xl shadow">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-900">{% trans "Pending Bills" %}</h2>
-                <a href="{% url 'accounting:bill_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+                <a href="/staff-{{ staff_token }}/operations/accounting/bills/" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
             </div>
             <div class="divide-y divide-gray-200">
                 {% for bill in pending_bills %}
-                <a href="{% url 'accounting:bill_detail' pk=bill.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <a href="/staff-{{ staff_token }}/operations/accounting/bills/{{ bill.pk }}/" class="block px-6 py-4 hover:bg-gray-50">
                     <div class="flex justify-between">
                         <span class="font-medium">{{ bill.vendor.name }}</span>
                         <span class="text-sm font-semibold text-red-600">${{ bill.total }}</span>
@@ -81,22 +81,115 @@
 
     <!-- Quick Links -->
     <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{% url 'accounting:account_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/accounting/accounts/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">📊</div>
             <div class="font-medium">{% trans "Chart of Accounts" %}</div>
         </a>
-        <a href="{% url 'accounting:vendor_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/accounting/vendors/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">🏢</div>
             <div class="font-medium">{% trans "Vendors" %}</div>
         </a>
-        <a href="{% url 'accounting:budget_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/accounting/budgets/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">💰</div>
             <div class="font-medium">{% trans "Budgets" %}</div>
         </a>
-        <a href="{% url 'accounting:reconciliation_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/accounting/reconciliations/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">🏦</div>
             <div class="font-medium">{% trans "Reconciliations" %}</div>
         </a>
+    </div>
+
+    <!-- DEV: All Accounting Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Accounting Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/" class="text-blue-600 hover:underline">Accounting Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Accounts -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📋</span> Accounts
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/accounts/" class="text-blue-600 hover:underline">Account List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/accounts/add/" class="text-blue-600 hover:underline">+ Add Account</a></li>
+                    <li class="text-gray-400 text-xs">accounts/&lt;pk&gt;/ - Detail</li>
+                    <li class="text-gray-400 text-xs">accounts/&lt;pk&gt;/edit/ - Edit</li>
+                    <li class="text-gray-400 text-xs">accounts/&lt;pk&gt;/delete/ - Delete</li>
+                </ul>
+            </div>
+
+            <!-- Journals -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📖</span> Journals
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/journals/" class="text-blue-600 hover:underline">Journal List</a></li>
+                    <li class="text-gray-400 text-xs">journals/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Vendors -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏢</span> Vendors
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/vendors/" class="text-blue-600 hover:underline">Vendor List</a></li>
+                    <li class="text-gray-400 text-xs">vendors/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Bills -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🧾</span> Bills
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/bills/" class="text-blue-600 hover:underline">Bill List</a></li>
+                    <li class="text-gray-400 text-xs">bills/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Budgets -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>💰</span> Budgets
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/budgets/" class="text-blue-600 hover:underline">Budget List</a></li>
+                </ul>
+            </div>
+
+            <!-- Reconciliations -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏦</span> Reconciliations
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/accounting/reconciliations/" class="text-blue-600 hover:underline">Reconciliation List</a></li>
+                    <li class="text-gray-400 text-xs">reconciliations/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
+        </div>
     </div>
 </div>
 {% endblock staff_content %}

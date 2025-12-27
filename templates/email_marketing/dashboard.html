@@ -34,23 +34,23 @@
 
     <!-- Quick Links -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <a href="{% url 'marketing:campaign_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/marketing/campaigns/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">📧</div>
             <div class="font-medium">{% trans "Campaigns" %}</div>
         </a>
-        <a href="{% url 'marketing:subscriber_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/marketing/subscribers/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">👥</div>
             <div class="font-medium">{% trans "Subscribers" %}</div>
         </a>
-        <a href="{% url 'marketing:template_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/marketing/templates/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">📄</div>
             <div class="font-medium">{% trans "Templates" %}</div>
         </a>
-        <a href="{% url 'marketing:segment_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/marketing/segments/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">🎯</div>
             <div class="font-medium">{% trans "Segments" %}</div>
         </a>
-        <a href="{% url 'marketing:sequence_list' %}" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
+        <a href="/staff-{{ staff_token }}/operations/marketing/sequences/" class="bg-white rounded-xl shadow p-6 text-center hover:bg-gray-50">
             <div class="text-2xl mb-2">🔄</div>
             <div class="font-medium">{% trans "Automations" %}</div>
         </a>
@@ -60,11 +60,11 @@
     <div class="bg-white rounded-xl shadow">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Campaigns" %}</h2>
-            <a href="{% url 'marketing:campaign_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+            <a href="/staff-{{ staff_token }}/operations/marketing/campaigns/" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
         </div>
         <div class="divide-y divide-gray-200">
             {% for campaign in recent_campaigns %}
-            <a href="{% url 'marketing:campaign_detail' pk=campaign.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+            <a href="/staff-{{ staff_token }}/operations/marketing/campaigns/{{ campaign.pk }}/" class="block px-6 py-4 hover:bg-gray-50">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="font-medium text-gray-900">{{ campaign.name }}</span>
@@ -82,6 +82,82 @@
             {% empty %}
             <div class="px-6 py-8 text-center text-gray-500">{% trans "No campaigns yet" %}</div>
             {% endfor %}
+        </div>
+    </div>
+
+    <!-- DEV: All Email Marketing Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Email Marketing Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/" class="text-blue-600 hover:underline">Marketing Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Campaigns -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📧</span> Campaigns
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/campaigns/" class="text-blue-600 hover:underline">Campaign List</a></li>
+                    <li class="text-gray-400 text-xs">campaigns/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Subscribers -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👥</span> Subscribers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/subscribers/" class="text-blue-600 hover:underline">Subscriber List</a></li>
+                </ul>
+            </div>
+
+            <!-- Templates -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📄</span> Templates
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/templates/" class="text-blue-600 hover:underline">Template List</a></li>
+                </ul>
+            </div>
+
+            <!-- Segments -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🎯</span> Segments
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/segments/" class="text-blue-600 hover:underline">Segment List</a></li>
+                </ul>
+            </div>
+
+            <!-- Sequences -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🔄</span> Automations
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/marketing/sequences/" class="text-blue-600 hover:underline">Sequence List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development.
         </div>
     </div>
 </div>

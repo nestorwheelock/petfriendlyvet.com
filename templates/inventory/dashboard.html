@@ -402,5 +402,187 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- DEV: All Inventory Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Inventory Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dashboard & Alerts -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard & Alerts
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/" class="text-blue-600 hover:underline">Dashboard</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/alerts/" class="text-blue-600 hover:underline">Alerts</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/expiring/" class="text-blue-600 hover:underline">Expiring Items</a></li>
+                </ul>
+            </div>
+
+            <!-- Inventory Items -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📦</span> Inventory Items
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/items/" class="text-blue-600 hover:underline">Item List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/items/add/" class="text-blue-600 hover:underline">+ Add Item</a></li>
+                    <li class="text-gray-400 text-xs">items/&lt;pk&gt;/ - Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">items/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Stock Levels -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Stock Levels
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/stock/" class="text-blue-600 hover:underline">Stock Levels</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/stock/add/" class="text-blue-600 hover:underline">+ Add Stock Level</a></li>
+                    <li class="text-gray-400 text-xs">stock/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                    <li class="text-gray-400 text-xs">stock/&lt;pk&gt;/adjust/ - Adjust (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Batches -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏷️</span> Batches
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/batches/" class="text-blue-600 hover:underline">Batch List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/batches/add/" class="text-blue-600 hover:underline">+ Add Batch</a></li>
+                    <li class="text-gray-400 text-xs">batches/&lt;pk&gt;/ - Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">batches/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Movements -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🔄</span> Stock Movements
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/movements/" class="text-blue-600 hover:underline">Movement History</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/movements/add/" class="text-blue-600 hover:underline">+ Record Movement</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/transfers/create/" class="text-blue-600 hover:underline">+ Create Transfer</a></li>
+                </ul>
+            </div>
+
+            <!-- Suppliers -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏢</span> Suppliers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/suppliers/" class="text-blue-600 hover:underline">Supplier List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/suppliers/add/" class="text-blue-600 hover:underline">+ Add Supplier</a></li>
+                    <li class="text-gray-400 text-xs">suppliers/&lt;pk&gt;/ - Detail (needs ID)</li>
+                    <li class="text-gray-400 text-xs">suppliers/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Locations -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📍</span> Locations
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/locations/" class="text-blue-600 hover:underline">Location List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/locations/add/" class="text-blue-600 hover:underline">+ Add Location</a></li>
+                    <li class="text-gray-400 text-xs">locations/&lt;pk&gt;/edit/ - Edit (needs ID)</li>
+                </ul>
+            </div>
+
+            <!-- Location Types -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏷️</span> Location Types
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/location-types/" class="text-blue-600 hover:underline">Type List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/location-types/add/" class="text-blue-600 hover:underline">+ Add Type</a></li>
+                    <li class="text-gray-400 text-xs">location-types/&lt;pk&gt;/edit/ - Edit</li>
+                    <li class="text-gray-400 text-xs">location-types/&lt;pk&gt;/delete/ - Delete</li>
+                </ul>
+            </div>
+
+            <!-- Purchase Orders -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📦</span> Purchase Orders
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/" class="text-blue-600 hover:underline">PO List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/purchase-orders/create/" class="text-blue-600 hover:underline">+ Create PO</a></li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;pk&gt;/ - Detail</li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;pk&gt;/edit/ - Edit</li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;pk&gt;/submit/ - Submit</li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;pk&gt;/receive/ - Receive</li>
+                </ul>
+            </div>
+
+            <!-- PO Lines -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📝</span> PO Line Items
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;po&gt;/lines/add/</li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;po&gt;/lines/&lt;pk&gt;/edit/</li>
+                    <li class="text-gray-400 text-xs">purchase-orders/&lt;po&gt;/lines/&lt;pk&gt;/delete/</li>
+                    <li class="text-gray-500 text-xs italic mt-1">Access via PO Detail page</li>
+                </ul>
+            </div>
+
+            <!-- Reorder Rules -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📋</span> Reorder Rules
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/reorder-rules/" class="text-blue-600 hover:underline">Rule List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/reorder-rules/add/" class="text-blue-600 hover:underline">+ Add Rule</a></li>
+                    <li class="text-gray-400 text-xs">reorder-rules/&lt;pk&gt;/edit/ - Edit</li>
+                </ul>
+            </div>
+
+            <!-- Product-Suppliers -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🔗</span> Product-Suppliers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/" class="text-blue-600 hover:underline">Link List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/product-suppliers/add/" class="text-blue-600 hover:underline">+ Add Link</a></li>
+                    <li class="text-gray-400 text-xs">product-suppliers/&lt;pk&gt;/edit/ - Edit</li>
+                </ul>
+            </div>
+
+            <!-- Stock Counts -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📝</span> Stock Counts
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/" class="text-blue-600 hover:underline">Count List</a></li>
+                    <li><a href="/staff-{{ staff_token }}/operations/inventory/stock-counts/create/" class="text-blue-600 hover:underline">+ Start Count</a></li>
+                    <li class="text-gray-400 text-xs">stock-counts/&lt;pk&gt;/ - Detail</li>
+                    <li class="text-gray-400 text-xs">stock-counts/&lt;pk&gt;/entry/ - Entry</li>
+                    <li class="text-gray-400 text-xs">stock-counts/&lt;pk&gt;/approve/ - Approve</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
+        </div>
+    </div>
 </div>
 {% endblock %}

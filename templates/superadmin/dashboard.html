@@ -133,7 +133,7 @@
             <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="card-title text-base-content">{% trans "Recent Activity" %}</h2>
-                    <a href="{% url 'superadmin:audit_dashboard' %}" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
+                    <a href="/superadmin/audit/" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
@@ -167,7 +167,7 @@
             <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="card-title text-base-content">{% trans "System Health" %}</h2>
-                    <a href="{% url 'superadmin:monitoring' %}" class="btn btn-ghost btn-sm">{% trans "Details" %}</a>
+                    <a href="/superadmin/monitoring/" class="btn btn-ghost btn-sm">{% trans "Details" %}</a>
                 </div>
                 <div class="space-y-3">
                     {% for name, status in system_health.items %}
@@ -194,7 +194,7 @@
             <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="card-title text-base-content">{% trans "Recent Registrations" %}</h2>
-                    <a href="{% url 'superadmin:user_list' %}" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
+                    <a href="/superadmin/users/" class="btn btn-ghost btn-sm">{% trans "View All" %}</a>
                 </div>
                 <div class="space-y-2">
                     {% for user in recent_users %}
@@ -226,23 +226,125 @@
             <div class="card-body">
                 <h2 class="card-title text-base-content mb-4">{% trans "Quick Actions" %}</h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <a href="{% url 'superadmin:user_create' %}" class="btn btn-outline btn-primary">
+                    <a href="/superadmin/users/add/" class="btn btn-outline btn-primary">
                         {% include "components/icons/feather.html" with icon="user-plus" class="w-4 h-4 mr-2" %}
                         {% trans "New User" %}
                     </a>
-                    <a href="{% url 'superadmin:settings' %}" class="btn btn-outline btn-secondary">
+                    <a href="/superadmin/settings/" class="btn btn-outline btn-secondary">
                         {% include "components/icons/feather.html" with icon="settings" class="w-4 h-4 mr-2" %}
                         {% trans "Settings" %}
                     </a>
-                    <a href="{% url 'superadmin:audit_dashboard' %}" class="btn btn-outline">
+                    <a href="/superadmin/audit/" class="btn btn-outline">
                         {% include "components/icons/feather.html" with icon="eye" class="w-4 h-4 mr-2" %}
                         {% trans "Audit Logs" %}
                     </a>
-                    <a href="{% url 'superadmin:monitoring' %}" class="btn btn-outline">
+                    <a href="/superadmin/monitoring/" class="btn btn-outline">
                         {% include "components/icons/feather.html" with icon="activity" class="w-4 h-4 mr-2" %}
                         {% trans "Monitoring" %}
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEV: All Superadmin Module Pages -->
+    <div class="mt-6 card bg-warning/10 border-2 border-warning border-dashed">
+        <div class="card-body">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xl">🛠️</span>
+                <h2 class="card-title text-warning-content">DEV: All Superadmin Module Pages</h2>
+                <span class="badge badge-warning badge-sm">TEMPORARY</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Dashboard -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>📊</span> Dashboard
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/" class="link link-primary">Superadmin Dashboard</a></li>
+                    </ul>
+                </div>
+
+                <!-- Users -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>👥</span> Users
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/users/" class="link link-primary">User List</a></li>
+                        <li><a href="/superadmin/users/add/" class="link link-primary">+ Add User</a></li>
+                        <li class="text-base-content/50 text-xs">users/&lt;pk&gt;/ - Edit User</li>
+                        <li class="text-base-content/50 text-xs">users/&lt;pk&gt;/deactivate/ - Deactivate</li>
+                    </ul>
+                </div>
+
+                <!-- Roles -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>🔐</span> Roles
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/roles/" class="link link-primary">Role List</a></li>
+                    </ul>
+                </div>
+
+                <!-- Modules -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>📦</span> Modules
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/modules/" class="link link-primary">Module List</a></li>
+                        <li class="text-base-content/50 text-xs">modules/&lt;pk&gt;/toggle/ - Toggle</li>
+                        <li class="text-base-content/50 text-xs">modules/&lt;pk&gt;/features/ - Features</li>
+                    </ul>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>🎛️</span> Features
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li class="text-base-content/50 text-xs">features/&lt;pk&gt;/toggle/ - Toggle Feature</li>
+                    </ul>
+                </div>
+
+                <!-- Settings -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>⚙️</span> Settings
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/settings/" class="link link-primary">System Settings</a></li>
+                    </ul>
+                </div>
+
+                <!-- Audit -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>📋</span> Audit
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/audit/" class="link link-primary">Audit Dashboard</a></li>
+                    </ul>
+                </div>
+
+                <!-- Monitoring -->
+                <div class="bg-base-100 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
+                        <span>📈</span> Monitoring
+                    </h3>
+                    <ul class="text-sm space-y-1">
+                        <li><a href="/superadmin/monitoring/" class="link link-primary">System Monitoring</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-4 text-xs text-warning-content/70">
+                <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
             </div>
         </div>
     </div>

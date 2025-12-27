@@ -35,7 +35,7 @@
         <div class="bg-white rounded-xl shadow">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-900">{% trans "Recent Interactions" %}</h2>
-                <a href="{% url 'crm:customer_list' %}" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
+                <a href="/staff-{{ staff_token }}/operations/crm/customers/" class="text-sm text-primary-600 hover:text-primary-700">{% trans "View All" %}</a>
             </div>
             <div class="divide-y divide-gray-200">
                 {% for interaction in recent_interactions %}
@@ -86,7 +86,7 @@
             </div>
             <div class="divide-y divide-gray-200">
                 {% for customer in top_customers %}
-                <a href="{% url 'crm:customer_detail' pk=customer.pk %}" class="block px-6 py-4 hover:bg-gray-50">
+                <a href="/staff-{{ staff_token }}/operations/crm/customers/{{ customer.pk }}/" class="block px-6 py-4 hover:bg-gray-50">
                     <div class="flex justify-between">
                         <span class="font-medium">{{ customer.user.get_full_name|default:customer.user.email }}</span>
                         <span class="text-sm font-semibold text-green-600">${{ customer.total_spent }}</span>
@@ -116,6 +116,42 @@
                     {% endfor %}
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- DEV: All CRM Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All CRM Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/crm/" class="text-blue-600 hover:underline">CRM Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Customers -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>👥</span> Customers
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/crm/customers/" class="text-blue-600 hover:underline">Customer List</a></li>
+                    <li class="text-gray-400 text-xs">customers/&lt;pk&gt;/ - Customer Detail (needs ID)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
         </div>
     </div>
 </div>

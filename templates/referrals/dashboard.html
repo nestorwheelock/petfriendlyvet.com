@@ -32,19 +32,19 @@
 
     <!-- Quick Links -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <a href="{% url 'referrals:specialist_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/referrals/specialists/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">🏥</span>
             <span class="font-medium">{% trans "Specialists" %}</span>
         </a>
-        <a href="{% url 'referrals:referral_list' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/referrals/outbound/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">📋</span>
             <span class="font-medium">{% trans "Referrals" %}</span>
         </a>
-        <a href="{% url 'referrals:visiting_schedule' %}" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/referrals/visiting/" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">📅</span>
             <span class="font-medium">{% trans "Visiting Schedule" %}</span>
         </a>
-        <a href="{% url 'referrals:specialist_list' %}?visiting=yes" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
+        <a href="/staff-{{ staff_token }}/operations/referrals/specialists/?visiting=yes" class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition flex items-center gap-3">
             <span class="text-2xl">👨‍⚕️</span>
             <span class="font-medium">{% trans "Visiting Specialists" %}</span>
         </a>
@@ -55,7 +55,7 @@
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900">{% trans "Recent Referrals" %}</h2>
-                <a href="{% url 'referrals:referral_list' %}" class="text-primary-600 text-sm hover:underline">
+                <a href="/staff-{{ staff_token }}/operations/referrals/outbound/" class="text-primary-600 text-sm hover:underline">
                     {% trans "View All" %}
                 </a>
             </div>
@@ -63,7 +63,7 @@
             <ul class="divide-y divide-gray-200">
                 {% for referral in recent_referrals %}
                 <li class="p-4 hover:bg-gray-50">
-                    <a href="{% url 'referrals:referral_detail' referral.pk %}" class="block">
+                    <a href="/staff-{{ staff_token }}/operations/referrals/outbound/{{ referral.pk }}/" class="block">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-gray-900">{{ referral.pet.name }}</p>
@@ -97,7 +97,7 @@
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900">{% trans "Upcoming Visits" %}</h2>
-                <a href="{% url 'referrals:visiting_schedule' %}" class="text-primary-600 text-sm hover:underline">
+                <a href="/staff-{{ staff_token }}/operations/referrals/visiting/" class="text-primary-600 text-sm hover:underline">
                     {% trans "View All" %}
                 </a>
             </div>
@@ -105,7 +105,7 @@
             <ul class="divide-y divide-gray-200">
                 {% for schedule in upcoming_schedules %}
                 <li class="p-4 hover:bg-gray-50">
-                    <a href="{% url 'referrals:visiting_detail' schedule.pk %}" class="block">
+                    <a href="/staff-{{ staff_token }}/operations/referrals/visiting/{{ schedule.pk }}/" class="block">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-gray-900">{{ schedule.specialist.name }}</p>
@@ -125,6 +125,64 @@
                 {% trans "No upcoming visits scheduled" %}
             </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- DEV: All Referrals Module Pages -->
+    <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 border-dashed rounded-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="text-xl">🛠️</span>
+            <h2 class="font-bold text-yellow-800">DEV: All Referrals Module Pages</h2>
+            <span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">TEMPORARY</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Dashboard -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📊</span> Dashboard
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/referrals/" class="text-blue-600 hover:underline">Referrals Dashboard</a></li>
+                </ul>
+            </div>
+
+            <!-- Specialists -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>🏥</span> Specialists
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/referrals/specialists/" class="text-blue-600 hover:underline">Specialist List</a></li>
+                    <li class="text-gray-400 text-xs">specialists/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Referrals -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📋</span> Outbound Referrals
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/referrals/outbound/" class="text-blue-600 hover:underline">Referral List</a></li>
+                    <li class="text-gray-400 text-xs">outbound/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+
+            <!-- Visiting -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <span>📅</span> Visiting Schedule
+                </h3>
+                <ul class="text-sm space-y-1">
+                    <li><a href="/staff-{{ staff_token }}/operations/referrals/visiting/" class="text-blue-600 hover:underline">Schedule List</a></li>
+                    <li class="text-gray-400 text-xs">visiting/&lt;pk&gt;/ - Detail</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 text-xs text-yellow-700">
+            <strong>Note:</strong> This section is temporary for development. Links marked in gray require an object ID.
         </div>
     </div>
 </div>
