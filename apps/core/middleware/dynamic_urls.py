@@ -18,8 +18,10 @@ from django.http import Http404
 TOKEN_LENGTH = 6
 
 # URL patterns for dynamic routing
-ADMIN_PATTERN = re.compile(r'^/panel-([a-zA-Z0-9]{6})(/.*)?$')
-STAFF_PATTERN = re.compile(r'^/staff-([a-zA-Z0-9]{6})/(.*)$')
+# Note: Patterns must account for optional language prefix from LocaleMiddleware
+# e.g., /en/panel-abc123/ or /es/staff-xyz789/operations/
+ADMIN_PATTERN = re.compile(r'^(/[a-z]{2})?/panel-([a-zA-Z0-9]{6})(/.*)?$')
+STAFF_PATTERN = re.compile(r'^(/[a-z]{2})?/staff-([a-zA-Z0-9]{6})/(.*)$')
 
 # URLs that are always blocked (return 404)
 BLOCKED_PATTERNS = [
@@ -224,11 +226,12 @@ class DynamicURLMiddleware:
         if is_blocked_path(path):
             raise Http404("Page not found")
 
-        # Check for admin panel access (/panel-{token}/)
+        # Check for admin panel access (/panel-{token}/ or /en/panel-{token}/)
         admin_match = ADMIN_PATTERN.match(path)
         if admin_match:
-            token = admin_match.group(1)
-            remainder = admin_match.group(2) or '/'
+            lang_prefix = admin_match.group(1) or ''  # e.g., '/en' or ''
+            token = admin_match.group(2)
+            remainder = admin_match.group(3) or '/'
 
             # Must have session
             if not hasattr(request, 'session'):
@@ -242,17 +245,18 @@ class DynamicURLMiddleware:
             if not hasattr(request, 'user') or not request.user.is_superuser:
                 raise Http404("Page not found")
 
-            # Rewrite path to /admin/
-            request.path = '/admin' + remainder
+            # Rewrite path to /admin/ (preserve language prefix)
+            request.path = lang_prefix + '/admin' + remainder
             request.path_info = request.path
 
             return self.get_response(request)
 
-        # Check for staff access (/staff-{token}/...)
+        # Check for staff access (/staff-{token}/... or /en/staff-{token}/...)
         staff_match = STAFF_PATTERN.match(path)
         if staff_match:
-            token = staff_match.group(1)
-            remainder = staff_match.group(2)
+            lang_prefix = staff_match.group(1) or ''  # e.g., '/en' or ''
+            token = staff_match.group(2)
+            remainder = staff_match.group(3)
 
             # Must have session
             if not hasattr(request, 'session'):
@@ -269,9 +273,9 @@ class DynamicURLMiddleware:
             # Mark this as a staff portal request
             request.is_staff_portal = True
 
-            # Rewrite path to the actual module path
-            # /staff-abc123/operations/appointments/ -> /operations/appointments/
-            request.path = '/' + remainder
+            # Rewrite path to the actual module path (preserve language prefix)
+            # /en/staff-abc123/operations/appointments/ -> /en/operations/appointments/
+            request.path = lang_prefix + '/' + remainder
             request.path_info = request.path
 
             return self.get_response(request)

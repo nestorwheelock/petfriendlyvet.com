@@ -13,10 +13,14 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods, require_POST
 
+from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
+
 from apps.accounts.decorators import require_permission
 from apps.locations.models import Location
 from apps.practice.models import PatientRecord
 
+from .forms import EncounterEditForm
 from .models import Encounter, PatientProblem, ClinicalEvent
 from .services import encounters, events
 
@@ -215,3 +219,33 @@ def transition_encounter(request, encounter_id):
         })
 
     return staff_redirect(request, 'operations/clinical/')
+
+
+@login_required
+@require_permission('emr', 'edit')
+def edit_encounter(request, encounter_id):
+    """Edit encounter details (type, chief complaint, assignments, room).
+
+    Does NOT change pipeline state - use transition_encounter for that.
+    """
+    encounter = get_object_or_404(
+        Encounter.objects.select_related('patient__pet', 'location', 'assigned_vet'),
+        id=encounter_id
+    )
+    location = get_selected_location(request)
+
+    if request.method == 'POST':
+        form = EncounterEditForm(request.POST, instance=encounter)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Encounter updated successfully.'))
+            return staff_redirect(request, 'operations/clinical/')
+    else:
+        form = EncounterEditForm(instance=encounter)
+
+    return render(request, 'emr/encounter_edit.html', {
+        'form': form,
+        'encounter': encounter,
+        'location': location,
+        'locations': Location.objects.filter(is_active=True),
+    })

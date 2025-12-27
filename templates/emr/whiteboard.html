@@ -208,6 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const oldCard = document.getElementById('encounter-' + encounterId);
                     if (oldCard && newCard) {
                         oldCard.replaceWith(newCard);
+                        // CRITICAL: Tell HTMX to process the new card's hx-* attributes
+                        // Without this, HTMX buttons won't work after drag-drop
+                        htmx.process(newCard);
                     }
                     updateColumnCounts();
                 })

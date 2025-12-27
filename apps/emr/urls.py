@@ -28,4 +28,11 @@ urlpatterns = [
         views.transition_encounter,
         name='transition_encounter',
     ),
+
+    # Encounter edit
+    path(
+        'encounters/<int:encounter_id>/edit/',
+        views.edit_encounter,
+        name='edit_encounter',
+    ),
 ]

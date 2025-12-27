@@ -1,0 +1,129 @@
+{% extends "base_staff.html" %}
+{% load static i18n %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="/staff-{{ staff_token }}/operations/clinical/" class="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700">{% trans "Clinical" %}</a>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-2 text-sm font-medium text-gray-700">{% trans "Edit Encounter" %}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block staff_content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    {% include "components/icons/feather.html" with icon="edit-2" class="w-6 h-6 text-primary-600" %}
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">{% trans "Edit Encounter" %}</h1>
+                    <p class="text-gray-600">
+                        {{ encounter.patient.pet.name }}
+                        <span class="text-gray-400">&bull;</span>
+                        {{ encounter.get_pipeline_state_display }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="p-6 space-y-6">
+            {% csrf_token %}
+
+            <!-- Encounter Type -->
+            <div>
+                <label for="id_encounter_type" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Encounter Type" %}
+                </label>
+                {{ form.encounter_type }}
+            </div>
+
+            <!-- Chief Complaint -->
+            <div>
+                <label for="id_chief_complaint" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Chief Complaint" %}
+                </label>
+                {{ form.chief_complaint }}
+                <p class="mt-1 text-xs text-gray-500">{% trans "Primary reason for the visit" %}</p>
+            </div>
+
+            <!-- Staff Assignments -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_assigned_vet" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Assigned Veterinarian" %}
+                    </label>
+                    {{ form.assigned_vet }}
+                </div>
+                <div>
+                    <label for="id_assigned_tech" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% trans "Assigned Technician" %}
+                    </label>
+                    {{ form.assigned_tech }}
+                </div>
+            </div>
+
+            <!-- Room -->
+            <div>
+                <label for="id_room" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Room" %}
+                </label>
+                {{ form.room }}
+                <p class="mt-1 text-xs text-gray-500">{% trans "Exam room or treatment area" %}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <a href="/staff-{{ staff_token }}/operations/clinical/"
+                   class="btn btn-ghost">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% include "components/icons/feather.html" with icon="save" class="w-4 h-4 mr-2" %}
+                    {% trans "Save Changes" %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Encounter Info Card -->
+    <div class="mt-4 bg-gray-50 rounded-lg border border-gray-200 p-4">
+        <h3 class="text-sm font-medium text-gray-700 mb-2">{% trans "Encounter Details" %}</h3>
+        <dl class="grid grid-cols-2 gap-2 text-sm">
+            <dt class="text-gray-500">{% trans "Patient" %}</dt>
+            <dd class="text-gray-900">{{ encounter.patient.pet.name }}</dd>
+
+            <dt class="text-gray-500">{% trans "Owner" %}</dt>
+            <dd class="text-gray-900">{{ encounter.patient.pet.owner.get_full_name|default:encounter.patient.pet.owner.email }}</dd>
+
+            <dt class="text-gray-500">{% trans "Location" %}</dt>
+            <dd class="text-gray-900">{{ encounter.location.name }}</dd>
+
+            <dt class="text-gray-500">{% trans "Status" %}</dt>
+            <dd class="text-gray-900">{{ encounter.get_pipeline_state_display }}</dd>
+
+            <dt class="text-gray-500">{% trans "Created" %}</dt>
+            <dd class="text-gray-900">{{ encounter.created_at|date:"M j, Y H:i" }}</dd>
+
+            {% if encounter.checked_in_at %}
+            <dt class="text-gray-500">{% trans "Checked In" %}</dt>
+            <dd class="text-gray-900">{{ encounter.checked_in_at|date:"M j, Y H:i" }}</dd>
+            {% endif %}
+        </dl>
+    </div>
+</div>
+{% endblock %}
