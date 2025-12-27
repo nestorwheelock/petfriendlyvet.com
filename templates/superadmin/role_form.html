@@ -1,0 +1,109 @@
+{% extends "base_superadmin.html" %}
+{% load i18n %}
+
+{% block title %}{% if role %}{% trans "Edit Role" %}{% else %}{% trans "Create Role" %}{% endif %}{% endblock %}
+
+{% block superadmin_content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-base-content">
+            {% if role %}{% trans "Edit Role" %}{% else %}{% trans "Create Role" %}{% endif %}
+        </h1>
+        <p class="text-base-content/60">
+            {% if role %}{% trans "Update role settings and hierarchy level" %}{% else %}{% trans "Create a new custom role with specific permissions" %}{% endif %}
+        </p>
+    </div>
+
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Name -->
+                <div class="form-control">
+                    <label class="label" for="id_name">
+                        <span class="label-text font-medium">{% trans "Role Name" %}</span>
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.name.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Slug -->
+                <div class="form-control">
+                    <label class="label" for="id_slug">
+                        <span class="label-text font-medium">{% trans "Slug" %}</span>
+                        <span class="label-text-alt text-base-content/50">{% trans "URL-friendly identifier" %}</span>
+                    </label>
+                    {{ form.slug }}
+                    {% if form.slug.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.slug.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Hierarchy Level -->
+                <div class="form-control">
+                    <label class="label" for="id_hierarchy_level">
+                        <span class="label-text font-medium">{% trans "Hierarchy Level" %}</span>
+                        <span class="label-text-alt text-base-content/50">{% trans "10-99, higher = more authority" %}</span>
+                    </label>
+                    {{ form.hierarchy_level }}
+                    {% if form.hierarchy_level.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.hierarchy_level.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                    <div class="mt-2 text-sm text-base-content/60">
+                        <p>{% trans "Recommended levels:" %}</p>
+                        <ul class="list-disc list-inside ml-2 mt-1">
+                            <li>{% trans "10: Customers" %}</li>
+                            <li>{% trans "20-30: Staff (receptionists, technicians)" %}</li>
+                            <li>{% trans "40: Senior Staff (veterinarians)" %}</li>
+                            <li>{% trans "60: Managers" %}</li>
+                            <li>{% trans "80: Administrators" %}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-control">
+                    <label class="label" for="id_description">
+                        <span class="label-text font-medium">{% trans "Description" %}</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <label class="label">
+                        <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Is Active -->
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-4">
+                        {{ form.is_active }}
+                        <span class="label-text font-medium">{% trans "Active" %}</span>
+                    </label>
+                    <p class="text-sm text-base-content/60 ml-10">{% trans "Inactive roles cannot be assigned to users" %}</p>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex gap-4 pt-4 border-t border-base-300">
+                    <button type="submit" class="btn btn-primary">
+                        {% include "components/icons/feather.html" with icon="save" class="w-4 h-4 mr-1" %}
+                        {% if role %}{% trans "Update Role" %}{% else %}{% trans "Create Role" %}{% endif %}
+                    </button>
+                    <a href="{% url 'superadmin:role_list' %}" class="btn btn-ghost">
+                        {% trans "Cancel" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

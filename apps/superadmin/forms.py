@@ -2,11 +2,64 @@
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.models import Role
 from apps.practice.models import ClinicSettings
 
 User = get_user_model()
+
+
+class RoleForm(forms.ModelForm):
+    """Form for creating and editing roles."""
+
+    class Meta:
+        model = Role
+        fields = ['name', 'slug', 'description', 'hierarchy_level', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'e.g., Practice Manager',
+            }),
+            'slug': forms.TextInput(attrs={
+                'class': 'input input-bordered w-full',
+                'placeholder': 'e.g., practice-manager',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full',
+                'rows': 3,
+                'placeholder': 'Description of this role...',
+            }),
+            'hierarchy_level': forms.NumberInput(attrs={
+                'class': 'input input-bordered w-full',
+                'min': 10,
+                'max': 99,
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'checkbox checkbox-primary',
+            }),
+        }
+
+    def save(self, commit=True):
+        """Create/update role and linked Django Group."""
+        role = super().save(commit=False)
+
+        # Create or update the linked Group
+        if role.pk:
+            # Updating existing role - update group name if changed
+            if role.group and role.group.name != role.name:
+                role.group.name = role.name
+                role.group.save()
+        else:
+            # Creating new role - create group first
+            group, _ = Group.objects.get_or_create(name=role.name)
+            role.group = group
+
+        if commit:
+            role.save()
+
+        return role
 
 
 class UserForm(forms.ModelForm):

@@ -177,30 +177,56 @@ class UserDeactivateView(SuperuserRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class RoleListView(SuperuserRequiredMixin, TemplateView):
-    """Display role and permission matrix."""
+class RoleListView(SuperuserRequiredMixin, ListView):
+    """Display role list with hierarchy and user counts."""
 
     template_name = 'superadmin/role_list.html'
+    context_object_name = 'roles'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_queryset(self):
+        from apps.accounts.models import Role
+        return Role.objects.annotate(
+            user_count=Count('user_roles')
+        ).order_by('-hierarchy_level')
 
-        # User roles from User model
-        context['user_roles'] = User.ROLE_CHOICES
 
-        # Staff roles from StaffProfile if it exists
-        try:
-            from apps.practice.models import StaffProfile
-            context['staff_roles'] = StaffProfile.ROLE_CHOICES
-        except (ImportError, AttributeError):
-            context['staff_roles'] = []
+class RoleCreateView(SuperuserRequiredMixin, CreateView):
+    """Create a new role."""
 
-        # Count users per role
-        context['role_counts'] = {}
-        for role_code, role_name in User.ROLE_CHOICES:
-            context['role_counts'][role_code] = User.objects.filter(role=role_code).count()
+    template_name = 'superadmin/role_form.html'
 
-        return context
+    def get_form_class(self):
+        from .forms import RoleForm
+        return RoleForm
+
+    def get_success_url(self):
+        return reverse_lazy('superadmin:role_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, _('Role created successfully.'))
+        return super().form_valid(form)
+
+
+class RoleUpdateView(SuperuserRequiredMixin, UpdateView):
+    """Update an existing role."""
+
+    template_name = 'superadmin/role_form.html'
+    context_object_name = 'role'
+
+    def get_queryset(self):
+        from apps.accounts.models import Role
+        return Role.objects.all()
+
+    def get_form_class(self):
+        from .forms import RoleForm
+        return RoleForm
+
+    def get_success_url(self):
+        return reverse_lazy('superadmin:role_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, _('Role updated successfully.'))
+        return super().form_valid(form)
 
 
 class SettingsView(SuperuserRequiredMixin, UpdateView):

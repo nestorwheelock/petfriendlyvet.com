@@ -3,89 +3,69 @@
 
 {% block title %}{% trans "Roles & Permissions" %}{% endblock %}
 
+{% block header_actions %}
+<a href="{% url 'superadmin:role_create' %}" class="btn btn-primary btn-sm">
+    {% include "components/icons/feather.html" with icon="plus" class="w-4 h-4 mr-1" %}
+    {% trans "Add Role" %}
+</a>
+{% endblock %}
+
 {% block superadmin_content %}
 <div class="space-y-6">
     <div>
         <h1 class="text-2xl font-bold text-base-content">{% trans "Roles & Permissions" %}</h1>
-        <p class="text-base-content/60">{% trans "View user roles and their permissions" %}</p>
+        <p class="text-base-content/60">{% trans "Manage user roles and their hierarchy levels" %}</p>
     </div>
 
-    <!-- User Roles -->
+    <!-- Roles Table -->
     <div class="card bg-base-100 shadow-lg">
         <div class="card-body">
-            <h2 class="card-title text-base-content mb-4">{% trans "User Roles" %}</h2>
+            <h2 class="card-title text-base-content mb-4">{% trans "Custom Roles" %}</h2>
             <div class="overflow-x-auto">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>{% trans "Role" %}</th>
+                            <th>{% trans "Hierarchy" %}</th>
                             <th>{% trans "Users" %}</th>
+                            <th>{% trans "Status" %}</th>
                             <th>{% trans "Description" %}</th>
+                            <th>{% trans "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for code, name in user_roles %}
+                        {% for role in roles %}
                         <tr class="hover">
                             <td>
-                                <span class="badge {% if code == 'admin' %}badge-error{% elif code == 'vet' %}badge-secondary{% elif code == 'staff' %}badge-primary{% else %}badge-ghost{% endif %}">
-                                    {{ name }}
+                                <span class="font-medium">{{ role.name }}</span>
+                                <div class="text-xs text-base-content/50">{{ role.slug }}</div>
+                            </td>
+                            <td>
+                                <span class="badge {% if role.hierarchy_level >= 80 %}badge-error{% elif role.hierarchy_level >= 60 %}badge-warning{% elif role.hierarchy_level >= 40 %}badge-secondary{% elif role.hierarchy_level >= 20 %}badge-primary{% else %}badge-ghost{% endif %}">
+                                    {{ role.hierarchy_level }}
                                 </span>
                             </td>
-                            <td>{{ role_counts|default_if_none:0 }}</td>
-                            <td class="text-base-content/60">
-                                {% if code == 'owner' %}{% trans "Pet owners who use customer-facing features" %}
-                                {% elif code == 'staff' %}{% trans "Staff members with access to staff modules" %}
-                                {% elif code == 'vet' %}{% trans "Veterinarians with prescription privileges" %}
-                                {% elif code == 'admin' %}{% trans "Administrators with full system access" %}
+                            <td>{{ role.user_count }}</td>
+                            <td>
+                                {% if role.is_active %}
+                                <span class="badge badge-success badge-sm">{% trans "Active" %}</span>
+                                {% else %}
+                                <span class="badge badge-ghost badge-sm">{% trans "Inactive" %}</span>
                                 {% endif %}
                             </td>
+                            <td class="text-base-content/60 max-w-xs truncate">
+                                {{ role.description|default:"-" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'superadmin:role_update' role.pk %}" class="btn btn-ghost btn-xs">
+                                    {% include "components/icons/feather.html" with icon="edit-2" class="w-4 h-4" %}
+                                </a>
+                            </td>
                         </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Staff Roles -->
-    {% if staff_roles %}
-    <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-            <h2 class="card-title text-base-content mb-4">{% trans "Staff Roles" %}</h2>
-            <div class="overflow-x-auto">
-                <table class="table">
-                    <thead>
+                        {% empty %}
                         <tr>
-                            <th>{% trans "Role" %}</th>
-                            <th>{% trans "Prescribe" %}</th>
-                            <th>{% trans "Dispense" %}</th>
-                            <th>{% trans "Controlled Substances" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for code, name in staff_roles %}
-                        <tr class="hover">
-                            <td><span class="badge badge-outline">{{ name }}</span></td>
-                            <td>
-                                {% if code == 'veterinarian' %}
-                                <span class="text-success">Yes</span>
-                                {% else %}
-                                <span class="text-base-content/40">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if code in 'veterinarian,pharmacy_tech' %}
-                                <span class="text-success">Yes</span>
-                                {% else %}
-                                <span class="text-base-content/40">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if code == 'veterinarian' %}
-                                <span class="text-warning">Requires DEA</span>
-                                {% else %}
-                                <span class="text-base-content/40">No</span>
-                                {% endif %}
+                            <td colspan="6" class="text-center text-base-content/50 py-8">
+                                {% trans "No roles found. Create your first role." %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -94,37 +74,47 @@
             </div>
         </div>
     </div>
-    {% endif %}
 
-    <!-- Permission Legend -->
+    <!-- Hierarchy Legend -->
     <div class="card bg-base-100 shadow-lg">
         <div class="card-body">
-            <h2 class="card-title text-base-content mb-4">{% trans "Access Levels" %}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h2 class="card-title text-base-content mb-4">{% trans "Hierarchy Levels" %}</h2>
+            <p class="text-base-content/60 mb-4">{% trans "Higher numbers indicate more authority. Users can only manage users with lower hierarchy levels." %}</p>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="p-4 bg-base-200 rounded-lg">
-                    <h3 class="font-semibold text-base-content mb-2">{% trans "Customer" %}</h3>
-                    <ul class="text-sm text-base-content/70 space-y-1">
-                        <li>View own pets and appointments</li>
-                        <li>Place orders in store</li>
-                        <li>View invoices and loyalty points</li>
-                    </ul>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-ghost">10</span>
+                        <span class="font-semibold">{% trans "Customer" %}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">{% trans "Pet owners" %}</p>
                 </div>
                 <div class="p-4 bg-base-200 rounded-lg">
-                    <h3 class="font-semibold text-base-content mb-2">{% trans "Staff" %}</h3>
-                    <ul class="text-sm text-base-content/70 space-y-1">
-                        <li>Access staff modules</li>
-                        <li>Manage appointments</li>
-                        <li>Process orders and inventory</li>
-                    </ul>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-primary">20-30</span>
+                        <span class="font-semibold">{% trans "Staff" %}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">{% trans "Receptionists, techs" %}</p>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-secondary">40</span>
+                        <span class="font-semibold">{% trans "Senior Staff" %}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">{% trans "Veterinarians" %}</p>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-warning">60</span>
+                        <span class="font-semibold">{% trans "Managers" %}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">{% trans "Department heads" %}</p>
                 </div>
                 <div class="p-4 bg-base-200 rounded-lg border-2 border-error/30">
-                    <h3 class="font-semibold text-error mb-2">{% trans "Superuser" %}</h3>
-                    <ul class="text-sm text-base-content/70 space-y-1">
-                        <li>Full system access</li>
-                        <li>User management</li>
-                        <li>System settings</li>
-                        <li>Audit logs</li>
-                    </ul>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-error">80+</span>
+                        <span class="font-semibold">{% trans "Admin" %}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">{% trans "Full system access" %}</p>
                 </div>
             </div>
         </div>
